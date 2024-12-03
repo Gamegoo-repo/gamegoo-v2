@@ -37,8 +37,11 @@ dependencies {
 
     // database
     runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
+    // rds ssh 접속
+    implementation 'com.github.mwiede:jsch:0.2.16'
+    
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
