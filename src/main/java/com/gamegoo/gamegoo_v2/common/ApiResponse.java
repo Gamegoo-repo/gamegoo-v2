@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gamegoo.gamegoo_v2.exception.ErrorCode;
+import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

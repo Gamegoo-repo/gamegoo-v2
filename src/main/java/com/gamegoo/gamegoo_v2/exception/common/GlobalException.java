@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.exception;
+package com.gamegoo.gamegoo_v2.exception.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
