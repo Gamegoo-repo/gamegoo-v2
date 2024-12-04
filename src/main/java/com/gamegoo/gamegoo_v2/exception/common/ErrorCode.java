@@ -37,7 +37,19 @@ public enum ErrorCode {
     /**
      * 회원 관련 에러
      */
-    MEMBER_NOT_FOUND(NOT_FOUND, "MEMBER_4001", "사용자를 찾을 수 없습니다.");
+    MEMBER_NOT_FOUND(NOT_FOUND, "MEMBER_4001", "사용자를 찾을 수 없습니다."),
+    TARGET_MEMBER_DEACTIVATED(FORBIDDEN, "MEMBER_4002", "대상 회원이 탈퇴했습니다."),
+
+
+    /*
+     * 차단 관련 에러
+     */
+    TARGET_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK401", "차단 대상 회원을 찾을 수 없습니다."),
+    ALREADY_BLOCKED(HttpStatus.BAD_REQUEST, "BLOCK402", "이미 차단한 회원입니다."),
+    TARGET_MEMBER_NOT_BLOCKED(HttpStatus.BAD_REQUEST, "BLOCK403", "차단 목록에 존재하지 않는 회원입니다."),
+    BLOCK_MEMBER_BAD_REQUEST(HttpStatus.BAD_REQUEST, "BLOCK404", "잘못된 친구 차단 요청입니다."),
+    DELETE_BLOCKED_MEMBER_FAILED(HttpStatus.BAD_REQUEST, "BLOCK405", "차단 목록에서 삭제 불가한 회원입니다."),
+    UNBLOCK_TARGET_MEMBER_BLIND(HttpStatus.BAD_REQUEST, "BLOCK406", "차단 대상 회원이 탈퇴했습니다. 차단 해제가 불가합니다.");
 
     private final HttpStatus status;
     private final String code;
