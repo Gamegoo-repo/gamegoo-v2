@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.integration.block;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
+import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.exception.common.MemberException;
 import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
@@ -51,8 +52,8 @@ public class BlockMemberTest {
     })
     void blockMemberSucceeds(boolean chatroomExists, boolean friendshipExists, boolean friendRequestExists) {
         // given
-        Member member = createMyMember();
-        Member targetMember = createTargetMember();
+        Member member = createMember("member@naver.com", "member");
+        Member targetMember = createMember("target@naver.com", "target");
 
         // 조건에 따른 상태 설정
         //if (chatroomExists) {
@@ -85,20 +86,20 @@ public class BlockMemberTest {
     @Test
     void blockMember_shouldThrowWhenBlockingSelf() {
         // given
-        Member member = createMyMember();
+        Member member = createMember("member@naver.com", "member");
 
         // when // then
         assertThatThrownBy(() -> blockFacadeService.blockMember(member, member.getId()))
                 .isInstanceOf(BlockException.class)
-                .hasMessage("잘못된 친구 차단 요청입니다.");
+                .hasMessage(ErrorCode.BLOCK_MEMBER_BAD_REQUEST.getMessage());
     }
 
     @DisplayName("회원 차단 실패: 이미 차단한 회원인 경우 예외가 발생한다.")
     @Test
     void blockMember_shouldThrowWhenAlreadyBlocked() {
         // given
-        Member member = createMyMember();
-        Member targetMember = createTargetMember();
+        Member member = createMember("member@naver.com", "member");
+        Member targetMember = createMember("target@naver.com", "target");
 
         // 차단 처리
         blockFacadeService.blockMember(member, targetMember.getId());
@@ -106,15 +107,15 @@ public class BlockMemberTest {
         // when // then
         assertThatThrownBy(() -> blockFacadeService.blockMember(member, targetMember.getId()))
                 .isInstanceOf(BlockException.class)
-                .hasMessage("이미 차단한 회원입니다.");
+                .hasMessage(ErrorCode.ALREADY_BLOCKED.getMessage());
     }
 
     @DisplayName("회원 차단 실패: 차단 대상 회원이 탈퇴한 경우 예외가 발생한다.")
     @Test
     void blockMember_shouldThrowWhenTargetMemberIsBlind() {
         // given
-        Member member = createMyMember();
-        Member targetMember = createTargetMember();
+        Member member = createMember("member@naver.com", "member");
+        Member targetMember = createMember("target@naver.com", "target");
 
         // 대상 회원을 탈퇴 처리
         targetMember.updateBlind(true);
@@ -122,33 +123,17 @@ public class BlockMemberTest {
         // when // then
         assertThatThrownBy(() -> blockFacadeService.blockMember(member, targetMember.getId()))
                 .isInstanceOf(MemberException.class)
-                .hasMessage("대상 회원이 탈퇴했습니다.");
+                .hasMessage(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage());
     }
 
-    private Member createMyMember() {
+    private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()
-                .email("test1@naver.com")
-                .password("test1password")
+                .email(email)
+                .password("testPassword")
                 .profileImage(1)
                 .loginType(LoginType.GENERAL)
-                .gameName("test1")
-                .tag("tag1")
-                .tier(Tier.IRON)
-                .gameRank(0)
-                .winRate(0.0)
-                .gameCount(0)
-                .isAgree(true)
-                .build());
-    }
-
-    private Member createTargetMember() {
-        return memberRepository.save(Member.builder()
-                .email("test2@naver.com")
-                .password("test2password")
-                .profileImage(2)
-                .loginType(LoginType.GENERAL)
-                .gameName("test2")
-                .tag("tag2")
+                .gameName(gameName)
+                .tag("TAG")
                 .tier(Tier.IRON)
                 .gameRank(0)
                 .winRate(0.0)
