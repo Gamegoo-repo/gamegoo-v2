@@ -28,7 +28,7 @@ public class Notification extends BaseDateTimeEntity {
     private String content;
 
     @Column(nullable = false)
-    private boolean read = false;
+    private boolean isRead = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_member_id")
