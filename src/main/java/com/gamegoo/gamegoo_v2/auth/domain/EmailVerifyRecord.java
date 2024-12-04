@@ -18,7 +18,7 @@ public class EmailVerifyRecord extends BaseDateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "record_id", nullable = false)
+    @Column(name = "record_id")
     private Long id;
 
     @Column(nullable = false, length = 100)

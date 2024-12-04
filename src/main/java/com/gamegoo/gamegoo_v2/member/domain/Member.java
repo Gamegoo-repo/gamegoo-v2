@@ -22,7 +22,7 @@ public class Member extends BaseDateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id", nullable = false)
+    @Column(name = "member_id")
     private Long id;
 
     @Column(nullable = false, length = 100)
@@ -43,13 +43,13 @@ public class Member extends BaseDateTimeEntity {
     private boolean blind = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(20)", nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private LoginType loginType;
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false, length = 100)
     private String gameName;
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false, length = 100)
     private String tag;
 
     @Enumerated(EnumType.STRING)

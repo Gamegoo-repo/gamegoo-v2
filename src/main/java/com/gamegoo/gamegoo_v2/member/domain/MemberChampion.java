@@ -21,7 +21,7 @@ public class MemberChampion extends BaseDateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_champion_id", nullable = false)
+    @Column(name = "member_champion_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

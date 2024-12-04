@@ -21,7 +21,7 @@ public class MemberGameStyle extends BaseDateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_gamestyle_id", nullable = false)
+    @Column(name = "member_gamestyle_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

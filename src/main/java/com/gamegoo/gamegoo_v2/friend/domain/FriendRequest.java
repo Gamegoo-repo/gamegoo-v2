@@ -27,7 +27,7 @@ public class FriendRequest extends BaseDateTimeEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(30)", nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     private FriendRequestStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
