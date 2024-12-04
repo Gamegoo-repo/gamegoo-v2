@@ -8,6 +8,11 @@ springdoc:
     operations-sorter: alpha      # alpha: 알파벳 순 태그 정렬, method: HTTP Method 순 정렬
     enabled: true
 
+jwt:
+  secret: ${JWT_SECRET}
+  access_expiration_time: 600000 # 10분 (10 * 60 * 1000 밀리초)
+  refresh_expiration_day: 14 # 2주
+
 ---
 # 로컬 환경
 spring:
@@ -29,7 +34,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    
+
 ssh:
   remote_jump_host: ${EC2_IP}
   ssh_port: 22

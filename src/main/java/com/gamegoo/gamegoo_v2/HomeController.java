@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2;
 
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
-import com.gamegoo.gamegoo_v2.exception.ErrorCode;
-import com.gamegoo.gamegoo_v2.exception.GlobalException;
+import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.exception.common.GlobalException;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

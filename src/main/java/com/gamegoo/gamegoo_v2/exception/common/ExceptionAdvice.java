@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.exception;
+package com.gamegoo.gamegoo_v2.exception.common;
 
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
