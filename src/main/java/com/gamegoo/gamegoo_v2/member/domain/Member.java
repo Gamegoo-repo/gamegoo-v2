@@ -1,6 +1,8 @@
 package com.gamegoo.gamegoo_v2.member.domain;
 
+import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,11 +10,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
@@ -80,8 +85,11 @@ public class Member extends BaseDateTimeEntity {
     @Column(nullable = false)
     private boolean isAgree;
 
+    @OneToMany(mappedBy = "blockerMember", cascade = CascadeType.ALL)
+    private List<Block> blockList = new ArrayList<>();
+
     public static Member create(String email, String password, LoginType loginType, String gameName, String tag,
-            Tier tier, Integer rank, Double winRate, int gameCount, boolean isAgree) {
+            Tier tier, Integer gameRank, Double winRate, int gameCount, boolean isAgree) {
         int randomProfileImage = ThreadLocalRandom.current().nextInt(1, 9);
 
         return Member.builder()
@@ -92,7 +100,7 @@ public class Member extends BaseDateTimeEntity {
                 .gameName(gameName)
                 .tag(tag)
                 .tier(tier)
-                .rank(rank)
+                .gameRank(gameRank)
                 .winRate(winRate)
                 .gameCount(gameCount)
                 .isAgree(isAgree)
@@ -101,7 +109,7 @@ public class Member extends BaseDateTimeEntity {
 
     @Builder
     private Member(String email, String password, Integer profileImage, LoginType loginType, String gameName,
-            String tag, Tier tier, Integer rank, Double winRate, int gameCount, boolean isAgree) {
+            String tag, Tier tier, Integer gameRank, Double winRate, int gameCount, boolean isAgree) {
         this.email = email;
         this.password = password;
         this.profileImage = profileImage;
@@ -109,10 +117,14 @@ public class Member extends BaseDateTimeEntity {
         this.gameName = gameName;
         this.tag = tag;
         this.tier = tier;
-        this.gameRank = rank;
+        this.gameRank = gameRank;
         this.winRate = winRate;
         this.gameCount = gameCount;
         this.isAgree = isAgree;
+    }
+
+    public void updateBlind(boolean blind) {
+        this.blind = blind;
     }
 
 }
