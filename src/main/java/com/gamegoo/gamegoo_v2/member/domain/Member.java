@@ -89,7 +89,7 @@ public class Member extends BaseDateTimeEntity {
     private List<Block> blockList = new ArrayList<>();
 
     public static Member create(String email, String password, LoginType loginType, String gameName, String tag,
-            Tier tier, Integer gameRank, Double winRate, int gameCount, boolean isAgree) {
+            Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
         int randomProfileImage = ThreadLocalRandom.current().nextInt(1, 9);
 
         return Member.builder()
@@ -108,8 +108,8 @@ public class Member extends BaseDateTimeEntity {
     }
 
     @Builder
-    private Member(String email, String password, Integer profileImage, LoginType loginType, String gameName,
-            String tag, Tier tier, Integer gameRank, Double winRate, int gameCount, boolean isAgree) {
+    private Member(String email, String password, int profileImage, LoginType loginType, String gameName,
+            String tag, Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
         this.email = email;
         this.password = password;
         this.profileImage = profileImage;
