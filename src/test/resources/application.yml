@@ -8,3 +8,8 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+jwt:
+  secret: "secretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecret"
+  access_expiration_time: 600000 # 10분 (10 * 60 * 1000 밀리초)
+  refresh_expiration_day: 14 # 2주
