@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-public class BlockMemberTest {
+class BlockFacadeServiceTest {
 
     @Autowired
     private BlockFacadeService blockFacadeService;
