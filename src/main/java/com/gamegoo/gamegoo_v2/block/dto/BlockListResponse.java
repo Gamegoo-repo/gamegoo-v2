@@ -15,8 +15,8 @@ public class BlockListResponse {
     int listSize;
     int totalPage;
     long totalElements;
-    boolean isFirst;
-    boolean isLast;
+    Boolean isFirst;
+    Boolean isLast;
 
     @Getter
     @Builder
@@ -26,7 +26,7 @@ public class BlockListResponse {
         int profileImg;
         String email;
         String name;
-        boolean isBlind;
+        Boolean isBlind;
 
         public static BlockedMemberResponse of(Member member) {
             String name = member.isBlind() ? "(탈퇴한 사용자)" : member.getGameName();
