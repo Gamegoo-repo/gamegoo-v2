@@ -39,7 +39,7 @@ public class BlockFacadeService {
      * @return
      */
     public BlockListResponse getBlockList(Member member, Integer pageIdx) {
-        PageRequest pageRequest = PageRequest.of(pageIdx, PAGE_SIZE);
+        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE);
         Page<Member> members = blockService.findBlockedMembersByBlockerId(member.getId(), pageRequest);
 
         return BlockListResponse.of(members);
