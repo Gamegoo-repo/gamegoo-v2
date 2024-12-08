@@ -5,40 +5,24 @@ import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.exception.common.MemberException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BlockController.class)
-@Import(BlockControllerTest.TestConfig.class)
 class BlockControllerTest extends ControllerTestSupport {
 
-    @TestConfiguration
-    static class TestConfig {
-
-        @Bean
-        public BlockFacadeService blockFacadeService() {
-            return Mockito.mock(BlockFacadeService.class);
-        }
-
-    }
-
-    @Autowired
+    @MockitoBean
     private BlockFacadeService blockFacadeService;
 
     private static final String API_URL_PREFIX = "/api/v2/block";
@@ -53,7 +37,7 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void blockMemberSucceeds() throws Exception {
             // given
-            doNothing().when(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+            willDoNothing().given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -66,8 +50,8 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void blockMemberFailedWhenAlreadyBlocked() throws Exception {
             // given
-            doThrow(new BlockException(ErrorCode.ALREADY_BLOCKED))
-                    .when(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+            willThrow(new BlockException(ErrorCode.ALREADY_BLOCKED))
+                    .given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -80,8 +64,8 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void blockMemberFailedWhenTargetIsBlind() throws Exception {
             // given
-            doThrow(new MemberException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
-                    .when(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+            willThrow(new BlockException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
+                    .given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
