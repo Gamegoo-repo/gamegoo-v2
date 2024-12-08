@@ -17,7 +17,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
 
     @GetMapping("/token/{memberId}")
-    @Operation(summary = "jwt 토큰 재발급 API", description = "access token, refresh token을 재발급 받는 API 입니다.")
+    @Operation(summary = "임시 access token 발급 API", description = "테스트용으로 access token을 발급받을 수 있는 API 입니다.")
     public ApiResponse<String> getTestAccessToken(@PathVariable(name = "memberId") Long memberId) {
         return ApiResponse.ok(jwtProvider.createAccessToken(memberId));
     }

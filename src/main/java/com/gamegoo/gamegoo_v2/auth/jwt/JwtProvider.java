@@ -6,22 +6,21 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtProvider {
 
-    private final Key key;
+    private final SecretKey key;
     private final long accessTokenExpTime;
 
     @Value("${jwt.refresh_expiration_day}")
@@ -31,10 +30,10 @@ public class JwtProvider {
     public static final String BEARER_PREFIX = "Bearer ";
 
     public JwtProvider(
-            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.secret}") String secret,
             @Value("${jwt.access_expiration_time}") long accessTokenExpTime) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
+                Jwts.SIG.HS256.key().build().getAlgorithm());
         this.accessTokenExpTime = accessTokenExpTime;
     }
 
@@ -111,7 +110,10 @@ public class JwtProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parser()
+                    .verifyWith(key) // 서명 키 설정
+                    .build()
+                    .parse(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException e) {
             throw new JwtAuthException(ErrorCode.INVALID_SIGNATURE);
@@ -134,17 +136,15 @@ public class JwtProvider {
      * @return
      */
     private String createToken(Long memberId, Long expireTime) {
-        Claims claims = Jwts.claims();
-        claims.put("memberId", memberId);
 
         long now = (new Date()).getTime();
         Date validity = new Date(now + expireTime);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date(now))
-                .setExpiration(validity)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .claim("memberId", memberId)
+                .issuedAt(new Date(now))
+                .expiration(validity)
+                .signWith(key)
                 .compact();
     }
 
@@ -156,7 +156,11 @@ public class JwtProvider {
      */
     private Claims parseClaims(String accessToken) {
         try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            return Jwts.parser()
+                    .verifyWith(key) // 서명 키 설정
+                    .build()
+                    .parseSignedClaims(accessToken)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }

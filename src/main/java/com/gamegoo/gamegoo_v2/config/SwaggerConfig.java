@@ -29,7 +29,7 @@ public class SwaggerConfig {
                         new SecurityScheme()
                                 .name(jwtSchemeName)
                                 .type(SecurityScheme.Type.HTTP) // HTTP 방식
-                                .scheme("bearer")
+                                .scheme("Bearer")
                                 .bearerFormat("JWT"));
 
         return new OpenAPI()
