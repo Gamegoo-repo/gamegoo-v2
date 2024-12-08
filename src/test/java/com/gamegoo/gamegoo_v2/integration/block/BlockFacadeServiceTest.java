@@ -1,10 +1,11 @@
 package com.gamegoo.gamegoo_v2.integration.block;
 
+import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
+import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.exception.common.MemberException;
 import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.domain.Tier;
@@ -35,6 +36,10 @@ class BlockFacadeServiceTest {
     @Autowired
     private BlockRepository blockRepository;
 
+    private static final String MEMBER_EMAIL = "test@gmail.com";
+    private static final String MEMBER_GAMENAME = "member";
+
+    /*   회원 차단   */
     @DisplayName("회원 차단 성공")
     @ParameterizedTest(name = "채팅방: {0}, 친구 관계: {1}, 친구 요청: {2}")
     //@CsvSource({
@@ -52,7 +57,7 @@ class BlockFacadeServiceTest {
     })
     void blockMemberSucceeds(boolean chatroomExists, boolean friendshipExists, boolean friendRequestExists) {
         // given
-        Member member = createMember("member@naver.com", "member");
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
         Member targetMember = createMember("target@naver.com", "target");
 
         // 조건에 따른 상태 설정
@@ -86,7 +91,7 @@ class BlockFacadeServiceTest {
     @Test
     void blockMember_shouldThrowWhenBlockingSelf() {
         // given
-        Member member = createMember("member@naver.com", "member");
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
 
         // when // then
         assertThatThrownBy(() -> blockFacadeService.blockMember(member, member.getId()))
@@ -98,7 +103,7 @@ class BlockFacadeServiceTest {
     @Test
     void blockMember_shouldThrowWhenAlreadyBlocked() {
         // given
-        Member member = createMember("member@naver.com", "member");
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
         Member targetMember = createMember("target@naver.com", "target");
 
         // 차단 처리
@@ -114,7 +119,7 @@ class BlockFacadeServiceTest {
     @Test
     void blockMember_shouldThrowWhenTargetMemberIsBlind() {
         // given
-        Member member = createMember("member@naver.com", "member");
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
         Member targetMember = createMember("target@naver.com", "target");
 
         // 대상 회원을 탈퇴 처리
@@ -124,6 +129,43 @@ class BlockFacadeServiceTest {
         assertThatThrownBy(() -> blockFacadeService.blockMember(member, targetMember.getId()))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage());
+    }
+
+    /*   차단한 회원 목록 조회   */
+    @DisplayName("차단한 회원 목록 조회 성공: 차단한 회원이 존재하는 경우")
+    @Test
+    void getBlockListSucceedsWhenBlockedMemberExists() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        for (int i = 1; i <= 5; i++) {
+            Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+            blockFacadeService.blockMember(member, targetMember.getId());
+        }
+
+        // when
+        BlockListResponse blockList = blockFacadeService.getBlockList(member, 1);
+
+        // then
+        assertThat(blockList.getListSize()).isEqualTo(5);
+
+        BlockListResponse.BlockedMemberResponse blockedMemberResponse = blockList.getBlockedMemberList().get(0);
+        assertThat(blockedMemberResponse.getName()).isEqualTo("member5");
+    }
+
+    @DisplayName("차단한 회원 목록 조회 성공: 차단한 회원이 없는 경우")
+    @Test
+    void getBlockListSucceedsWhenBlockedMemberNotExists() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when
+        BlockListResponse blockList = blockFacadeService.getBlockList(member, 1);
+
+        // then
+        assertThat(blockList.getListSize()).isEqualTo(0);
+        assertThat(blockList.getBlockedMemberList()).isEmpty();
     }
 
     private Member createMember(String email, String gameName) {

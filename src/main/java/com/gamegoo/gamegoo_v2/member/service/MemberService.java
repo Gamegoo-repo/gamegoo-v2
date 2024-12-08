@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.member.service;
 
+import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.exception.common.MemberException;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
