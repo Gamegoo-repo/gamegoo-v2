@@ -5,13 +5,13 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class SendFriendRequestResponse {
+public class FriendRequestResponse {
 
     Long targetMemberId;
     String message;
 
-    public static SendFriendRequestResponse of(Long targetMemberId, String message) {
-        return SendFriendRequestResponse.builder()
+    public static FriendRequestResponse of(Long targetMemberId, String message) {
+        return FriendRequestResponse.builder()
                 .targetMemberId(targetMemberId)
                 .message(message)
                 .build();
