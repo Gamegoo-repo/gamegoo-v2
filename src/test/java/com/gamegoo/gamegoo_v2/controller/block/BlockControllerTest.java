@@ -140,6 +140,52 @@ class BlockControllerTest extends ControllerTestSupport {
     }
 
     @Nested
+    @DisplayName("회원 차단 해제")
+    class UnblockMemberTest {
+
+        @DisplayName("회원 차단 해제 성공: 차단 해제 성공 메시지가 반환된다.")
+        @Test
+        void unblockMemberSucceeds() throws Exception {
+            // given
+            willDoNothing().given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").value("회원 차단 해제 성공"));
+        }
+
+        @DisplayName("회원 차단 해제 실패: 대상 회원을 차단한 상태가 아닌 경우 에러 응답을 반환한다.")
+        @Test
+        void unblockMemberFailedWhenTargetMemberIsNotBlocked() throws Exception {
+            // given
+            willThrow(new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED))
+                    .given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("차단 목록에 존재하지 않는 회원입니다."));
+
+        }
+
+        @DisplayName("회원 차단 해제 실패: 대상 회원이 탈퇴한 경우 에러 응답을 반환한다.")
+        @Test
+        void unblockMemberFailedWhenTargetIsBlind() throws Exception {
+            // given
+            willThrow(new BlockException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
+                    .given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.message").value("대상 회원이 탈퇴했습니다."));
+        }
+
+    }
+
+    @Nested
     @DisplayName("차단 목록에서 삭제")
     class DeleteBlockTest {
 
