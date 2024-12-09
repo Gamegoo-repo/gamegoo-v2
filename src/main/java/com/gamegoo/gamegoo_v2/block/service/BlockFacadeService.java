@@ -57,4 +57,15 @@ public class BlockFacadeService {
         blockService.unBlockMember(member, targetMember);
     }
 
+    /**
+     * targetMember가 탈퇴한 회원인 경우 member의 차단 목록에서 targetMember 삭제 Facade 메소드
+     *
+     * @param member
+     * @param targetMemberId
+     */
+    public void deleteBlock(Member member, Long targetMemberId) {
+        Member targetMember = memberService.findMember(targetMemberId);
+        blockService.deleteBlock(member, targetMember);
+    }
+
 }

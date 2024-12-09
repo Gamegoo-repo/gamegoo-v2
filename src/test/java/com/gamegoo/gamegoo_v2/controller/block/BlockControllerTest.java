@@ -185,5 +185,51 @@ class BlockControllerTest extends ControllerTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("차단 목록에서 삭제")
+    class DeleteBlockTest {
+
+        @DisplayName("차단 목록에서 삭제 성공: 차단 목록에서 삭제 성공 메시지가 반환된다.")
+        @Test
+        void deleteBlockSucceeds() throws Exception {
+            // given
+            willDoNothing().given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").value("차단 목록에서 삭제 성공"));
+        }
+
+        @DisplayName("차단 목록에서 삭제 실패: 대상 회원을 차단한 상태가 아닌 경우 에러 응답을 반환한다.")
+        @Test
+        void deleteBlockFailedWhenTargetMemberIsNotBlocked() throws Exception {
+            // given
+            willThrow(new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED))
+                    .given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("차단 목록에 존재하지 않는 회원입니다."));
+
+        }
+
+        @DisplayName("차단 목록에서 삭제 실패: 대상 회원이 탈퇴하지 않은 경우 에러 응답을 반환한다.")
+        @Test
+        void deleteBlockFailedWhenTargetIsBlind() throws Exception {
+            // given
+            willThrow(new BlockException(ErrorCode.DELETE_BLOCKED_MEMBER_FAILED))
+                    .given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.message").value("차단 목록에서 삭제 불가한 회원입니다."));
+        }
+
+    }
+
 }
 
