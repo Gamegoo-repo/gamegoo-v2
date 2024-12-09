@@ -53,7 +53,7 @@ public class BlockFacadeService {
      */
     public void deleteBlock(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-
+        blockService.deleteBlock(member, targetMember);
     }
 
 }

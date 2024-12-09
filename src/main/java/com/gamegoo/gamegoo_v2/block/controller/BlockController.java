@@ -50,7 +50,7 @@ public class BlockController {
     @DeleteMapping("/delete/{memberId}")
     public ApiResponse<String> deleteBlockMember(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
-
+        blockFacadeService.deleteBlock(member, targetMemberId);
         return ApiResponse.ok("차단 목록에서 삭제 성공");
     }
 
