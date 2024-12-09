@@ -49,7 +49,22 @@ public enum ErrorCode {
     TARGET_MEMBER_NOT_BLOCKED(BAD_REQUEST, "BLOCK_403", "차단 목록에 존재하지 않는 회원입니다."),
     BLOCK_MEMBER_BAD_REQUEST(BAD_REQUEST, "BLOCK_404", "잘못된 친구 차단 요청입니다."),
     DELETE_BLOCKED_MEMBER_FAILED(FORBIDDEN, "BLOCK_405", "차단 목록에서 삭제 불가한 회원입니다."),
-    UNBLOCK_TARGET_MEMBER_BLIND(FORBIDDEN, "BLOCK_406", "차단 대상 회원이 탈퇴했습니다. 차단 해제가 불가합니다.");
+    UNBLOCK_TARGET_MEMBER_BLIND(FORBIDDEN, "BLOCK_406", "차단 대상 회원이 탈퇴했습니다. 차단 해제가 불가합니다."),
+
+    /**
+     * 친구 관련 에러
+     */
+    FRIEND_BAD_REQUEST(BAD_REQUEST, "FRIEND401", "잘못된 친구 요청입니다."),
+    FRIEND_TARGET_IS_BLOCKED(BAD_REQUEST, "FRIEND402", "내가 차단한 회원입니다. 친구 요청을 보낼 수 없습니다."),
+    BLOCKED_BY_FRIEND_TARGET(BAD_REQUEST, "FRIEND403", "나를 차단한 회원입니다. 친구 요청을 보낼 수 없습니다."),
+    MY_PENDING_FRIEND_REQUEST_EXIST(BAD_REQUEST, "FRIEND404", "해당 회원에게 보낸 수락 대기 중인 친구 요청이 존재합니다. 친구 요청을 보낼 수 없습니다."),
+    TARGET_PENDING_FRIEND_REQUEST_EXIST(BAD_REQUEST, "FRIEND405", "해당 회원이 나에게 보낸 친구 요청이 수락 대기 중 입니다. 해당 요청을 수락 해주세요."),
+    ALREADY_FRIEND(BAD_REQUEST, "FRIEND406", "두 회원은 이미 친구 관계 입니다. 친구 요청을 보낼 수 없습니다."),
+    PENDING_FRIEND_REQUEST_NOT_EXIST(NOT_FOUND, "FRIEND407", "취소/수락/거절할 친구 요청이 존재하지 않습니다."),
+    MEMBERS_NOT_FRIEND(BAD_REQUEST, "FRIEND408", "두 회원은 친구 관계가 아닙니다."),
+    ALREADY_STAR_FRIEND(BAD_REQUEST, "FRIEND409", "이미 즐겨찾기 되어 있는 친구입니다."),
+    NOT_STAR_FRIEND(BAD_REQUEST, "FRIEND410", "즐겨찾기 되어 있는 친구가 아닙니다."),
+    FRIEND_SEARCH_QUERY_BAD_REQUEST(BAD_REQUEST, "FRIEND411", "친구 검색 쿼리는 100자 이하여야 합니다.");
 
     private final HttpStatus status;
     private final String code;
