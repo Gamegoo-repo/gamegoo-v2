@@ -43,7 +43,7 @@ public class FriendFacadeService {
         Member targetMember = memberService.findMember(targetMemberId);
         FriendRequest friendRequest = friendService.acceptFriendRequest(member, targetMember);
 
-        return FriendRequestResponse.of(friendRequest.getToMember().getId(), "친구 요청 수락 성공");
+        return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 수락 성공");
     }
 
 }

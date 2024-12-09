@@ -70,8 +70,8 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // 수락 대기 상태인 FriendRequest 엔티티 조회 및 검증
-        FriendRequest friendRequest = friendRequestRepository.findByFromMemberAndToMemberAndStatus(member,
-                        targetMember, FriendRequestStatus.PENDING)
+        FriendRequest friendRequest = friendRequestRepository.findByFromMemberAndToMemberAndStatus(targetMember,
+                        member, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST));
 
         // FriendRequest 엔티티 상태 변경
