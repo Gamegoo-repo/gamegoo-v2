@@ -59,4 +59,15 @@ public class Block extends BaseDateTimeEntity {
         member.getBlockList().add(this);
     }
 
+    // Block 엔티티 매핑 해제를 위한 메소드
+    public void removeBlockerMember(Member blockerMember) {
+        blockerMember.getBlockList().remove(this);
+        this.blockerMember = null;
+    }
+
+    // Block 엔티티의 deleted를 변경하는 메소드
+    public void updateDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
 }

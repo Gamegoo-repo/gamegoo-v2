@@ -38,7 +38,7 @@ class BlockRepositoryTest {
 
     @DisplayName("차단한 회원 목록 조회: 차단한 회원이 없는 경우")
     @Test
-    void findBlockedMembersByBlockerIdAndNotDeleted() {
+    void findBlockedMembersByBlockerIdAndNotDeletedNoResult() {
         // when
         Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
                 PageRequest.of(0, PAGE_SIZE));
@@ -94,6 +94,28 @@ class BlockRepositoryTest {
         assertTrue(blockedMembers.isLast());
     }
 
+    @DisplayName("차단한 회원 목록 조회: deleted 상태인 차단 내역을 제외하고 조회")
+    @Test
+    void findBlockedMembersByBlockerIdAndNotDeleted() {
+        // given
+        for (int i = 1; i <= 10; i++) {
+            Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
+            Block block = blockMember(blocker, blocked);
+            block.updateDeleted(true);
+        }
+
+        // when
+        Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+                PageRequest.of(0, PAGE_SIZE));
+
+        // then
+        assertThat(blockedMembers).isEmpty();
+        assertThat(blockedMembers.getTotalElements()).isEqualTo(0);
+        assertThat(blockedMembers.getTotalPages()).isEqualTo(0);
+        assertTrue(blockedMembers.isFirst());
+        assertTrue(blockedMembers.isLast());
+    }
+
     private Member createMember(String email, String gameName) {
         return em.persist(Member.builder()
                 .email(email)
@@ -110,9 +132,8 @@ class BlockRepositoryTest {
                 .build());
     }
 
-    private void blockMember(Member blocker, Member blocked) {
-        Block block = Block.create(blocker, blocked);
-        em.persist(block);
+    private Block blockMember(Member blocker, Member blocked) {
+        return em.persist(Block.create(blocker, blocked));
     }
 
 }

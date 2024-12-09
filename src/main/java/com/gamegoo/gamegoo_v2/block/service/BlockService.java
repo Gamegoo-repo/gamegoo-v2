@@ -60,6 +60,45 @@ public class BlockService {
         return blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blockerId, pageable);
     }
 
+    /**
+     * menber가 targetMember를 차단 해제 처하는 메소드
+     *
+     * @param member
+     * @param targetMember
+     */
+    public void unBlockMember(Member member, Member targetMember) {
+        // 대상 회원의 탈퇴 여부 검증
+        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+
+        // targetMember가 차단 실제로 차단 목록에 존재하는지 검증 및 block 엔티티 조회
+        Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
+                .orElseThrow(() -> new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED));
+
+        // 양방향 연관관계 제거 및 block 엔티티 삭제
+        block.removeBlockerMember(member);
+        blockRepository.delete(block);
+    }
+
+    /**
+     * member의 차단 목록에서 targetMember 삭제
+     *
+     * @param member
+     * @param targetMember
+     */
+    public void deleteBlock(Member member, Member targetMember) {
+        // targetMember가 차단 목록에 존재하는지 검증 및 block 엔티티 조회
+        Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
+                .orElseThrow(() -> new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED));
+
+        // targetMember가 탈퇴한 회원이 맞는지 검증
+        if (!targetMember.isBlind()) {
+            throw new BlockException(ErrorCode.DELETE_BLOCKED_MEMBER_FAILED);
+        }
+
+        // Block 엔티티의 deleted 필드 업데이트
+        block.updateDeleted(true);
+    }
+
     private void validateNotSelfBlock(Member member, Member targetMember) {
         if (member.equals(targetMember)) {
             throw new BlockException(ErrorCode.BLOCK_MEMBER_BAD_REQUEST);
