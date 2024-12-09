@@ -7,7 +7,7 @@ import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
-import com.gamegoo.gamegoo_v2.friend.dto.SendFriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -56,12 +56,12 @@ class FriendFacadeServiceTest {
         Member targetMember = createMember("target@naver.com", "target");
 
         // when
-        SendFriendRequestResponse sendFriendRequestResponse = friendFacadeService.sendFriendRequest(member,
+        FriendRequestResponse friendRequestResponse = friendFacadeService.sendFriendRequest(member,
                 targetMember.getId());
 
         // then
-        assertThat(sendFriendRequestResponse.getTargetMemberId()).isEqualTo(targetMember.getId());
-        assertThat(sendFriendRequestResponse.getMessage()).isEqualTo("친구 요청 전송 성공");
+        assertThat(friendRequestResponse.getTargetMemberId()).isEqualTo(targetMember.getId());
+        assertThat(friendRequestResponse.getMessage()).isEqualTo("친구 요청 전송 성공");
     }
 
     @DisplayName("친구 요청 전송 실패: 본인 id를 요청한 경우 예외가 발생한다.")

@@ -5,7 +5,7 @@ import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
-import com.gamegoo.gamegoo_v2.friend.dto.SendFriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,7 +38,7 @@ class FriendControllerTest extends ControllerTestSupport {
         @Test
         void sendFriendRequestSucceeds() throws Exception {
             // given
-            SendFriendRequestResponse response = SendFriendRequestResponse.builder()
+            FriendRequestResponse response = FriendRequestResponse.builder()
                     .targetMemberId(TARGET_MEMBER_ID)
                     .message("친구 요청 전송 성공")
                     .build();
