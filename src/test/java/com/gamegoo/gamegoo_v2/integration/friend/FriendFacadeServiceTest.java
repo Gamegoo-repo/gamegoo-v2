@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -56,12 +57,12 @@ class FriendFacadeServiceTest {
         Member targetMember = createMember("target@naver.com", "target");
 
         // when
-        FriendRequestResponse friendRequestResponse = friendFacadeService.sendFriendRequest(member,
+        FriendRequestResponse response = friendFacadeService.sendFriendRequest(member,
                 targetMember.getId());
 
         // then
-        assertThat(friendRequestResponse.getTargetMemberId()).isEqualTo(targetMember.getId());
-        assertThat(friendRequestResponse.getMessage()).isEqualTo("친구 요청 전송 성공");
+        assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+        assertThat(response.getMessage()).isEqualTo("친구 요청 전송 성공");
     }
 
     @DisplayName("친구 요청 전송 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -171,6 +172,49 @@ class FriendFacadeServiceTest {
         assertThatThrownBy(() -> friendFacadeService.sendFriendRequest(member, targetMember.getId()))
                 .isInstanceOf(FriendException.class)
                 .hasMessage(ErrorCode.TARGET_PENDING_FRIEND_REQUEST_EXIST.getMessage());
+    }
+
+    @DisplayName("친구 요청 수락 성공")
+    @Test
+    void acceptFriendRequestSucceeds() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 상대 -> 나 친구 요청 생성
+        friendRequestRepository.save(FriendRequest.create(targetMember, member));
+
+        // when
+        FriendRequestResponse response = friendFacadeService.acceptFriendRequest(member, targetMember.getId());
+
+        // then
+        assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+        assertTrue(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+    }
+
+    @DisplayName("친구 요청 수락 실패: 본인 id를 요청한 경우 예외가 발생한다.")
+    @Test
+    void acceptFriendRequest_shouldThrowWhenTargetIsSelf() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.acceptFriendRequest(member, member.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.FRIEND_BAD_REQUEST.getMessage());
+    }
+
+    @DisplayName("친구 요청 수락 실패: PENDING 상태인 친구 요청이 없는 경우 예외가 발생한다")
+    @Test
+    void accpetFriendRequest_shouldThrowWhenNoPendingRequest() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.acceptFriendRequest(member, targetMember.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage());
     }
 
     private Member createMember(String email, String gameName) {
