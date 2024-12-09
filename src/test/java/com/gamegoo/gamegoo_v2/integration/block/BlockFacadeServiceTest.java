@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.integration.block;
 
+import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
@@ -19,8 +20,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -166,6 +170,70 @@ class BlockFacadeServiceTest {
         // then
         assertThat(blockList.getListSize()).isEqualTo(0);
         assertThat(blockList.getBlockedMemberList()).isEmpty();
+    }
+
+    /*   차단 목록에서 삭제   */
+    @DisplayName("차단 목록에서 삭제 성공")
+    @Test
+    void deleteBlockSucceeds() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 회원 차단 처리
+        blockFacadeService.blockMember(member, targetMember.getId());
+
+        // 대상 회원 탈퇴 처리
+        targetMember.updateBlind(true);
+
+        // when
+        blockFacadeService.deleteBlock(member, targetMember.getId());
+
+        // then
+        // 차단 기록 엔티티의 delete 상태가 정상적으로 변경되었는지 검증
+        Optional<Block> block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember);
+        assertTrue(block.get().isDeleted());
+    }
+
+    @DisplayName("차단 목록에서 삭제 실패: 대상 회원이 탈퇴하지 않은 경우 예외가 발생한다.")
+    @Test
+    void deleteBlock_shouldThrowWhenTargetMemberIsNotBlind() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 회원 차단 처리
+        blockFacadeService.blockMember(member, targetMember.getId());
+
+        // when // then
+        assertThatThrownBy(() -> blockFacadeService.deleteBlock(member, targetMember.getId()))
+                .isInstanceOf(BlockException.class)
+                .hasMessage(ErrorCode.DELETE_BLOCKED_MEMBER_FAILED.getMessage());
+    }
+
+    @DisplayName("차단 목록에서 삭제 실패: 대상 회원을 차단하지 않은 상태인 경우 예외가 발생한다.")
+    @Test
+    void deleteBlock_shouldThrowWhenTargetMemberIsNotBlocked() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> blockFacadeService.deleteBlock(member, targetMember.getId()))
+                .isInstanceOf(BlockException.class)
+                .hasMessage(ErrorCode.TARGET_MEMBER_NOT_BLOCKED.getMessage());
+    }
+
+    @DisplayName("차단 목록에서 삭제 실패: 대상 회원을 찾을 수 없는 경우 예외가 발생한다.")
+    @Test
+    void unBlockMember_shouldThrowWhenTargetMemberNotFound() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> blockFacadeService.deleteBlock(member, 100L))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
     }
 
     private Member createMember(String email, String gameName) {
