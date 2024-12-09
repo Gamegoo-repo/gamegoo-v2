@@ -302,7 +302,7 @@ class BlockFacadeServiceTest {
 
     @DisplayName("차단 목록에서 삭제 실패: 대상 회원을 찾을 수 없는 경우 예외가 발생한다.")
     @Test
-    void unBlockMember_shouldThrowWhenTargetMemberNotFound() {
+    void deleteBlock_shouldThrowWhenTargetMemberNotFound() {
         // given
         Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
 

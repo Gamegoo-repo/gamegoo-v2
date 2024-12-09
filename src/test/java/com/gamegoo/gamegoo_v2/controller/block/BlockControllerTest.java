@@ -32,7 +32,6 @@ class BlockControllerTest extends ControllerTestSupport {
     private BlockFacadeService blockFacadeService;
 
     private static final String API_URL_PREFIX = "/api/v2/block";
-
     private static final Long TARGET_MEMBER_ID = 2L;
 
     @Nested
@@ -62,7 +61,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("이미 차단한 회원입니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.ALREADY_BLOCKED.getMessage()));
 
         }
 
@@ -76,7 +75,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.message").value("대상 회원이 탈퇴했습니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage()));
         }
 
     }
@@ -89,7 +88,7 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void getBlockListSucceeds() throws Exception {
             // given
-            BlockListResponse blockListResponse = BlockListResponse.builder()
+            BlockListResponse response = BlockListResponse.builder()
                     .blockedMemberList(new ArrayList<>())
                     .listSize(0)
                     .totalPage(0)
@@ -98,7 +97,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .isLast(true)
                     .build();
 
-            given(blockFacadeService.getBlockList(any(), any())).willReturn(blockListResponse);
+            given(blockFacadeService.getBlockList(any(), any())).willReturn(response);
 
             // when // then
             int pageIdx = 1;
@@ -118,7 +117,7 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void getBlockListFailedWhenPageIsNotValid() throws Exception {
             // given
-            BlockListResponse blockListResponse = BlockListResponse.builder()
+            BlockListResponse response = BlockListResponse.builder()
                     .blockedMemberList(new ArrayList<>())
                     .listSize(0)
                     .totalPage(0)
@@ -127,7 +126,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .isLast(true)
                     .build();
 
-            given(blockFacadeService.getBlockList(any(), any())).willReturn(blockListResponse);
+            given(blockFacadeService.getBlockList(any(), any())).willReturn(response);
 
             // when // then
             int pageIdx = 0;

@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -37,5 +38,20 @@ public class FriendRequest extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_member_id", nullable = false)
     private Member toMember;
+
+    public static FriendRequest create(Member fromMember, Member toMember) {
+        return FriendRequest.builder()
+                .status(FriendRequestStatus.PENDING)
+                .fromMember(fromMember)
+                .toMember(toMember)
+                .build();
+    }
+
+    @Builder
+    private FriendRequest(FriendRequestStatus status, Member fromMember, Member toMember) {
+        this.status = status;
+        this.fromMember = fromMember;
+        this.toMember = toMember;
+    }
 
 }
