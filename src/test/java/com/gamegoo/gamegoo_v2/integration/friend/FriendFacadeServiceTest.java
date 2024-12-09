@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-public class FriendFacadeServiceTest {
+class FriendFacadeServiceTest {
 
     @Autowired
     FriendFacadeService friendFacadeService;
