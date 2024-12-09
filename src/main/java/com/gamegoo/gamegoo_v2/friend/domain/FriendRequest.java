@@ -54,4 +54,8 @@ public class FriendRequest extends BaseDateTimeEntity {
         this.toMember = toMember;
     }
 
+    public void updateStatus(FriendRequestStatus status) {
+        this.status = status;
+    }
+
 }

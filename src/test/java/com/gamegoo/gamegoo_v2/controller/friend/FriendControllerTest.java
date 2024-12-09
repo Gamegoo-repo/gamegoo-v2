@@ -5,7 +5,7 @@ import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
-import com.gamegoo.gamegoo_v2.friend.dto.SendFriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,13 +33,13 @@ class FriendControllerTest extends ControllerTestSupport {
 
     @Nested
     @DisplayName("친구 요청 전송")
-    class sendFriendRequest {
+    class SendFriendRequestTest {
 
         @DisplayName("친구 요청 전송 성공")
         @Test
         void sendFriendRequestSucceeds() throws Exception {
             // given
-            SendFriendRequestResponse response = SendFriendRequestResponse.builder()
+            FriendRequestResponse response = FriendRequestResponse.builder()
                     .targetMemberId(TARGET_MEMBER_ID)
                     .message("친구 요청 전송 성공")
                     .build();
@@ -146,5 +147,55 @@ class FriendControllerTest extends ControllerTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("친구 요청 수락")
+    class AcceptFriendRequestTest {
+
+        @DisplayName("친구 요청 수락 성공")
+        @Test
+        void acceptFriendRequestSucceeds() throws Exception {
+            // given
+            FriendRequestResponse response = FriendRequestResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("친구 요청 수락 성공")
+                    .build();
+
+            given(friendFacadeService.acceptFriendRequest(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.message").value("친구 요청 수락 성공"))
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID));
+        }
+
+        @DisplayName("친구 요청 수락 실패: 본인 id를 요청한 경우 에러 응답을 반환한다.")
+        @Test
+        void acceptFriendRequestFailedWhenTargetIsSelf() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
+                    .given(friendFacadeService).acceptFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.FRIEND_BAD_REQUEST.getMessage()));
+        }
+
+        @DisplayName("친구 요청 수락 실패: PENDING 상태인 친구 요청이 없는 경우 에러 응답을 반환한다.")
+        @Test
+        void acceptFriendRequestFailedWhenNoPendingRequest() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
+                    .given(friendFacadeService).acceptFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
+        }
+
+    }
 
 }

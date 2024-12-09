@@ -165,7 +165,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("차단 목록에 존재하지 않는 회원입니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.TARGET_MEMBER_NOT_BLOCKED.getMessage()));
 
         }
 
@@ -179,7 +179,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.message").value("대상 회원이 탈퇴했습니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage()));
         }
 
     }
@@ -211,7 +211,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("차단 목록에 존재하지 않는 회원입니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.TARGET_MEMBER_NOT_BLOCKED.getMessage()));
 
         }
 
@@ -225,7 +225,7 @@ class BlockControllerTest extends ControllerTestSupport {
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.message").value("차단 목록에서 삭제 불가한 회원입니다."));
+                    .andExpect(jsonPath("$.message").value(ErrorCode.DELETE_BLOCKED_MEMBER_FAILED.getMessage()));
         }
 
     }

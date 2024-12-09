@@ -5,7 +5,10 @@ import com.gamegoo.gamegoo_v2.common.validator.FriendValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
+import com.gamegoo.gamegoo_v2.friend.domain.FriendRequestStatus;
+import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FriendService {
 
     private final FriendRequestRepository friendRequestRepository;
+    private final FriendRepository friendRepository;
     private final BlockValidator blockValidator;
     private final MemberValidator memberValidator;
     private final FriendValidator friendValidator;
@@ -49,6 +53,35 @@ public class FriendService {
         FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.create(member, targetMember));
 
         // 친구 요청 알림 생성
+
+        return friendRequest;
+    }
+
+    /**
+     * targetMember가 보낸 친구 요청 수락 처리 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    @Transactional
+    public FriendRequest acceptFriendRequest(Member member, Member targetMember) {
+        // targetMember로 나 자신을 요청한 경우 검증
+        validateNotSelf(member, targetMember);
+
+        // 수락 대기 상태인 FriendRequest 엔티티 조회 및 검증
+        FriendRequest friendRequest = friendRequestRepository.findByFromMemberAndToMemberAndStatus(targetMember,
+                        member, FriendRequestStatus.PENDING)
+                .orElseThrow(() -> new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST));
+
+        // FriendRequest 엔티티 상태 변경
+        friendRequest.updateStatus(FriendRequestStatus.ACCEPTED);
+
+        // friend 엔티티 생성 및 저장
+        friendRepository.save(Friend.create(member, targetMember));
+        friendRepository.save(Friend.create(targetMember, member));
+
+        // targetMember에게 친구 요청 수락 알림 생성
 
         return friendRequest;
     }
