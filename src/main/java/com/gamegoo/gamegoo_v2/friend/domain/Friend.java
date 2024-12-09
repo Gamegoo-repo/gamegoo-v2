@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,5 +35,29 @@ public class Friend extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_member_id", nullable = false)
     private Member toMember;
+
+    public static Friend create(Member fromMember, Member toMember) {
+        Friend friend = Friend.builder()
+                .liked(false)
+                .toMember(toMember)
+                .build();
+        friend.setFromMember(fromMember); // 양방향 관계 설정
+        return friend;
+    }
+
+    @Builder
+    private Friend(boolean liked, Member fromMember, Member toMember) {
+        this.liked = liked;
+        this.fromMember = fromMember;
+        this.toMember = toMember;
+    }
+
+    public void setFromMember(Member member) {
+        if (this.fromMember != null) {
+            this.fromMember.getFriendList().remove(this);
+        }
+        this.fromMember = member;
+        member.getFriendList().add(this);
+    }
 
 }

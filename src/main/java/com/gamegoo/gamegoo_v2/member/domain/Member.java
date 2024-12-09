@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.member.domain;
 
 import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
+import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -87,6 +88,9 @@ public class Member extends BaseDateTimeEntity {
 
     @OneToMany(mappedBy = "blockerMember", cascade = CascadeType.ALL)
     private List<Block> blockList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "fromMember", cascade = CascadeType.ALL)
+    private List<Friend> friendList = new ArrayList<>();
 
     public static Member create(String email, String password, LoginType loginType, String gameName, String tag,
             Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
