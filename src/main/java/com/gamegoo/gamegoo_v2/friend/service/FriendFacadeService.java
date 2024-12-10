@@ -46,4 +46,19 @@ public class FriendFacadeService {
         return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 수락 성공");
     }
 
+    /**
+     * 친구 요청 거절 Facade 메소드
+     *
+     * @param member
+     * @param targetMemberId
+     * @return
+     */
+    @Transactional
+    public FriendRequestResponse rejectFriendRequest(Member member, Long targetMemberId) {
+        Member targetMember = memberService.findMember(targetMemberId);
+        FriendRequest friendRequest = friendService.rejectFriendRequest(member, targetMember);
+
+        return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 거절 성공");
+    }
+
 }

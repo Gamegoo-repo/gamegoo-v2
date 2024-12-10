@@ -198,4 +198,55 @@ class FriendControllerTest extends ControllerTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("친구 요청 거절")
+    class rejectFriendRequestTest {
+
+        @DisplayName("친구 요청 거절 성공")
+        @Test
+        void rejectFriendRequestSucceeds() throws Exception {
+            // given
+            FriendRequestResponse response = FriendRequestResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("친구 요청 거절 성공")
+                    .build();
+
+            given(friendFacadeService.rejectFriendRequest(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.message").value("친구 요청 거절 성공"))
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID));
+        }
+
+        @DisplayName("친구 요청 거절 실패: 본인 id를 요청한 경우 에러 응답을 반환한다.")
+        @Test
+        void rejectFriendRequestFailedWhenTargetIsSelf() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
+                    .given(friendFacadeService).rejectFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.FRIEND_BAD_REQUEST.getMessage()));
+        }
+
+        @DisplayName("친구 요청 거절 실패: PENDING 상태인 친구 요청이 없는 경우 에러 응답을 반환한다.")
+        @Test
+        void rejectFriendRequestFailedWhenNoPendingRequest() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
+                    .given(friendFacadeService).rejectFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
+        }
+
+    }
+
 }
