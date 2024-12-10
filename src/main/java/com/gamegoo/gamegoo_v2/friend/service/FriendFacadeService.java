@@ -1,7 +1,9 @@
 package com.gamegoo.gamegoo_v2.friend.service;
 
+import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,21 @@ public class FriendFacadeService {
         FriendRequest friendRequest = friendService.acceptFriendRequest(member, targetMember);
 
         return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 수락 성공");
+    }
+
+    /**
+     * 친구 즐겨찾기 설정/해제 Facade 메소드
+     *
+     * @param member
+     * @param friendMemberId
+     * @return
+     */
+    @Transactional
+    public StarFriendResponse reverseFriendLiked(Member member, Long friendMemberId) {
+        Member friendMember = memberService.findMember(friendMemberId);
+        Friend friend = friendService.reverseFriendLiked(member, friendMember);
+
+        return StarFriendResponse.of(friend);
     }
 
 }
