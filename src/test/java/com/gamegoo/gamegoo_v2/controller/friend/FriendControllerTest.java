@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -192,6 +193,57 @@ class FriendControllerTest extends ControllerTestSupport {
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("친구 요청 취소")
+    class CancelFriendRequestTest {
+
+        @DisplayName("친구 요청 취소 성공")
+        @Test
+        void cancelFriendRequestSucceeds() throws Exception {
+            // given
+            FriendRequestResponse response = FriendRequestResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("친구 요청 취소 성공")
+                    .build();
+
+            given(friendFacadeService.cancelFriendRequest(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.message").value("친구 요청 취소 성공"))
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID));
+        }
+
+        @DisplayName("친구 요청 취소 실패: 본인 id를 요청한 경우 에러 응답을 반환한다.")
+        @Test
+        void cancelFriendRequestFailedWhenTargetIsSelf() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
+                    .given(friendFacadeService).cancelFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.FRIEND_BAD_REQUEST.getMessage()));
+        }
+
+        @DisplayName("친구 요청 취소 실패: PENDING 상태인 친구 요청이 없는 경우 에러 응답을 반환한다.")
+        @Test
+        void cancelFriendRequestFailedWhenNoPendingRequest() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
+                    .given(friendFacadeService).cancelFriendRequest(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
         }
