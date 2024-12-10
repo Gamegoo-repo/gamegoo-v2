@@ -60,4 +60,8 @@ public class Friend extends BaseDateTimeEntity {
         member.getFriendList().add(this);
     }
 
+    public void reverseLiked() {
+        this.liked = !this.liked;
+    }
+
 }

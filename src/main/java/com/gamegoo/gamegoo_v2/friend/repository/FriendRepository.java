@@ -8,4 +8,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     boolean existsByFromMemberAndToMember(Member fromMember, Member toMember);
 
+    Friend findByFromMemberAndToMember(Member fromMember, Member toMember);
+
 }

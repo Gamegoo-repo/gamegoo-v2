@@ -29,6 +29,21 @@ public class FriendValidator {
     }
 
     /**
+     * 두 회원이 서로 친구가 아니면 예외 발생
+     *
+     * @param member
+     * @param targetMember
+     */
+    public void validateIsFriend(Member member, Member targetMember) {
+        boolean exists1 = friendRepository.existsByFromMemberAndToMember(member, targetMember);
+        boolean exists2 = friendRepository.existsByFromMemberAndToMember(targetMember, member);
+
+        if (!exists1 || !exists2) {
+            throw new FriendException(ErrorCode.MEMBERS_NOT_FRIEND);
+        }
+    }
+
+    /**
      * 두 회원 사이에 PENDING 상태인 친구 요청이 존재하면 예외 발생
      *
      * @param member
@@ -49,6 +64,5 @@ public class FriendValidator {
             throw new FriendException(ErrorCode.TARGET_PENDING_FRIEND_REQUEST_EXIST);
         }
     }
-
 
 }

@@ -86,6 +86,31 @@ public class FriendService {
         return friendRequest;
     }
 
+    /**
+     * targetMember를 즐겨찾기 설정 또는 해제 처리 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    @Transactional
+    public Friend reverseFriendLiked(Member member, Member targetMember) {
+        // targetMember로 나 자신을 요청한 경우 검증
+        validateNotSelf(member, targetMember);
+
+        // targetMember의 탈퇴 여부 검증
+        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+
+        // 두 회원이 친구 관계가 맞는지 검증
+        friendValidator.validateIsFriend(member, targetMember);
+
+        // liked 상태 변경
+        Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        friend.reverseLiked();
+
+        return friend;
+    }
+
     private void validateNotSelf(Member member, Member targetMember) {
         if (member.equals(targetMember)) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);
