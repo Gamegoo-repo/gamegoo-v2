@@ -86,6 +86,31 @@ public class FriendService {
         return friendRequest;
     }
 
+    /**
+     * 두 회원 사이 친구 관계 삭제 메소드
+     *
+     * @param member
+     * @param targetMember
+     */
+    @Transactional
+    public void deleteFriend(Member member, Member targetMember) {
+        // 두 회원이 친구 관계인지 검증
+        Friend friend1 = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        Friend friend2 = friendRepository.findByFromMemberAndToMember(targetMember, member);
+
+        if (friend1 == null && friend2 == null) {
+            throw new FriendException(ErrorCode.MEMBERS_NOT_FRIEND);
+        }
+
+        // 친구 관계 삭제
+        if (friend1 != null) {
+            friendRepository.delete(friend1);
+        }
+        if (friend2 != null) {
+            friendRepository.delete(friend2);
+        }
+    }
+
     private void validateNotSelf(Member member, Member targetMember) {
         if (member.equals(targetMember)) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);

@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.friend.service;
 
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
+import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
@@ -44,6 +45,21 @@ public class FriendFacadeService {
         FriendRequest friendRequest = friendService.acceptFriendRequest(member, targetMember);
 
         return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 수락 성공");
+    }
+
+    /**
+     * 친구 삭제 Facade 메소드
+     *
+     * @param member
+     * @param targetMemberId
+     * @return
+     */
+    @Transactional
+    public DeleteFriendResponse deleteFriend(Member member, Long targetMemberId) {
+        Member targetMember = memberService.findMember(targetMemberId);
+        friendService.deleteFriend(member, targetMember);
+
+        return DeleteFriendResponse.of(targetMemberId);
     }
 
 }

@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.friend.controller;
 
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +39,14 @@ public class FriendController {
     public ApiResponse<FriendRequestResponse> acceptFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.acceptFriendRequest(member, targetMemberId));
+    }
+
+    @Operation(summary = "친구 삭제 API", description = "친구 회원과의 친구 관계를 끊는 API 입니다.")
+    @Parameter(name = "memberId", description = "삭제 처리할 친구 회원의 id 입니다.")
+    @DeleteMapping("/{memberId}")
+    public ApiResponse<DeleteFriendResponse> deleteFriend(@PathVariable(name = "memberId") Long targetMemberId,
+            @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.deleteFriend(member, targetMemberId));
     }
 
 }
