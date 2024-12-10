@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +38,14 @@ public class FriendController {
     public ApiResponse<FriendRequestResponse> acceptFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.acceptFriendRequest(member, targetMemberId));
+    }
+
+    @Operation(summary = "친구 요청 취소 API", description = "대상 회원에게 보낸 친구 요청을 취소하는 API 입니다.")
+    @Parameter(name = "memberId", description = "친구 요청을 취소할 대상 회원의 id 입니다.")
+    @DeleteMapping("/request/{memberId}")
+    public ApiResponse<FriendRequestResponse> cancelFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
+            @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.cancelFriendRequest(member, targetMemberId));
     }
 
 }
