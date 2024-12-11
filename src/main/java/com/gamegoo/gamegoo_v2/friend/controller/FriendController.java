@@ -40,6 +40,14 @@ public class FriendController {
         return ApiResponse.ok(friendFacadeService.acceptFriendRequest(member, targetMemberId));
     }
 
+    @Operation(summary = "친구 요청 거절 API", description = "대상 회원이 보낸 친구 요청을 거절 처리하는 API 입니다.")
+    @Parameter(name = "memberId", description = "친구 요청을 거절할 대상 회원의 id 입니다.")
+    @PatchMapping("/request/{memberId}/reject")
+    public ApiResponse<FriendRequestResponse> rejectFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
+            @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.rejectFriendRequest(member, targetMemberId));
+    }
+  
     @Operation(summary = "친구 요청 취소 API", description = "대상 회원에게 보낸 친구 요청을 취소하는 API 입니다.")
     @Parameter(name = "memberId", description = "친구 요청을 취소할 대상 회원의 id 입니다.")
     @DeleteMapping("/request/{memberId}")
