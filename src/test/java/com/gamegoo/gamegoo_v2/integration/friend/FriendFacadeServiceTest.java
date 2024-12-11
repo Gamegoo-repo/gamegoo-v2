@@ -15,20 +15,20 @@ import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
-@Transactional
 class FriendFacadeServiceTest {
 
     @Autowired
@@ -48,6 +48,14 @@ class FriendFacadeServiceTest {
 
     private static final String MEMBER_EMAIL = "test@gmail.com";
     private static final String MEMBER_GAMENAME = "member";
+
+    @AfterEach
+    void tearDown() {
+        friendRepository.deleteAllInBatch();
+        friendRequestRepository.deleteAllInBatch();
+        blockRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+    }
 
     @DisplayName("친구 요청 전송 성공")
     @Test
@@ -71,6 +79,8 @@ class FriendFacadeServiceTest {
         // given
         Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
 
+        System.out.println("member.getId() = " + member.getId());
+
         // when // then
         assertThatThrownBy(() -> friendFacadeService.sendFriendRequest(member, member.getId()))
                 .isInstanceOf(FriendException.class)
@@ -86,6 +96,7 @@ class FriendFacadeServiceTest {
 
         // 대상 회원을 탈퇴 처리
         targetMember.updateBlind(true);
+        memberRepository.save(targetMember);
 
         // when // then
         assertThatThrownBy(() -> friendFacadeService.sendFriendRequest(member, targetMember.getId()))
@@ -215,6 +226,38 @@ class FriendFacadeServiceTest {
         assertThatThrownBy(() -> friendFacadeService.acceptFriendRequest(member, targetMember.getId()))
                 .isInstanceOf(FriendException.class)
                 .hasMessage(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage());
+    }
+
+    @DisplayName("친구 삭제 성공")
+    @Test
+    void deleteFriendSucceeds() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 두 회원 간 친구 관계 생성
+        friendRepository.save(Friend.create(member, targetMember));
+        friendRepository.save(Friend.create(targetMember, member));
+
+        // when
+        friendFacadeService.deleteFriend(member, targetMember.getId());
+
+        // then
+        assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+        assertFalse(friendRepository.existsByFromMemberAndToMember(targetMember, member));
+    }
+
+    @DisplayName("친구 삭제 실패: 두 회원이 친구 관계가 아닌 경우 예외가 발생한다.")
+    @Test
+    void deleteFriendFailed() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.deleteFriend(member, targetMember.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.MEMBERS_NOT_FRIEND.getMessage());
     }
 
     private Member createMember(String email, String gameName) {
