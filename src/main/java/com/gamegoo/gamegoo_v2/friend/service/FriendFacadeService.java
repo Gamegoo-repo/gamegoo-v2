@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -63,8 +65,8 @@ public class FriendFacadeService {
 
         return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 거절 성공");
     }
- 
-      /**
+
+    /**
      * 친구 요청 취소 Facade 메소드
      *
      * @param member
@@ -107,6 +109,16 @@ public class FriendFacadeService {
         friendService.deleteFriend(member, targetMember);
 
         return DeleteFriendResponse.of(targetMemberId);
+    }
+
+    /**
+     * 모든 친구 목록 조회 Facade 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<Long> getFriendIdList(Member member) {
+        return member.getFriendList().stream().map(friend -> friend.getToMember().getId()).toList();
     }
 
 }

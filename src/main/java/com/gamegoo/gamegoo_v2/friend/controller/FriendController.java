@@ -12,11 +12,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Tag(name = "Friend", description = "친구 관련 API")
 @RestController
@@ -49,7 +52,7 @@ public class FriendController {
             @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.rejectFriendRequest(member, targetMemberId));
     }
-  
+
     @Operation(summary = "친구 요청 취소 API", description = "대상 회원에게 보낸 친구 요청을 취소하는 API 입니다.")
     @Parameter(name = "memberId", description = "친구 요청을 취소할 대상 회원의 id 입니다.")
     @DeleteMapping("/request/{memberId}")
@@ -72,6 +75,13 @@ public class FriendController {
     public ApiResponse<DeleteFriendResponse> deleteFriend(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.deleteFriend(member, targetMemberId));
+    }
+
+    @Operation(summary = "모든 친구 id 조회 API", description = "해당 회원의 모든 친구 id 목록을 조회하는 API 입니다. " +
+            "정렬 기능 없음, socket서버용 API입니다.")
+    @GetMapping("/ids")
+    public ApiResponse<List<Long>> getFriendIds(@AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.getFriendIdList(member));
     }
 
 }
