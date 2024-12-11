@@ -15,11 +15,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -300,6 +304,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
         }
+
     }
 
     @Nested
@@ -433,6 +438,27 @@ class FriendControllerTest extends ControllerTestSupport {
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value(ErrorCode.MEMBERS_NOT_FRIEND.getMessage()));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("모든 친구 id 조회")
+    class GetFriendIdListTest {
+
+        @DisplayName("모든 친구 id 조회 성공")
+        @Test
+        void getFriendIdListSucceeds() throws Exception {
+            // given
+            List<Long> response = new ArrayList<>();
+
+            given(friendFacadeService.getFriendIdList(any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/ids"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").isArray());
         }
 
     }
