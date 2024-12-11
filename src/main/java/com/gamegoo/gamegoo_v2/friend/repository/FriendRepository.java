@@ -4,7 +4,7 @@ import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface FriendRepository extends JpaRepository<Friend, Long> {
+public interface FriendRepository extends JpaRepository<Friend, Long>, FriendRepositoryCustom {
 
     boolean existsByFromMemberAndToMember(Member fromMember, Member toMember);
 

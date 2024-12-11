@@ -2,7 +2,9 @@ package com.gamegoo.gamegoo_v2.friend.controller;
 
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
+import com.gamegoo.gamegoo_v2.common.annotation.ValidCursor;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -82,6 +85,15 @@ public class FriendController {
     @GetMapping("/ids")
     public ApiResponse<List<Long>> getFriendIds(@AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.getFriendIdList(member));
+    }
+
+    @Operation(summary = "친구 목록 조회 API", description = "해당 회원의 친구 목록을 조회하는 API 입니다. 이름 오름차순(한글-영문-숫자 순)으로 정렬해 제공합니다."
+            + "cursor를 보내지 않으면 상위 10개 친구 목록을 조회합니다.")
+    @Parameter(name = "cursor", description = "페이징을 위한 커서, 이전 친구 목록 조회에서 응답받은 next_cursor를 보내주세요.")
+    @GetMapping
+    public ApiResponse<FriendListResponse> getFriendList(
+            @ValidCursor @RequestParam(name = "cursor", required = false) Long cursor, @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.getFriends(member, cursor));
     }
 
 }
