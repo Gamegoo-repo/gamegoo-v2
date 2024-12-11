@@ -110,6 +110,28 @@ public class FriendService {
 
         return friendRequest;
     }
+ 
+    /**
+     * targetMember에게 보낸 친구 요청 취소 처리 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    @Transactional
+    public FriendRequest cancelFriendRequest(Member member, Member targetMember) {
+        // targetMember로 나 자신을 요청한 경우 검증
+        validateNotSelf(member, targetMember);
+
+        // 수락 대기 상태인 FriendRequest 엔티티 조회 및 검증
+        FriendRequest friendRequest = friendRequestRepository.findByFromMemberAndToMemberAndStatus(member,
+                        targetMember, FriendRequestStatus.PENDING)
+                .orElseThrow(() -> new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST));
+
+        // FriendRequest 엔티티 상태 변경
+        friendRequest.updateStatus(FriendRequestStatus.CANCELLED);
+    }
+  
 
     private void validateNotSelf(Member member, Member targetMember) {
         if (member.equals(targetMember)) {
