@@ -49,6 +49,36 @@ public class FriendFacadeService {
     }
 
     /**
+     * 친구 요청 거절 Facade 메소드
+     *
+     * @param member
+     * @param targetMemberId
+     * @return
+     */
+    @Transactional
+    public FriendRequestResponse rejectFriendRequest(Member member, Long targetMemberId) {
+        Member targetMember = memberService.findMember(targetMemberId);
+        FriendRequest friendRequest = friendService.rejectFriendRequest(member, targetMember);
+
+        return FriendRequestResponse.of(friendRequest.getFromMember().getId(), "친구 요청 거절 성공");
+    }
+ 
+      /**
+     * 친구 요청 취소 Facade 메소드
+     *
+     * @param member
+     * @param targetMemberId
+     * @return
+     */
+    @Transactional
+    public FriendRequestResponse cancelFriendRequest(Member member, Long targetMemberId) {
+        Member targetMember = memberService.findMember(targetMemberId);
+        FriendRequest friendRequest = friendService.cancelFriendRequest(member, targetMember);
+
+        return FriendRequestResponse.of(friendRequest.getToMember().getId(), "친구 요청 취소 성공");
+    }
+
+    /**
      * 친구 즐겨찾기 설정/해제 Facade 메소드
      *
      * @param member
