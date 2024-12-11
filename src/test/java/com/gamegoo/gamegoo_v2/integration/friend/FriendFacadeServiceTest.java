@@ -7,7 +7,9 @@ import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
+import com.gamegoo.gamegoo_v2.friend.domain.FriendRequestStatus;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -217,7 +219,7 @@ class FriendFacadeServiceTest {
 
     @DisplayName("친구 요청 수락 실패: PENDING 상태인 친구 요청이 없는 경우 예외가 발생한다")
     @Test
-    void accpetFriendRequest_shouldThrowWhenNoPendingRequest() {
+    void acceptFriendRequest_shouldThrowWhenNoPendingRequest() {
         // given
         Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
         Member targetMember = createMember("target@naver.com", "target");
@@ -226,6 +228,177 @@ class FriendFacadeServiceTest {
         assertThatThrownBy(() -> friendFacadeService.acceptFriendRequest(member, targetMember.getId()))
                 .isInstanceOf(FriendException.class)
                 .hasMessage(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage());
+    }
+
+    @DisplayName("친구 요청 거절 성공")
+    @Test
+    void rejectFriendRequestSucceeds() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 상대 -> 나 친구 요청 생성
+        friendRequestRepository.save(FriendRequest.create(targetMember, member));
+
+        // when
+        FriendRequestResponse response = friendFacadeService.rejectFriendRequest(member, targetMember.getId());
+
+        // then
+        assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+        assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+    }
+
+    @DisplayName("친구 요청 거절 실패: 본인 id를 요청한 경우 예외가 발생한다.")
+    @Test
+    void rejectFriendRequest_shouldThrowWhenTargetIsSelf() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.rejectFriendRequest(member, member.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.FRIEND_BAD_REQUEST.getMessage());
+    }
+
+    @DisplayName("친구 요청 거절 실패: PENDING 상태인 친구 요청이 없는 경우 예외가 발생한다")
+    @Test
+    void rejectFriendRequest_shouldThrowWhenNoPendingRequest() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.rejectFriendRequest(member, targetMember.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage());
+    }
+  
+    @DisplayName("친구 요청 취소 성공")
+    @Test
+    void cancelFriendRequestSucceeds() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+      
+        // 나 -> 상대 친구 요청 생성
+        friendRequestRepository.save(FriendRequest.create(member, targetMember));
+
+        // when
+        FriendRequestResponse response = friendFacadeService.cancelFriendRequest(member, targetMember.getId());
+
+        // then
+        assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+        assertThat(friendRequestRepository.findByFromMemberAndToMemberAndStatus(member, targetMember,
+                FriendRequestStatus.CANCELLED)).isNotEmpty();
+    }
+
+    @DisplayName("친구 요청 취소 실패: 본인 id를 요청한 경우 예외가 발생한다.")
+    @Test
+    void cancelFriendRequest_shouldThrowWhenTargetIsSelf() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.cancelFriendRequest(member, member.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.FRIEND_BAD_REQUEST.getMessage());
+    }
+  
+    @DisplayName("친구 요청 취소 실패: PENDING 상태인 친구 요청이 없는 경우 예외가 발생한다")
+    @Test
+    void cancelFriendRequest_shouldThrowWhenNoPendingRequest() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.cancelFriendRequest(member, targetMember.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage());
+    }
+
+    @DisplayName("친구 즐겨찾기 설정 성공: 즐겨찾기 되지 않은 친구를 요청한 경우 즐겨찾기가 설정된다.")
+    @Test
+    void reverseFriendLikedSucceedsWhenNotLiked() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 두 회원 간 친구 관계 생성
+        friendRepository.save(Friend.create(member, targetMember));
+        friendRepository.save(Friend.create(targetMember, member));
+
+        // when
+        StarFriendResponse response = friendFacadeService.reverseFriendLiked(member, targetMember.getId());
+
+        // then
+        Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        assertTrue(friend.isLiked());
+        assertThat(response.getMessage()).isEqualTo("친구 즐겨찾기 설정 성공");
+    }
+
+    @DisplayName("친구 즐겨찾기 해제 성공: 즐겨찾기 된 친구를 요청한 경우 즐겨찾기가 해제된다.")
+    @Test
+    void reverseFriendLikedSucceedsWhenLiked() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 두 회원 간 친구 관계 생성
+        Friend savedFriend = friendRepository.save(Friend.create(member, targetMember));
+        friendRepository.save(Friend.create(targetMember, member));
+
+        // member -> targetMember 즐겨찾기 설정
+        savedFriend.reverseLiked();
+
+        // when
+        StarFriendResponse response = friendFacadeService.reverseFriendLiked(member, targetMember.getId());
+
+        // then
+        Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        assertFalse(friend.isLiked());
+        assertThat(response.getMessage()).isEqualTo("친구 즐겨찾기 해제 성공");
+    }
+
+    @DisplayName("친구 즐겨찾기 설정/해제 실패: 본인 id를 요청한 경우 예외가 발생한다.")
+    @Test
+    void reverseFriendLiked_shouldThrownWhenTargetIsSelf() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.reverseFriendLiked(member, member.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.FRIEND_BAD_REQUEST.getMessage());
+    }
+
+    @DisplayName("친구 즐겨찾기 설정/해제 실패: 상대가 탈퇴한 회원인 경우 예외가 발생한다.")
+    @Test
+    void reverseFriendLiked_shouldThrownWhenTargetIsBlind() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // 대상 회원을 탈퇴 처리
+        targetMember.updateBlind(true);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.reverseFriendLiked(member, targetMember.getId()))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage());
+    }
+
+    @DisplayName("친구 즐겨찾기 설정/해제 실패: 상대가 친구가 아닌 경우 예외가 발생한다.")
+    @Test
+    void reverseFriendLiked_shouldThrownWhenTargetIsNotFriend() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        Member targetMember = createMember("target@naver.com", "target");
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.reverseFriendLiked(member, targetMember.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.MEMBERS_NOT_FRIEND.getMessage());
     }
 
     @DisplayName("친구 삭제 성공")
