@@ -110,7 +110,7 @@ public class FriendService {
 
         return friendRequest;
     }
- 
+
     /**
      * targetMember에게 보낸 친구 요청 취소 처리 메소드
      *
@@ -130,8 +130,10 @@ public class FriendService {
 
         // FriendRequest 엔티티 상태 변경
         friendRequest.updateStatus(FriendRequestStatus.CANCELLED);
+
+        return friendRequest;
     }
-  
+
 
     /**
      * targetMember를 즐겨찾기 설정 또는 해제 처리 메소드
@@ -158,8 +160,36 @@ public class FriendService {
         return friend;
     }
 
+    /**
+     * 두 회원 사이 친구 관계 삭제 메소드
+     *
+     * @param member
+     * @param targetMember
+     */
+    @Transactional
+    public void deleteFriend(Member member, Member targetMember) {
+        // targetMember로 나 자신을 요청한 경우 검증
+        validateNotSelf(member, targetMember);
+
+        // 두 회원이 친구 관계인지 검증
+        Friend friend1 = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        Friend friend2 = friendRepository.findByFromMemberAndToMember(targetMember, member);
+
+        if (friend1 == null && friend2 == null) {
+            throw new FriendException(ErrorCode.MEMBERS_NOT_FRIEND);
+        }
+
+        // 친구 관계 삭제
+        if (friend1 != null) {
+            friendRepository.delete(friend1);
+        }
+        if (friend2 != null) {
+            friendRepository.delete(friend2);
+        }
+    }
+
     private void validateNotSelf(Member member, Member targetMember) {
-        if (member.equals(targetMember)) {
+        if (member.getId().equals(targetMember.getId())) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);
         }
     }
