@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.friend.controller;
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +55,14 @@ public class FriendController {
     public ApiResponse<FriendRequestResponse> cancelFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.cancelFriendRequest(member, targetMemberId));
+    }
+
+    @Operation(summary = "친구 즐겨찾기 설정/해제 API", description = "대상 친구 회원을 즐겨찾기 설정/해제 하는 API 입니다.")
+    @Parameter(name = "memberId", description = "즐겨찾기 설정/해제할 친구 회원의 id 입니다.")
+    @PatchMapping("/{memberId}/star")
+    public ApiResponse<StarFriendResponse> reverseFriendLiked(@PathVariable(name = "memberId") Long friendMemberId,
+            @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.reverseFriendLiked(member, friendMemberId));
     }
 
 }
