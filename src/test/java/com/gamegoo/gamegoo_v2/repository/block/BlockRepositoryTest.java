@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.repository.block;
 
 import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.config.QuerydslConfig;
 import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.domain.Tier;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@Import(QuerydslConfig.class)
 class BlockRepositoryTest {
 
     @Autowired
