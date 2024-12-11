@@ -100,7 +100,7 @@ public class BlockService {
     }
 
     private void validateNotSelfBlock(Member member, Member targetMember) {
-        if (member.equals(targetMember)) {
+        if (member.getId().equals(targetMember.getId())) {
             throw new BlockException(ErrorCode.BLOCK_MEMBER_BAD_REQUEST);
         }
     }
