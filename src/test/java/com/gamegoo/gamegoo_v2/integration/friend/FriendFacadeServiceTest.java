@@ -247,9 +247,21 @@ class FriendFacadeServiceTest {
         assertFalse(friendRepository.existsByFromMemberAndToMember(targetMember, member));
     }
 
+    @DisplayName("친구 삭제 실패: 본인 id를 요청한 경우 예외가 발생한다.")
+    @Test
+    void deleteFriend_shouldThrowWhenTargetIsSelf() {
+        // given
+        Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+
+        // when // then
+        assertThatThrownBy(() -> friendFacadeService.deleteFriend(member, member.getId()))
+                .isInstanceOf(FriendException.class)
+                .hasMessage(ErrorCode.FRIEND_BAD_REQUEST.getMessage());
+    }
+
     @DisplayName("친구 삭제 실패: 두 회원이 친구 관계가 아닌 경우 예외가 발생한다.")
     @Test
-    void deleteFriendFailed() {
+    void deleteFriend_shouldThrowWhenNotFriend() {
         // given
         Member member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
         Member targetMember = createMember("target@naver.com", "target");

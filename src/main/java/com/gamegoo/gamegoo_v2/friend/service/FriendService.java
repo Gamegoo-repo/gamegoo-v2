@@ -94,6 +94,9 @@ public class FriendService {
      */
     @Transactional
     public void deleteFriend(Member member, Member targetMember) {
+        // targetMember로 나 자신을 요청한 경우 검증
+        validateNotSelf(member, targetMember);
+
         // 두 회원이 친구 관계인지 검증
         Friend friend1 = friendRepository.findByFromMemberAndToMember(member, targetMember);
         Friend friend2 = friendRepository.findByFromMemberAndToMember(targetMember, member);
