@@ -112,7 +112,7 @@ public class FriendService {
     }
 
     private void validateNotSelf(Member member, Member targetMember) {
-        if (member.equals(targetMember)) {
+        if (member.getId().equals(targetMember.getId())) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);
         }
     }

@@ -23,7 +23,7 @@ public class BlockValidator {
     public <T extends GlobalException> void validateIfBlocked(Member member, Member targetMember,
             Class<T> exceptionClass, ErrorCode errorCode) {
         for (Block block : member.getBlockList()) {
-            if (block.getBlockedMember().equals(targetMember)) {
+            if (block.getBlockedMember().getId().equals(targetMember.getId())) {
                 throw createException(exceptionClass, errorCode);
             }
         }
