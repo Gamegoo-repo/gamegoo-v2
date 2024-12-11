@@ -110,7 +110,7 @@ public class FriendService {
 
         return friendRequest;
     }
- 
+
     /**
      * targetMember에게 보낸 친구 요청 취소 처리 메소드
      *
@@ -130,8 +130,10 @@ public class FriendService {
 
         // FriendRequest 엔티티 상태 변경
         friendRequest.updateStatus(FriendRequestStatus.CANCELLED);
+
+        return friendRequest;
     }
-  
+
 
     /**
      * targetMember를 즐겨찾기 설정 또는 해제 처리 메소드
