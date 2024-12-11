@@ -5,6 +5,7 @@ import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
+import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -194,6 +196,57 @@ class FriendControllerTest extends ControllerTestSupport {
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST.getMessage()));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("친구 삭제")
+    class DeleteFriendTest {
+
+        @DisplayName("친구 삭제 성공")
+        @Test
+        void deleteFriendSucceeds() throws Exception {
+            // given
+            DeleteFriendResponse response = DeleteFriendResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("친구 삭제 성공")
+                    .build();
+
+            given(friendFacadeService.deleteFriend(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.message").value("친구 삭제 성공"))
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID));
+        }
+
+        @DisplayName("친구 삭제 실패: 본인의 id를 요청한 경우 에러 응답을 반환한다.")
+        @Test
+        void deleteFriendFailedWhenTargetIsSelf() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
+                    .given(friendFacadeService).deleteFriend(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.FRIEND_BAD_REQUEST.getMessage()));
+        }
+
+        @DisplayName("친구 삭제 실패: 상대가 친구가 아닌 경우 에러 응답을 반환한다.")
+        @Test
+        void deleteFriendFailedWhenNotFriend() throws Exception {
+            // given
+            willThrow(new FriendException(ErrorCode.MEMBERS_NOT_FRIEND))
+                    .given(friendFacadeService).deleteFriend(any(), eq(TARGET_MEMBER_ID));
+
+            // when // then
+            mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(ErrorCode.MEMBERS_NOT_FRIEND.getMessage()));
         }
 
     }
