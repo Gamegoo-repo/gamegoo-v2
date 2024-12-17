@@ -20,7 +20,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -229,7 +228,6 @@ class BlockServiceTest {
 
         @DisplayName("차단 목록에서 삭제 성공")
         @Test
-        @Transactional
         void deleteBlockSucceeds() {
             // given
             Member targetMember = createMember(TARGET_EMAIL, TARGET_GAMENAME);
