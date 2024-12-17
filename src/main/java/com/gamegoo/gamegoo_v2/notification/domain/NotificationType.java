@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,5 +31,20 @@ public class NotificationType extends BaseDateTimeEntity {
     private String content;
 
     private String sourceUrl;
+
+    public static NotificationType create(NotificationTypeTitle title) {
+        return NotificationType.builder()
+                .title(title)
+                .content(title.getMessage())
+                .sourceUrl(title.getSourceUrl())
+                .build();
+    }
+
+    @Builder
+    private NotificationType(NotificationTypeTitle title, String content, String sourceUrl) {
+        this.title = title;
+        this.content = content;
+        this.sourceUrl = sourceUrl;
+    }
 
 }
