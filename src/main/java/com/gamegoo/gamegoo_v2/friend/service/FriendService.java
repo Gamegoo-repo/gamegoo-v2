@@ -57,7 +57,7 @@ public class FriendService {
         FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.create(member, targetMember));
 
         // 친구 요청 알림 생성
-        eventPublisher.publishEvent(new SendFriendRequestEvent(member, targetMember));
+        eventPublisher.publishEvent(new SendFriendRequestEvent(member.getId(), targetMember.getId()));
 
         return friendRequest;
     }

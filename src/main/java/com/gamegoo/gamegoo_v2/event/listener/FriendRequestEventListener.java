@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.event.listener;
 
 import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FriendRequestEventListener {
 
     private final NotificationService notificationService;
+    private final MemberService memberService;
 
     /**
      * 친구 요청 전송 event listener
@@ -27,8 +29,8 @@ public class FriendRequestEventListener {
     @EventListener
     public void handleSendFriendRequestEvent(SendFriendRequestEvent event) {
         try {
-            Member member = event.getMember();
-            Member sourceMember = event.getSourceMember();
+            Member member = memberService.findMember(event.getMemberId());
+            Member sourceMember = memberService.findMember(event.getSourceMemberId());
 
             // member가 sourceMember에게 친구 요청 전송했음 알림 생성
             notificationService.createSendFriendRequestNotification(member, sourceMember);
