@@ -1,6 +1,6 @@
 package com.gamegoo.gamegoo_v2.event.listener;
 
-import com.gamegoo.gamegoo_v2.event.FriendRequestEvent;
+import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +17,15 @@ public class FriendRequestEventListener {
 
     private final NotificationService notificationService;
 
+    /**
+     * 친구 요청 전송 event listener
+     *
+     * @param event
+     */
     @Async
     @Transactional
     @EventListener
-    public void handleFriendRequestEvent(FriendRequestEvent event) {
+    public void handleSendFriendRequestEvent(SendFriendRequestEvent event) {
         try {
             Member member = event.getMember();
             Member sourceMember = event.getSourceMember();
@@ -33,7 +38,6 @@ public class FriendRequestEventListener {
         } catch (Exception e) {
             log.error("Failed to create friend request notifications", e);
         }
-
     }
 
 }

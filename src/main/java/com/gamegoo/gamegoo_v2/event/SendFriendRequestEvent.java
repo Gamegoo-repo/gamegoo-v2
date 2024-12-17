@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FriendRequestEvent {
+public class SendFriendRequestEvent {
 
     private final Member member;
     private final Member sourceMember;

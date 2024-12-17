@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.friend.service;
 import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.common.validator.FriendValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
+import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
@@ -12,6 +13,7 @@ import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,8 @@ public class FriendService {
     private final BlockValidator blockValidator;
     private final MemberValidator memberValidator;
     private final FriendValidator friendValidator;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     /**
      * 친구 요청 생성 메소드
@@ -53,6 +57,7 @@ public class FriendService {
         FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.create(member, targetMember));
 
         // 친구 요청 알림 생성
+        eventPublisher.publishEvent(new SendFriendRequestEvent(member, targetMember));
 
         return friendRequest;
     }
