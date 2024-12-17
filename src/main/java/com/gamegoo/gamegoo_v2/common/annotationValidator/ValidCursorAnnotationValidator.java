@@ -1,18 +1,18 @@
 package com.gamegoo.gamegoo_v2.common.annotationValidator;
 
-import com.gamegoo.gamegoo_v2.common.annotation.ValidPage;
+import com.gamegoo.gamegoo_v2.common.annotation.ValidCursor;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class ValidCursorAnnotationValidator implements ConstraintValidator<ValidPage, Integer> {
+public class ValidCursorAnnotationValidator implements ConstraintValidator<ValidCursor, Long> {
 
     @Override
-    public void initialize(ValidPage constraintAnnotation) {
+    public void initialize(ValidCursor constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
     }
 
     @Override
-    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+    public boolean isValid(Long value, ConstraintValidatorContext context) {
         if (value != null && value < 1) {
             return false;
         }
