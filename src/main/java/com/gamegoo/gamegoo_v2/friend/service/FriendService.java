@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.friend.service;
 import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.common.validator.FriendValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
+import com.gamegoo.gamegoo_v2.event.AcceptFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
@@ -87,6 +88,7 @@ public class FriendService {
         friendRepository.save(Friend.create(targetMember, member));
 
         // targetMember에게 친구 요청 수락 알림 생성
+        eventPublisher.publishEvent(new AcceptFriendRequestEvent(member.getId(), targetMember.getId()));
 
         return friendRequest;
     }
