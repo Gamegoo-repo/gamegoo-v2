@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.event.listener;
 
 import com.gamegoo.gamegoo_v2.event.AcceptFriendRequestEvent;
+import com.gamegoo.gamegoo_v2.event.RejectFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
@@ -55,6 +56,21 @@ public class FriendRequestEventListener {
             notificationService.createAcceptFriendRequestNotification(targetMember, member);
         } catch (Exception e) {
             log.error("Failed to create accept friend request notifications", e);
+        }
+    }
+
+    @Async
+    @Transactional
+    @EventListener
+    public void handleRejectFriendRequestEvent(RejectFriendRequestEvent event) {
+        try {
+            Member member = memberService.findMember(event.getMemberId());
+            Member targetMember = memberService.findMember(event.getTargetMemberId());
+
+            // targetMember에게 member가 친구 요청 거절했음 알림 생성
+            notificationService.createRejectFriendRequestNotification(targetMember, member);
+        } catch (Exception e) {
+            log.error("Failed to create reject friend request notifications", e);
         }
     }
 
