@@ -227,6 +227,11 @@ class FriendRequestServiceTest {
     @DisplayName("친구 요청 수락")
     class AcceptFriendRequestTest {
 
+        @BeforeEach
+        void setUp() {
+            initNotificationType();
+        }
+
         @DisplayName("친구 요청 수락 성공")
         @Test
         void acceptFriendRequestSucceeds() {
@@ -242,6 +247,11 @@ class FriendRequestServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertTrue(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+
+            // event로 인해 알림 1개가 저장되었는지 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(notificationRepository, times(1)).save(any(Notification.class));
+            });
         }
 
         @DisplayName("친구 요청 수락 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -271,6 +281,11 @@ class FriendRequestServiceTest {
     @DisplayName("친구 요청 거절")
     class RejectFriendRequestTest {
 
+        @BeforeEach
+        void setUp() {
+            initNotificationType();
+        }
+
         @DisplayName("친구 요청 거절 성공")
         @Test
         void rejectFriendRequestSucceeds() {
@@ -286,6 +301,11 @@ class FriendRequestServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+
+            // event로 인해 알림 1개가 저장되었는지 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(notificationRepository, times(1)).save(any(Notification.class));
+            });
         }
 
         @DisplayName("친구 요청 거절 실패: 본인 id를 요청한 경우 예외가 발생한다.")
