@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -41,5 +42,34 @@ public class Notification extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_type_id", nullable = false)
     private NotificationType notificationType;
+
+    public static Notification create(Member member, Member sourceMember, NotificationType notificationType,
+            String content) {
+        Notification notification = Notification.builder()
+                .sourceMember(sourceMember)
+                .notificationType(notificationType)
+                .content(content)
+                .build();
+        notification.setMember(member); // 양방향 연관관계 설정
+        return notification;
+    }
+
+    @Builder
+    private Notification(String content, boolean isRead, Member sourceMember, Member member,
+            NotificationType notificationType) {
+        this.content = content;
+        this.isRead = isRead;
+        this.sourceMember = sourceMember;
+        this.member = member;
+        this.notificationType = notificationType;
+    }
+
+    private void setMember(Member member) {
+        if (this.member != null) {
+            this.member.getNotificationList().remove(this);
+        }
+        this.member = member;
+        member.getNotificationList().add(this);
+    }
 
 }
