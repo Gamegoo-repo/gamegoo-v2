@@ -5,7 +5,9 @@ import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
+import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -13,6 +15,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.ArrayList;
@@ -459,6 +464,68 @@ class FriendControllerTest extends ControllerTestSupport {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
                     .andExpect(jsonPath("$.data").isArray());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("친구 목록 조회")
+    class GetFriendListTest {
+
+        @DisplayName("친구 목록 조회 성공: cursor가 없는 경우")
+        @Test
+        void getFriendListSucceedsWhenNoCursor() throws Exception {
+            // given
+            List<Friend> friends = new ArrayList<>();
+            Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
+            FriendListResponse response = FriendListResponse.of(friendSlice);
+
+            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("친구 목록 조회 성공: cursor가 있는 경우")
+        @Test
+        void getFriendListSucceedsWithCursor() throws Exception {
+            // given
+            List<Friend> friends = new ArrayList<>();
+            Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
+            FriendListResponse response = FriendListResponse.of(friendSlice);
+
+            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX)
+                            .param("cursor", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("친구 목록 조회 실패: cursor가 음수인 경우")
+        @Test
+        void getFriendListSucceedsWhenNegativeCursor() throws Exception {
+            // given
+            List<Friend> friends = new ArrayList<>();
+            Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
+            FriendListResponse response = FriendListResponse.of(friendSlice);
+
+            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX)
+                            .param("cursor", "-1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
         }
 
     }
