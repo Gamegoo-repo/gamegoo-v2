@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.integration.friend;
 
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
 import com.gamegoo.gamegoo_v2.member.domain.LoginType;
@@ -87,6 +88,92 @@ public class FriendQueryServiceTest {
 
             // then
             assertThat(friendIdList).hasSize(0);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("친구 목록 조회")
+    class GetFriendList {
+
+        @DisplayName("친구 목록 조회 성공: 친구가 없는 경우")
+        @Test
+        void getFriendListSucceedsWhenNoFriend() {
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, null);
+
+            // then
+            assertThat(friends.getListSize()).isEqualTo(0);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isEqualTo(false);
+        }
+
+        @DisplayName("친구 목록 조회 성공: 친구가 page size 이하인 경우")
+        @Test
+        void getFriendListSucceedsWhenOnePage() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+            }
+
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, null);
+
+            // then
+            assertThat(friends.getListSize()).isEqualTo(5);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isEqualTo(false);
+        }
+
+        @DisplayName("친구 목록 조회 성공: 친구가 page size 이상이고 cursor를 입력한 경우")
+        @Test
+        void getFriendListSucceedsWhenNextPage() {
+            // given
+            Long cursorId = 0L;
+            for (int i = 1; i <= 15; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+
+                if (i == 4) {
+                    cursorId = targetMember.getId();
+                }
+            }
+
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, cursorId);
+
+            // then
+            assertThat(friends.getListSize()).isEqualTo(5);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isEqualTo(false);
+        }
+
+        @DisplayName("친구 목록 조회 성공: 친구가 page size 이상이고 cursor를 입력하지 않은 경우")
+        @Test
+        void getFriendListSucceedsFirstPage() {
+            // given
+            for (int i = 1; i <= 15; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+            }
+
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, null);
+
+            // then
+            assertThat(friends.getListSize()).isEqualTo(10);
+            assertThat(friends.getNextCursor()).isNotNull();
+            assertThat(friends.isHasNext()).isEqualTo(true);
         }
 
     }
