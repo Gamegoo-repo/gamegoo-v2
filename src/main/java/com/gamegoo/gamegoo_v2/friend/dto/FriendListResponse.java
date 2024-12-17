@@ -12,9 +12,9 @@ import java.util.List;
 public class FriendListResponse {
 
     List<FriendInfoResponse> friendInfoDTOList;
-    int list_size;
-    boolean has_next;
-    Long next_cursor;
+    int listSize;
+    boolean hasNext;
+    Long nextCursor;
 
     @Getter
     @Builder
@@ -50,9 +50,9 @@ public class FriendListResponse {
 
         return FriendListResponse.builder()
                 .friendInfoDTOList(friendInfoResponseList)
-                .list_size(friendInfoResponseList.size())
-                .has_next(friends.hasNext())
-                .next_cursor(nextCursor)
+                .listSize(friendInfoResponseList.size())
+                .hasNext(friends.hasNext())
+                .nextCursor(nextCursor)
                 .build();
     }
 
