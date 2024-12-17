@@ -44,6 +44,11 @@ public class FriendRequestEventListener {
         }
     }
 
+    /**
+     * 친구 요청 수락 event listener
+     *
+     * @param event
+     */
     @Async
     @Transactional
     @EventListener
@@ -59,6 +64,11 @@ public class FriendRequestEventListener {
         }
     }
 
+    /**
+     * 친구 요청 거절 event listener
+     *
+     * @param event
+     */
     @Async
     @Transactional
     @EventListener
