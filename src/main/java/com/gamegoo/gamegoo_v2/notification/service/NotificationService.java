@@ -25,7 +25,6 @@ public class NotificationService {
 
     private static final String PLACEHOLDER = "n";
 
-
     /**
      * 친구 요청 전송됨 알림 생성 메소드
      *
@@ -111,6 +110,7 @@ public class NotificationService {
      */
     public Notification createMannerRatingNotification(List<MannerKeyword> mannerKeywordList, Member member) {
         validateMember(member);
+        validateMannerKeywordList(mannerKeywordList);
 
         NotificationType notificationType = findNotificationType(NotificationTypeTitle.MANNER_KEYWORD_RATED);
 
@@ -150,6 +150,12 @@ public class NotificationService {
 
     private void validateMember(Member member) {
         if (member == null) {
+            throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
+        }
+    }
+
+    private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
+        if (mannerKeywordList.size() == 0) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
         }
     }
