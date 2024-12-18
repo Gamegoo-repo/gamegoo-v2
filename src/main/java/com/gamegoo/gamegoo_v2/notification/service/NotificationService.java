@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class NotificationService {
 
     private final NotificationTypeRepository notificationTypeRepository;
@@ -32,6 +32,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createSendFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -47,6 +48,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createReceivedFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -62,6 +64,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createAcceptFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -77,6 +80,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createRejectFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -93,6 +97,7 @@ public class NotificationService {
      * @param mannerLevel
      * @return
      */
+    @Transactional
     public Notification createMannerLevelNotification(NotificationTypeTitle notificationTypeTitle, Member member,
             int mannerLevel) {
         validateMember(member);
@@ -109,6 +114,7 @@ public class NotificationService {
      * @param member
      * @return
      */
+    @Transactional
     public Notification createMannerRatingNotification(List<MannerKeyword> mannerKeywordList, Member member) {
         validateMember(member);
         validateMannerKeywordList(mannerKeywordList);
@@ -134,8 +140,25 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
-    private Notification saveNotification(NotificationType type, String content, Member member, Member sourceMember) {
+    @Transactional
+    protected Notification saveNotification(NotificationType type, String content, Member member, Member sourceMember) {
         return notificationRepository.save(Notification.create(member, sourceMember, type, content));
+    }
+
+    /**
+     * 알림 읽음 처리 메소드
+     *
+     * @param member
+     * @param notificationId
+     */
+    @Transactional
+    public Notification readNotification(Member member, Long notificationId) {
+        validateNotificationExists(member, notificationId);
+
+        Notification notification = notificationRepository.findById(notificationId).get();
+        notification.updateIsRead(true);
+
+        return notification;
     }
 
     /**
@@ -168,6 +191,19 @@ public class NotificationService {
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
         if (mannerKeywordList.size() == 0) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * notificationId에 해당하는 알림 내역 존재 여부 검증
+     *
+     * @param member
+     * @param notificationId
+     */
+    private void validateNotificationExists(Member member, Long notificationId) {
+        boolean exists = notificationRepository.existsByMemberAndId(member, notificationId);
+        if (!exists) {
+            throw new NotificationException(ErrorCode.NOTIFICATION_NOT_FOUND);
         }
     }
 
