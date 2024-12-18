@@ -7,11 +7,14 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface EmailVerifyRecordRepository extends JpaRepository<EmailVerifyRecord, Long> {
 
     @Query("SELECT e FROM EmailVerifyRecord e WHERE e.email = :email AND e.createdAt >= :timeLimit")
     List<EmailVerifyRecord> findRecentRecordsByEmail(@Param("email") String email,
                                                      @Param("timeLimit") LocalDateTime timeLimit);
+
+    Optional<EmailVerifyRecord> findTop1ByEmailOrderByCreatedAtDesc(String email);
 
 }
