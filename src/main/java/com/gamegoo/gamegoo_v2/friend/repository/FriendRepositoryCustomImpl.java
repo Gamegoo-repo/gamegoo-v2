@@ -47,6 +47,22 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
         return new SliceImpl<>(pagedFriends, Pageable.unpaged(), hasNext);
     }
 
+    @Override
+    public List<Friend> findFriendsByQueryStringAndOrdered(Long memberId, String queryString) {
+        // query string으로 시작하는 소환사명을 갖는 모든 친구 목록 조회
+        List<Friend> result = queryFactory.selectFrom(friend)
+                .where(friend.fromMember.id.eq(memberId)
+                        .and(friend.toMember.gameName.startsWith(queryString))
+                )
+                .fetch();
+
+        result.sort(
+                (f1, f2) -> memberNameComparator.compare(f1.getToMember().getGameName(),
+                        f2.getToMember().getGameName()));
+
+        return result;
+    }
+
 
     /**
      * cursorId에 해당하는 Friend 객체의 다음 인덱스 찾기

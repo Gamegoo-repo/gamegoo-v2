@@ -15,10 +15,12 @@ import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Slice;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -209,6 +211,18 @@ public class FriendService {
         return friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
     }
 
+    /**
+     * 소환사명으로 친구 목록 조회하는 메소드
+     *
+     * @param member
+     * @param query
+     * @return
+     */
+    public List<Friend> searchFriendByGamename(Member member, String query) {
+        validateSearchQuery(query);
+        return friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+    }
+
     private void validateNotSelf(Member member, Member targetMember) {
         if (member.getId().equals(targetMember.getId())) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);
@@ -220,6 +234,12 @@ public class FriendService {
                 ErrorCode.FRIEND_TARGET_IS_BLOCKED);
         blockValidator.validateIfBlocked(targetMember, member, FriendException.class,
                 ErrorCode.BLOCKED_BY_FRIEND_TARGET);
+    }
+
+    private void validateSearchQuery(String query) {
+        if (query.length() > 100) {
+            throw new FriendException(ErrorCode.FRIEND_SEARCH_QUERY_BAD_REQUEST);
+        }
     }
 
 }
