@@ -93,6 +93,31 @@ class NotificationFacadeServiceTest {
 
     }
 
+    @DisplayName("안읽은 알림 개수 조회 성공")
+    @Test
+    void countUnreadNotificationSucceeds() {
+        // given
+        // 알림 생성
+        Notification notification1 = createMannerLevelUpNotification(member);
+        Notification notification2 = createMannerLevelUpNotification(member);
+        Notification notification3 = createMannerLevelUpNotification(member);
+        Notification notification4 = createMannerLevelUpNotification(member);
+        Notification notification5 = createMannerLevelUpNotification(member);
+
+        // 알림 2개 읽음 처리
+        notification1.updateIsRead(true);
+        notification2.updateIsRead(true);
+        notificationRepository.save(notification1);
+        notificationRepository.save(notification2);
+
+        // when
+        Integer count = notificationFacadeService.countUnreadNotification(member);
+
+        // then
+        assertThat(count).isEqualTo(3);
+    }
+
+
     private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()
                 .email(email)
