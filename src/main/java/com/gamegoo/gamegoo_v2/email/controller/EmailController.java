@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.email.controller;
 
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
+import com.gamegoo.gamegoo_v2.email.dto.EmailCodeRequest;
 import com.gamegoo.gamegoo_v2.email.dto.EmailRequest;
 import com.gamegoo.gamegoo_v2.email.service.EmailFacadeService;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
@@ -38,6 +39,13 @@ public class EmailController {
     public ApiResponse<String> sendEmail(@AuthMember Member member) {
         emailFacadeService.sendEmailVerificationCode(member);
         return ApiResponse.ok("인증 이메일을 발송했습니다.");
+    }
+
+    @PostMapping("/verify")
+    @Operation(summary = "이메일 인증코드 검증 API 입니다.", description = "API for verifying email")
+    public ApiResponse<String> verifyEmail(@Valid @RequestBody EmailCodeRequest request) {
+        emailFacadeService.verifyEmailCode(request);
+        return ApiResponse.ok("인증이 완료되었습니다.");
     }
 
 

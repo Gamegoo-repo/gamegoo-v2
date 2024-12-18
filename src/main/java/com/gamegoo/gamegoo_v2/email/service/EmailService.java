@@ -31,6 +31,28 @@ public class EmailService {
     private static final String EMAIL_TITLE_FOR_JOIN = "GameGoo 이메일 인증 코드";
 
     /**
+     * 이메일 인증 코드 검증
+     *
+     * @param email 검증용 이메일
+     * @param code  검증용 코드
+     */
+    public void verifyEmailCode(String email, String code) {
+        // 해당 이메일로 인증을 요청하지 않은 경우
+        EmailVerifyRecord emailVerifyRecord = emailVerifyRecordRepository.findTop1ByEmailOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new EmailException(ErrorCode.EMAIL_RECORD_NOT_FOUND));
+
+        // 인증 코드가 틀린경우
+        if (!emailVerifyRecord.getCode().equals(code)) {
+            throw new EmailException(ErrorCode.INVALID_VERIFICATION_CODE);
+        }
+
+        // 인증 코드 발급 시간이 3분 초과인 경우
+        if (emailVerifyRecord.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(3))) {
+            throw new EmailException(ErrorCode.EMAIL_VERIFICATION_TIME_EXCEED);
+        }
+    }
+
+    /**
      * 랜덤 코드 이메일 전송
      *
      * @param email 이메일 주소
