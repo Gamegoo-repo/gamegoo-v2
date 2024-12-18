@@ -35,6 +35,7 @@ public class NotificationService {
     public Notification createSendFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
+
         NotificationType notificationType = findNotificationType(NotificationTypeTitle.FRIEND_REQUEST_SEND);
         return saveNotification(notificationType, notificationType.getContent(), member, sourceMember);
     }
@@ -148,12 +149,22 @@ public class NotificationService {
                 .orElseThrow(() -> new NotificationException(ErrorCode.NOTIFICATION_TYPE_NOT_FOUND));
     }
 
+    /**
+     * member가 null이 아닌지 검증하는 메소드
+     *
+     * @param member
+     */
     private void validateMember(Member member) {
         if (member == null) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
         }
     }
 
+    /**
+     * mannerKeywordList에 키워드가 1개 이상 있는지 검증하는 메소드
+     *
+     * @param mannerKeywordList
+     */
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
         if (mannerKeywordList.size() == 0) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);

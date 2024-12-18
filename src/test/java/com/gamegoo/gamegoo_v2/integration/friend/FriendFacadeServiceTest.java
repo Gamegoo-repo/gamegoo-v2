@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
-class FriendServiceTest {
+class FriendFacadeServiceTest {
 
     @Autowired
     FriendFacadeService friendFacadeService;

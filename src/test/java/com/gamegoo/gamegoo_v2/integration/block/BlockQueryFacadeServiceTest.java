@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest
-class BlockQueryServiceTest {
+class BlockQueryFacadeServiceTest {
 
     @Autowired
     private BlockFacadeService blockFacadeService;

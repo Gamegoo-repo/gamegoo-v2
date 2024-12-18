@@ -37,7 +37,7 @@ public class FriendRequestEventListener {
             // member가 sourceMember에게 친구 요청 전송했음 알림 생성
             notificationService.createSendFriendRequestNotification(member, sourceMember);
 
-            // sourceMeber가 member로부터 친구 요청 받았음 알림 생성
+            // sourceMember가 member로부터 친구 요청 받았음 알림 생성
             notificationService.createReceivedFriendRequestNotification(sourceMember, member);
         } catch (Exception e) {
             log.error("Failed to create friend request notifications", e);

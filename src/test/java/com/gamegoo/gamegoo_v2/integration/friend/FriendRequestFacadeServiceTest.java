@@ -47,7 +47,7 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("test")
 @SpringBootTest
 @Import(AsyncConfig.class)
-class FriendRequestServiceTest {
+class FriendRequestFacadeServiceTest {
 
     @Autowired
     FriendFacadeService friendFacadeService;
