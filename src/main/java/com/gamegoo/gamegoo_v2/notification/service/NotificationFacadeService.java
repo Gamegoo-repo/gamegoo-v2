@@ -28,4 +28,14 @@ public class NotificationFacadeService {
         return ReadNotificationResponse.of(notification.getId());
     }
 
+    /**
+     * 안읽은 알림 개수 조회 Facade 메소드
+     *
+     * @param member
+     * @return
+     */
+    public Integer countUnreadNotification(Member member) {
+        return notificationService.countUnreadNotification(member);
+    }
+
 }
