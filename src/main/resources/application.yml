@@ -2,6 +2,19 @@ spring:
   profiles:
     default: local
 
+  # Gmail 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: gamegoo0707@gmail.com
+    password: ${GMAIL_PWD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 springdoc:
   swagger-ui:
     tags-sorter: alpha            # alpha: 알파벳 순 태그 정렬, method: HTTP Method 순 정렬
@@ -12,6 +25,7 @@ jwt:
   secret: ${JWT_SECRET}
   access_expiration_time: 600000 # 10분 (10 * 60 * 1000 밀리초)
   refresh_expiration_day: 14 # 2주
+
 
 ---
 # 로컬 환경

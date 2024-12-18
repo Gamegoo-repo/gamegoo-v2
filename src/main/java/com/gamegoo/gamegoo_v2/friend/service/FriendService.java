@@ -15,6 +15,7 @@ import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class FriendService {
     private final FriendValidator friendValidator;
     private final ApplicationEventPublisher eventPublisher;
 
+    private final static int PAGE_SIZE = 10;
 
     /**
      * 친구 요청 생성 메소드
@@ -195,6 +197,16 @@ public class FriendService {
         if (friend2 != null) {
             friendRepository.delete(friend2);
         }
+    }
+
+    /**
+     * 해당 회원의 친구 목록 Slice 객체 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public Slice<Friend> getFriends(Member member, Long cursor) {
+        return friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
     }
 
     private void validateNotSelf(Member member, Member targetMember) {
