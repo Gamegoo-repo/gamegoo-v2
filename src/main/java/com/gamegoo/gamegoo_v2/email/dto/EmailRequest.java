@@ -5,16 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 public class EmailRequest {
 
-    @Getter
-    @NoArgsConstructor
-    public static class EmailRequestDTO {
-
-        @Email(message = "Email형식이 올바르지 않습니다.")
-        @NotBlank(message = "Email은 비워둘 수 없습니다.")
-        String email;
-
-    }
+    @Email(message = "Email형식이 올바르지 않습니다.")
+    @NotBlank(message = "Email은 비워둘 수 없습니다.")
+    String email;
 
 }

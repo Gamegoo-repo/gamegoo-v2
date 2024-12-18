@@ -14,26 +14,28 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Slf4j
 public class EmailService {
 
     private final EmailVerifyRecordRepository emailVerifyRecordRepository;
     private final JavaMailSender javaMailSender;
+    private static final String EMAIL_TEMPLATE_FOR_JOIN = "templates/email-template.html";
+    private static final String CERTIFICATION_NUMBER = "CERTIFICATION_NUMBER";
+    private static final String EMAIL_TITLE_FOR_JOIN = "GameGoo 이메일 인증 코드";
 
     /**
      * 랜덤 코드 이메일 전송
      *
      * @param email 이메일 주소
      */
+    @Transactional
     public void sendEmailVerificationCode(String email) {
         // 해당 이메일로 3분 이내에 3번 이상 요청을 보냈을 경우 제한
         checkEmailSendRequestLimit(email);
@@ -41,19 +43,16 @@ public class EmailService {
         // 랜덤 코드 생성하기
         String certificationNumber = RandomCodeGeneratorUtil.generateEmailRandomCode();
 
-        // HTML 템플릿 경로
-        String templatePath = "templates/email-template.html";
 
         // Placeholder 값 정의
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("CERTIFICATION_NUMBER", certificationNumber);
+        placeholders.put(CERTIFICATION_NUMBER, certificationNumber);
 
         // 이메일 전송
-        sendEmail(email, "GameGoo 이메일 인증 코드", templatePath, placeholders);
+        sendEmail(email, EMAIL_TITLE_FOR_JOIN, EMAIL_TEMPLATE_FOR_JOIN, placeholders);
 
         // 이메일 전송 기록 DB 저장
-        EmailVerifyRecord emailVerifyRecord = EmailVerifyRecord.create(email, certificationNumber);
-        emailVerifyRecordRepository.save(emailVerifyRecord);
+        emailVerifyRecordRepository.save(EmailVerifyRecord.create(email, certificationNumber));
     }
 
     /**
@@ -91,21 +90,12 @@ public class EmailService {
      * @param email 이메일 주소
      */
     protected void checkEmailSendRequestLimit(String email) {
-        // 최근 3개의 기록 가져오기
-        List<EmailVerifyRecord> recentRecords = emailVerifyRecordRepository.findTop3ByEmailOrderByUpdatedAtDesc(email);
+        LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(3);
 
-        // 3개의 기록이 존재할 경우만 처리
-        if (recentRecords.size() == 3) {
-            LocalDateTime now = LocalDateTime.now();
-
-            // 모든 기록이 3분 이내인지 확인
-            boolean allWithin3Minutes = recentRecords.stream()
-                    .allMatch(record -> Duration.between(record.getUpdatedAt(), now).toMinutes() < 3);
-
-            if (allWithin3Minutes) {
-                log.warn("3분 이내에 3개 이상의 이메일을 이미 보냈습니다. {}", email);
-                throw new EmailException(ErrorCode.EMAIL_LIMIT_EXCEEDED);
-            }
+        // 3분 이내에 보낸 메일의 개수가 3개 이상일 경우 예외 처리
+        if (emailVerifyRecordRepository.findRecentRecordsByEmail(email, timeLimit).size() > 2) {
+            log.warn("3분 이내에 3개 이상의 이메일을 이미 보냈습니다. {}", email);
+            throw new EmailException(ErrorCode.EMAIL_LIMIT_EXCEEDED);
         }
     }
 
