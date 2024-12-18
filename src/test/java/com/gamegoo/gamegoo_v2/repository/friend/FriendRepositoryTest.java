@@ -169,6 +169,52 @@ class FriendRepositoryTest {
 
     }
 
+    @Nested
+    @DisplayName("소환사명으로 친구 검색")
+    class searchFriendByGamename {
+
+        @DisplayName("소환사명으로 친구 검색: 검색 결과가 없는 경우 빈 리스트를 반환해야 한다.")
+        @Test
+        void searchFriendByGamenameSucceedsNoResult() {
+            // given
+            String query = "targetMember";
+
+            // when
+            List<Friend> friendList = friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+
+            // then
+            assertThat(friendList).isEmpty();
+
+        }
+
+        @DisplayName("소환사명으로 친구 검색 성공: 검색한 결과가 있는 경우 결과 리스트를 반환해야 한다.")
+        @Test
+        void searchFriendByGamenameSucceeds() {
+            // given
+            Member targetMember1 = createMember("targetMember1@gmail.com", "targetMember");
+            Member targetMember2 = createMember("targetMember2@gmail.com", "target");
+            Member targetMember3 = createMember("targetMember@gmail.com", "target3");
+            Member targetMember4 = createMember("targetMember@gmail.com", "t");
+            Member targetMember5 = createMember("targetMember@gmail.com", "TARGET");
+
+
+            createFriend(member, targetMember1);
+            createFriend(member, targetMember2);
+            createFriend(member, targetMember3);
+            createFriend(member, targetMember4);
+            createFriend(member, targetMember5);
+
+            String query = "target";
+
+            // when
+            List<Friend> friendList = friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+
+            // then
+            assertThat(friendList).hasSize(3);
+        }
+
+    }
+
     private Member createMember(String email, String gameName) {
         return em.persist(Member.builder()
                 .email(email)

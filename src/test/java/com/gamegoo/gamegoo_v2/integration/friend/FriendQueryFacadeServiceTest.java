@@ -1,7 +1,10 @@
 package com.gamegoo.gamegoo_v2.integration.friend;
 
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.exception.FriendException;
+import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -21,10 +24,11 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
 @SpringBootTest
-public class FriendQueryServiceTest {
+public class FriendQueryFacadeServiceTest {
 
     @Autowired
     FriendFacadeService friendFacadeService;
@@ -174,6 +178,56 @@ public class FriendQueryServiceTest {
             assertThat(friends.getListSize()).isEqualTo(10);
             assertThat(friends.getNextCursor()).isNotNull();
             assertThat(friends.isHasNext()).isEqualTo(true);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("소환사명으로 친구 검색")
+    class searchFriendByGamename {
+
+        @DisplayName("소환사명으로 친구 검색 성공: 친구가 없는 경우")
+        @Test
+        void searchFriendByGamenameSucceedsNoResult() {
+            // given
+            String query = "targetMember";
+
+            // when
+            List<FriendInfoResponse> friendList = friendFacadeService.searchFriend(member, query);
+
+            // then
+            assertThat(friendList).isEmpty();
+        }
+
+        @DisplayName("소환사명으로 친구 검색 성공: 친구가 있는 경우")
+        @Test
+        void searchFriendByGamenameSucceeds() {
+            // given
+            String query = "target";
+
+            Member targetMember = createMember("targetMember@gmail.com", "targetMember");
+
+            // 친구 관계 생성
+            friendRepository.save(Friend.create(member, targetMember));
+            friendRepository.save(Friend.create(targetMember, member));
+
+            // when
+            List<FriendInfoResponse> friendList = friendFacadeService.searchFriend(member, query);
+
+            // then
+            assertThat(friendList).hasSize(1);
+        }
+
+        @DisplayName("소환사명으로 친구 검색 실패: query 길이 제한을 초과한 경우 예외가 발생한다.")
+        @Test
+        void searchFriendByGamename_shouldThrowWhenQueryTooLong() {
+            // given
+            String query = "a".repeat(101);
+
+            // when // then
+            assertThatThrownBy(() -> friendFacadeService.searchFriend(member, query))
+                    .isInstanceOf(FriendException.class)
+                    .hasMessage(ErrorCode.FRIEND_SEARCH_QUERY_BAD_REQUEST.getMessage());
         }
 
     }
