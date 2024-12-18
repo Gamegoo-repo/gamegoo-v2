@@ -4,8 +4,8 @@ import com.gamegoo.gamegoo_v2.email.domain.EmailVerifyRecord;
 import com.gamegoo.gamegoo_v2.email.repository.EmailVerifyRecordRepository;
 import com.gamegoo.gamegoo_v2.exception.EmailException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
 import com.gamegoo.gamegoo_v2.utils.EmailTemplateProcessor;
+import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +25,16 @@ import java.util.Map;
 @Transactional
 @Slf4j
 public class EmailService {
+
     private final EmailVerifyRecordRepository emailVerifyRecordRepository;
     private final JavaMailSender javaMailSender;
 
     /**
      * 랜덤 코드 이메일 전송
+     *
      * @param email 이메일 주소
      */
-    public void sendEmailVerificationCode(String email){
+    public void sendEmailVerificationCode(String email) {
         // 해당 이메일로 3분 이내에 3번 이상 요청을 보냈을 경우 제한
         checkEmailSendRequestLimit(email);
 
@@ -56,6 +58,7 @@ public class EmailService {
 
     /**
      * 이메일 전송 메소드
+     *
      * @param email        수신자 이메일
      * @param subject      이메일 제목
      * @param templatePath 템플릿 파일 경로
@@ -84,6 +87,7 @@ public class EmailService {
 
     /**
      * 특정 이메일로 3분 이내 3개 미만의 이메일을 보냈는지 검증
+     *
      * @param email 이메일 주소
      */
     protected void checkEmailSendRequestLimit(String email) {
@@ -104,4 +108,5 @@ public class EmailService {
             }
         }
     }
+
 }

@@ -8,10 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class EmailFacadeService {
+
     private final EmailService emailService;
 
     @Transactional
-    public void sendEmailVerificationCode(String email){
+    public void sendEmailVerificationCode(String email) {
         emailService.sendEmailVerificationCode(email);
     }
 

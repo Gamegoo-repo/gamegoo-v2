@@ -13,6 +13,7 @@ public class RandomCodeGeneratorUtil {
 
     /**
      * 랜덤 코드 만드는 유틸
+     *
      * @return RandomCode
      */
     public static String generateEmailRandomCode() {
@@ -42,4 +43,5 @@ public class RandomCodeGeneratorUtil {
 
         return new String(characters);
     }
+
 }

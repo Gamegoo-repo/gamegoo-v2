@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface EmailVerifyRecordRepository extends JpaRepository<EmailVerifyRecord, Long> {
+
     @Query("SELECT e FROM EmailVerifyRecord e WHERE e.email = :email ORDER BY e.updatedAt DESC")
     List<EmailVerifyRecord> findTop3ByEmailOrderByUpdatedAtDesc(@Param("email") String email);
 

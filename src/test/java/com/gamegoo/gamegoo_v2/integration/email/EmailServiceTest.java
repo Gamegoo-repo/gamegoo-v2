@@ -9,7 +9,9 @@ import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.time.LocalDateTime;
@@ -20,7 +22,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class EmailServiceTest {
 
@@ -92,4 +100,5 @@ class EmailServiceTest {
                 .isInstanceOf(EmailException.class)
                 .hasMessage(ErrorCode.EMAIL_SEND_FAIL.getMessage());
     }
+
 }

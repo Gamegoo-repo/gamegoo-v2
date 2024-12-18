@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RandomCodeGeneratorUtilTest {
+
     @Test
     void testGenerateEmailRandomCode_LengthAndFormat() {
         // 랜덤 코드 생성
@@ -20,4 +21,5 @@ public class RandomCodeGeneratorUtilTest {
         assertTrue(randomCode.matches(".*[a-z].*"), "생성된 랜덤코드는 소문자를 하나 반드시 포함해야한다.");
         assertTrue(randomCode.matches(".*[0-9].*"), "생성된 랜덤코드는 숫자를 하나 반드시 포함해야한다.");
     }
+
 }

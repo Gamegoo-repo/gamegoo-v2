@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class EmailRequest {
+
     @Getter
     @NoArgsConstructor
     public static class EmailRequestDTO {
@@ -15,4 +16,5 @@ public class EmailRequest {
         String email;
 
     }
+
 }
