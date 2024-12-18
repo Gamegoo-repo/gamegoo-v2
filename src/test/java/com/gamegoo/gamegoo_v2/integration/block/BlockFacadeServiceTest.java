@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
-class BlockServiceTest {
+class BlockFacadeServiceTest {
 
     @Autowired
     private BlockFacadeService blockFacadeService;

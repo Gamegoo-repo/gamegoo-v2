@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.integration.friend;
 
 import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.config.AsyncConfig;
 import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
@@ -16,6 +17,11 @@ import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.notification.domain.Notification;
+import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
+import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
+import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
+import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,16 +29,25 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("test")
 @SpringBootTest
-class FriendRequestServiceTest {
+@Import(AsyncConfig.class)
+class FriendRequestFacadeServiceTest {
 
     @Autowired
     FriendFacadeService friendFacadeService;
@@ -48,6 +63,12 @@ class FriendRequestServiceTest {
 
     @Autowired
     FriendRequestRepository friendRequestRepository;
+
+    @MockitoSpyBean
+    NotificationRepository notificationRepository;
+
+    @Autowired
+    NotificationTypeRepository notificationTypeRepository;
 
     private static final String MEMBER_EMAIL = "test@gmail.com";
     private static final String MEMBER_GAMENAME = "member";
@@ -66,12 +87,19 @@ class FriendRequestServiceTest {
         friendRepository.deleteAllInBatch();
         friendRequestRepository.deleteAllInBatch();
         blockRepository.deleteAllInBatch();
+        notificationRepository.deleteAllInBatch();
+        notificationTypeRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
 
     @Nested
     @DisplayName("친구 요청 전송")
     class SendFriendRequestTest {
+
+        @BeforeEach
+        void setUp() {
+            initNotificationType();
+        }
 
         @DisplayName("친구 요청 전송 성공")
         @Test
@@ -85,6 +113,11 @@ class FriendRequestServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertThat(response.getMessage()).isEqualTo("친구 요청 전송 성공");
+
+            // event로 인해 알림 2개가 저장되었는지 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(notificationRepository, times(2)).save(any(Notification.class));
+            });
         }
 
         @DisplayName("친구 요청 전송 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -194,6 +227,11 @@ class FriendRequestServiceTest {
     @DisplayName("친구 요청 수락")
     class AcceptFriendRequestTest {
 
+        @BeforeEach
+        void setUp() {
+            initNotificationType();
+        }
+
         @DisplayName("친구 요청 수락 성공")
         @Test
         void acceptFriendRequestSucceeds() {
@@ -209,6 +247,11 @@ class FriendRequestServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertTrue(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+
+            // event로 인해 알림 1개가 저장되었는지 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(notificationRepository, times(1)).save(any(Notification.class));
+            });
         }
 
         @DisplayName("친구 요청 수락 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -238,6 +281,11 @@ class FriendRequestServiceTest {
     @DisplayName("친구 요청 거절")
     class RejectFriendRequestTest {
 
+        @BeforeEach
+        void setUp() {
+            initNotificationType();
+        }
+
         @DisplayName("친구 요청 거절 성공")
         @Test
         void rejectFriendRequestSucceeds() {
@@ -253,6 +301,11 @@ class FriendRequestServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+
+            // event로 인해 알림 1개가 저장되었는지 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(notificationRepository, times(1)).save(any(Notification.class));
+            });
         }
 
         @DisplayName("친구 요청 거절 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -337,6 +390,16 @@ class FriendRequestServiceTest {
                 .gameCount(0)
                 .isAgree(true)
                 .build());
+    }
+
+    private void initNotificationType() {
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_SEND));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_RECEIVED));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_ACCEPTED));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_REJECTED));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_LEVEL_UP));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_LEVEL_DOWN));
+        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_KEYWORD_RATED));
     }
 
 }

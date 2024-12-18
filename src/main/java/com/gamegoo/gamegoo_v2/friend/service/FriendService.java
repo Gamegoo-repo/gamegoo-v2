@@ -3,6 +3,9 @@ package com.gamegoo.gamegoo_v2.friend.service;
 import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.common.validator.FriendValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
+import com.gamegoo.gamegoo_v2.event.AcceptFriendRequestEvent;
+import com.gamegoo.gamegoo_v2.event.RejectFriendRequestEvent;
+import com.gamegoo.gamegoo_v2.event.SendFriendRequestEvent;
 import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
@@ -13,6 +16,7 @@ import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,7 @@ public class FriendService {
     private final BlockValidator blockValidator;
     private final MemberValidator memberValidator;
     private final FriendValidator friendValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final static int PAGE_SIZE = 10;
 
@@ -56,6 +61,7 @@ public class FriendService {
         FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.create(member, targetMember));
 
         // 친구 요청 알림 생성
+        eventPublisher.publishEvent(new SendFriendRequestEvent(member.getId(), targetMember.getId()));
 
         return friendRequest;
     }
@@ -85,6 +91,7 @@ public class FriendService {
         friendRepository.save(Friend.create(targetMember, member));
 
         // targetMember에게 친구 요청 수락 알림 생성
+        eventPublisher.publishEvent(new AcceptFriendRequestEvent(member.getId(), targetMember.getId()));
 
         return friendRequest;
     }
@@ -110,6 +117,7 @@ public class FriendService {
         friendRequest.updateStatus(FriendRequestStatus.REJECTED);
 
         // targetMember에게 친구 요청 거절 알림 생성
+        eventPublisher.publishEvent(new RejectFriendRequestEvent(member.getId(), targetMember.getId()));
 
         return friendRequest;
     }

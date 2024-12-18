@@ -71,7 +71,17 @@ public enum ErrorCode {
     MEMBERS_NOT_FRIEND(BAD_REQUEST, "FRIEND408", "두 회원은 친구 관계가 아닙니다."),
     ALREADY_STAR_FRIEND(BAD_REQUEST, "FRIEND409", "이미 즐겨찾기 되어 있는 친구입니다."),
     NOT_STAR_FRIEND(BAD_REQUEST, "FRIEND410", "즐겨찾기 되어 있는 친구가 아닙니다."),
-    FRIEND_SEARCH_QUERY_BAD_REQUEST(BAD_REQUEST, "FRIEND411", "친구 검색 쿼리는 100자 이하여야 합니다.");
+    FRIEND_SEARCH_QUERY_BAD_REQUEST(BAD_REQUEST, "FRIEND411", "친구 검색 쿼리는 100자 이하여야 합니다."),
+
+
+    /**
+     * 알림 관련 에러
+     */
+    NOTIFICATION_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI_401", "해당 알림 타입 데이터를 찾을 수 없습니다."),
+    NOTIFICATION_METHOD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "NOTI_402", "알림 생성 메소드 호출이 잘못되었습니다."),
+    INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTI_403",
+            "잘못된 알림 조회 타입입니다. general과 friend 중 하나를 입력하세요."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI_404", "해당 알림 내역을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
