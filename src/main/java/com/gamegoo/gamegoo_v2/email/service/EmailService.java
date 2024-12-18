@@ -63,7 +63,7 @@ public class EmailService {
      * @param templatePath 템플릿 파일 경로
      * @param placeholders 템플릿에 삽입할 Placeholder 값
      */
-    private void sendEmail(String email, String subject, String templatePath, Map<String, String> placeholders) {
+    public void sendEmail(String email, String subject, String templatePath, Map<String, String> placeholders) {
         try {
             // 템플릿 처리
             String htmlContent = EmailTemplateProcessor.processTemplate(templatePath, placeholders);

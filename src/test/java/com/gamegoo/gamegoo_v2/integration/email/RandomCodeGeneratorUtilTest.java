@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.integration.email;
 
 import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RandomCodeGeneratorUtilTest {
 
+    @DisplayName("인증 코드 랜덤 생성")
     @Test
     void testGenerateEmailRandomCode_LengthAndFormat() {
         // 랜덤 코드 생성
