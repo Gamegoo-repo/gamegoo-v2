@@ -6,12 +6,15 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -58,7 +61,7 @@ public class ExceptionAdvice {
                 .body(ApiResponse.of(BAD_REQUEST, "확인할 수 없는 형태의 데이터가 들어왔습니다"));
     }
 
-    // @Validated 검증 실패 시 발생하는 에러
+    // 메소드 파라미터 검증 실패 시 발생하는 에러
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<?>> handlerConstraintViolationException(ConstraintViolationException e) {
         // ConstraintViolationException에서 메시지 추출
@@ -67,6 +70,26 @@ public class ExceptionAdvice {
                 .collect(Collectors.joining(", "));
 
         return ResponseEntity.badRequest().body(ApiResponse.of(BAD_REQUEST, errorMessage));
+    }
+
+    // 컨트롤러 @Validated 검증 실패 시 발생하는 에러
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiResponse<?>> handlerHandlerMethodValidationException(HandlerMethodValidationException e) {
+        // 모든 제약 위반 메시지를 추출
+        List<String> errorMessages = e.getAllErrors().stream()
+                .map(error -> {
+                    if (error instanceof FieldError) {
+                        return error.getDefaultMessage();
+                    } else {
+                        return error.getDefaultMessage();
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // 첫 번째 오류 메시지만 반환
+        String responseMessage = String.join(", ", errorMessages);
+
+        return ResponseEntity.badRequest().body(ApiResponse.of(BAD_REQUEST, responseMessage));
     }
 
     // 필수 query parameter 누락 시 발생하는 에러

@@ -29,6 +29,7 @@ public class EmailController {
     public ApiResponse<String> sendEmailwithCheckDuplication(
             @Valid @RequestBody EmailRequest request) {
         emailFacadeService.sendVerificationCodeWithDuplicationCheck(request);
+
         return ApiResponse.ok("인증 이메일을 발송했습니다.");
     }
 

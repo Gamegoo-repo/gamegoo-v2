@@ -27,7 +27,7 @@ public class MemberService {
 
     public void checkExistMemberByEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
-            throw new MemberException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            throw new MemberException(ErrorCode.MEMBER_ALREADY_EXISTS);
         }
     }
 

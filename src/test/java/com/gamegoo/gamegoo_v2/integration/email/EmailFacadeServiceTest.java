@@ -1,83 +1,154 @@
 package com.gamegoo.gamegoo_v2.integration.email;
 
+import com.gamegoo.gamegoo_v2.email.domain.EmailVerifyRecord;
+import com.gamegoo.gamegoo_v2.email.dto.EmailRequest;
 import com.gamegoo.gamegoo_v2.email.repository.EmailVerifyRecordRepository;
 import com.gamegoo.gamegoo_v2.email.service.EmailFacadeService;
 import com.gamegoo.gamegoo_v2.email.service.EmailService;
 import com.gamegoo.gamegoo_v2.exception.EmailException;
+import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.member.service.MemberService;
+import com.gamegoo.gamegoo_v2.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.doNothing;
 
 @ActiveProfiles("test")
 @SpringBootTest
-@Transactional // DB 상태 롤백 보장
 class EmailFacadeServiceTest {
 
     @Autowired
     private EmailVerifyRecordRepository emailVerifyRecordRepository;
 
-    @MockitoBean
-    private JavaMailSender javaMailSender;
-
     @Autowired
-    private MemberService memberService;
+    private MemberRepository memberRepository;
 
     @Autowired
     private EmailFacadeService emailFacadeService;
 
-    @Autowired
+    @MockitoSpyBean
     private EmailService emailService;
 
-    @DisplayName("이메일 인증 코드 전송 성공: 요청이 정상 처리되고 이메일이 전송된다.")
-    @Test
-    void sendEmailVerificationCode_ShouldSendSuccessfully() {
-        // Given
-        String email = "test@example.com";
+    private static final String EMAIL = "test@example.com";
+    private static final String GAMENAME = "test";
 
-        // 실제로 이메일이 전송되지 않도록 Mock
-        doNothing().when(emailService).sendEmail(any(), any(), any(), any());
+    @AfterEach
+    void tearDown() {
+        emailVerifyRecordRepository.deleteAllInBatch();
+    }
 
-        // When // Then
-        assertDoesNotThrow(() -> emailFacadeService.sendEmailVerificationCode(email));
+    @Nested
+    @DisplayName("이메일 인증 코드 전송")
+    class sendEmailVerificationCode {
 
-        // 이메일 인증 레코드 저장 확인
+        @DisplayName("이메일 인증 코드 전송 성공")
+        @Test
+        void sendEmailVerificationCode_ShouldSendSuccessfully() {
+            // Given
+            EmailRequest request = EmailRequest.builder()
+                    .email(EMAIL)
+                    .build();
+
+            // 실제로 이메일이 전송되지 않도록 Mock
+            doNothing().when(emailService).sendEmail(any(), any(), any(), any());
+
+            // When // Then
+            assertDoesNotThrow(() -> emailFacadeService.sendEmailVerificationCode(request));
+
+            // 이메일 인증 레코드 저장 확인
+            List<EmailVerifyRecord> recordList = emailVerifyRecordRepository.findAll();
+            assertThat(recordList).hasSize(1);
+        }
+
+        @DisplayName("이메일 인증 코드 전송 실패: 3분 이내에 3번 이상 요청을 보낸 경우 예외가 발생한다.")
+        @Test
+        void sendEmailVerificationCode_ShouldThrowWhenTooManyRequests() {
+            // Given
+            EmailRequest request = EmailRequest.builder()
+                    .email(EMAIL)
+                    .build();
+
+            // 실제로 이메일이 전송되지 않도록 Mock
+            doNothing().when(emailService).sendEmail(any(), any(), any(), any());
+
+            // 인증코드 요청 3개 생성
+            emailVerifyRecordRepository.save(EmailVerifyRecord.create(EMAIL, "code1"));
+            emailVerifyRecordRepository.save(EmailVerifyRecord.create(EMAIL, "code2"));
+            emailVerifyRecordRepository.save(EmailVerifyRecord.create(EMAIL, "code3"));
+
+            // When // Then
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+                    .isInstanceOf(EmailException.class)
+                    .hasMessage(ErrorCode.EMAIL_LIMIT_EXCEEDED.getMessage());
+        }
+
+        @DisplayName("이메일 인증 코드 전송 실패: 메일 서버 장애로 인해 이메일 전송에 실패한 경우 예외가 발생한다.")
+        @Test
+        void sendEmail_ShouldThrowWhenMailServerDown() {
+            // Given
+            EmailRequest request = EmailRequest.builder()
+                    .email(EMAIL)
+                    .build();
+
+            // 이메일 전송 실패 mock 처리
+            willThrow(new EmailException(ErrorCode.EMAIL_SEND_FAIL))
+                    .given(emailService).sendEmail(any(), any(), any(), any());
+
+            // When // Then
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+                    .isInstanceOf(EmailException.class)
+                    .hasMessage(ErrorCode.EMAIL_SEND_FAIL.getMessage());
+        }
+
+        @DisplayName("이메일 인증 코드 전송 실패: 이미 등록된 메일인 경우 예외가 발생한다.")
+        @Test
+        void sendEmail_ShouldThrownWhenDuplicatedEmail() {
+            // given
+            EmailRequest request = EmailRequest.builder()
+                    .email(EMAIL)
+                    .build();
+
+            createMember(EMAIL, GAMENAME);
+
+            // when // then
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+                    .isInstanceOf(MemberException.class)
+                    .hasMessage(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
+        }
 
     }
 
-    @DisplayName("이메일 인증 코드 전송 실패: 3분 이내에 3번 이상 요청을 보낸 경우 예외가 발생한다.")
-    @Test
-    void sendEmailVerificationCode_ShouldThrowWhenTooManyRequests() {
-        // Given
-        String email = "test@example.com";
-
-        // 실제로 이메일이 전송되지 않도록 Mock
-    }
-
-    @DisplayName("이메일 전송 실패: 메일 서버 장애로 인해 이메일 전송에 실패한다.")
-    @Test
-    void sendEmail_ShouldThrowWhenMailServerDown() {
-        // Given
-        String email = "test@example.com";
-
-        // 실제로 이메일이 전송되지 않도록 Mock
-        doNothing().when(emailService).sendEmail(any(), any(), any(), any());
-
-        // When // Then
-        assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(email))
-                .isInstanceOf(EmailException.class)
-                .hasMessage(ErrorCode.EMAIL_SEND_FAIL.getMessage());
+    private Member createMember(String email, String gameName) {
+        return memberRepository.save(Member.builder()
+                .email(email)
+                .password("testPassword")
+                .profileImage(1)
+                .loginType(LoginType.GENERAL)
+                .gameName(gameName)
+                .tag("TAG")
+                .tier(Tier.IRON)
+                .gameRank(0)
+                .winRate(0.0)
+                .gameCount(0)
+                .isAgree(true)
+                .build());
     }
 
 }
