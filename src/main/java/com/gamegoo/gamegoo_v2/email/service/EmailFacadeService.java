@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.email.service;
 
+import com.gamegoo.gamegoo_v2.email.dto.EmailRequest;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,9 +15,9 @@ public class EmailFacadeService {
     private final MemberService memberService;
 
     @Transactional
-    public void sendEmailVerificationCode(String email) {
-        memberService.checkExistMemberByEmail(email);
-        emailService.sendEmailVerificationCode(email);
+    public void sendEmailVerificationCode(EmailRequest request) {
+        memberService.checkExistMemberByEmail(request.getEmail());
+        emailService.sendEmailVerificationCode(request.getEmail());
     }
 
 }

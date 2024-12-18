@@ -9,6 +9,19 @@ spring:
     username: sa
     password:
 
+  # Gmail 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: gamegoo0707@gmail.com
+    password: pwd
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: "secretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecret"
   access_expiration_time: 600000 # 10분 (10 * 60 * 1000 밀리초)
