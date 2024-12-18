@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,6 +62,25 @@ public class NotificationControllerTest extends ControllerTestSupport {
             mockMvc.perform(patch(API_URL_PREFIX + "/{notificationId}", NOTIFICATION_ID))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value(ErrorCode.NOTIFICATION_NOT_FOUND.getMessage()));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("안읽은 알림 개수 조회")
+    class countUnreadNotificationTest {
+
+        @DisplayName("안읽은 알림 개수 조회 성공")
+        @Test
+        void countUnreadNotificationSucceeds() throws Exception {
+            // given
+            given(notificationFacadeService.countUnreadNotification(any(Member.class))).willReturn(5);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/unread/count"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").value(5));
         }
 
     }
