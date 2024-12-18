@@ -22,7 +22,7 @@ public class EmailController {
     private final EmailFacadeService emailFacadeService;
 
 
-    @PostMapping("/email/send/join")
+    @PostMapping("/send/join")
     @Operation(summary = "회원가입용 이메일 인증코드 전송 API 입니다. 중복확인 포함", description = "API for sending email for join")
     public ApiResponse<String> sendEmailwithCheckDuplication(@Valid @RequestBody EmailRequest.EmailRequestDTO emailRequestDTO) {
         emailFacadeService.sendEmailVerificationCode(emailRequestDTO.getEmail());

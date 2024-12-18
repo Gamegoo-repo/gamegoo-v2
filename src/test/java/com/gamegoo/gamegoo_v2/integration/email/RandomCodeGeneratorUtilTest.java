@@ -1,12 +1,10 @@
-package com.gamegoo.gamegoo_v2.utils;
+package com.gamegoo.gamegoo_v2.integration.email;
 
+import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.util.HashSet;
-import java.util.Set;
 
 public class RandomCodeGeneratorUtilTest {
     @Test
@@ -22,5 +20,4 @@ public class RandomCodeGeneratorUtilTest {
         assertTrue(randomCode.matches(".*[a-z].*"), "생성된 랜덤코드는 소문자를 하나 반드시 포함해야한다.");
         assertTrue(randomCode.matches(".*[0-9].*"), "생성된 랜덤코드는 숫자를 하나 반드시 포함해야한다.");
     }
-
 }

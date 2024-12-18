@@ -41,7 +41,7 @@ public class EmailService {
         String certificationNumber = RandomCodeGeneratorUtil.generateEmailRandomCode();
 
         // HTML 템플릿 경로
-        String templatePath = "./email-template.html";
+        String templatePath = "templates/email-template.html";
 
         // Placeholder 값 정의
         Map<String, String> placeholders = new HashMap<>();
@@ -80,9 +80,9 @@ public class EmailService {
             // 이메일 전송
             javaMailSender.send(message);
 
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("이메일 전송에 실패했습니다.");
-            throw new EmailException(ErrorCode.EMAIL_CONTENT_LOAD_FAIL);
+            throw new EmailException(ErrorCode.EMAIL_SEND_FAIL);
         }
     }
 

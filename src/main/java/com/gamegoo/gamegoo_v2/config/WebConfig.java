@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthMemberArgumentResolver authMemberArgumentResolver;
     private final JwtInterceptor jwtInterceptor;
-    private final List<String> excludeEndpoints = Arrays.asList("/api/v2/auth/token/**");
+    private final List<String> excludeEndpoints = Arrays.asList("/api/v2/auth/token/**","/api/v2/email/send/join");
 
     // 인터셉터 설정
     @Override
