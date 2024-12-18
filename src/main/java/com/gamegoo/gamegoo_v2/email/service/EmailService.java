@@ -6,7 +6,6 @@ import com.gamegoo.gamegoo_v2.exception.EmailException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
 import com.gamegoo.gamegoo_v2.utils.EmailTemplateProcessor;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +56,6 @@ public class EmailService {
 
     /**
      * 이메일 전송 메소드
-     *
      * @param email        수신자 이메일
      * @param subject      이메일 제목
      * @param templatePath 템플릿 파일 경로
@@ -65,8 +63,6 @@ public class EmailService {
      */
     public void sendEmail(String email, String subject, String templatePath, Map<String, String> placeholders) {
         try {
-            log.info("Starting email send process for email: {}, placeholders: {}", email, placeholders);
-
             // 템플릿 처리
             String htmlContent = EmailTemplateProcessor.processTemplate(templatePath, placeholders);
 
@@ -94,7 +90,8 @@ public class EmailService {
         // 최근 3개의 기록 가져오기
         List<EmailVerifyRecord> recentRecords = emailVerifyRecordRepository.findTop3ByEmailOrderByUpdatedAtDesc(email);
 
-        if (recentRecords.size() == 3) { // 3개의 기록이 존재할 경우만 처리
+        // 3개의 기록이 존재할 경우만 처리
+        if (recentRecords.size() == 3) {
             LocalDateTime now = LocalDateTime.now();
 
             // 모든 기록이 3분 이내인지 확인

@@ -32,12 +32,14 @@ public class RandomCodeGeneratorUtil {
     // 문자열 내의 인덱스 순서를 섞는 함수
     private static String shuffleString(String input) {
         char[] characters = input.toCharArray();
+
         for (int i = 0; i < characters.length; i++) {
             int randomIndex = random.nextInt(characters.length);
             char temp = characters[i];
             characters[i] = characters[randomIndex];
             characters[randomIndex] = temp;
         }
+
         return new String(characters);
     }
 }

@@ -15,7 +15,6 @@ public class EmailTemplateProcessor {
 
     /**
      * 동적으로 템플릿을 선택하고 값을 대체
-     *
      * @param templateName 템플릿 파일 이름 (예: test.txt)
      * @param placeholders 대체할 값 (key: placeholder, value: 대체 값)
      * @return 최종 HTML 문자열
