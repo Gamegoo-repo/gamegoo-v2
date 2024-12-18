@@ -162,6 +162,21 @@ public class NotificationService {
     }
 
     /**
+     * 안읽은 알림 개수 계산 메소드
+     *
+     * @param member
+     * @return
+     */
+    public Integer countUnreadNotification(Member member) {
+        long count = member.getNotificationList()
+                .stream()
+                .filter(notification -> !notification.isRead())
+                .count();
+
+        return Long.valueOf(count).intValue();
+    }
+
+    /**
      * title로 NotificationType을 찾는 메소드
      *
      * @param title

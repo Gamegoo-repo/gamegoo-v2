@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,12 @@ public class NotificationController {
     public ApiResponse<ReadNotificationResponse> getTotalNotificationList(
             @PathVariable(name = "notificationId") Long notificationId, @AuthMember Member member) {
         return ApiResponse.ok(notificationFacadeService.readNotification(member, notificationId));
+    }
+
+    @Operation(summary = "안읽은 알림 개수 조회 API", description = "해당 회원의 안읽은 알림의 개수를 조회하는 API 입니다.")
+    @GetMapping("/unread/count")
+    public ApiResponse<Integer> getUnreadNotificationCount(@AuthMember Member member) {
+        return ApiResponse.ok(notificationFacadeService.countUnreadNotification(member));
     }
 
 }
