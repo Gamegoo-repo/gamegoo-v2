@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.integration.email;
+package com.gamegoo.gamegoo_v2.unit;
 
 import com.gamegoo.gamegoo_v2.utils.RandomCodeGeneratorUtil;
 import org.junit.jupiter.api.DisplayName;
