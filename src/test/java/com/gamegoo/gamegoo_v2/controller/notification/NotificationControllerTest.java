@@ -5,6 +5,7 @@ import com.gamegoo.gamegoo_v2.exception.NotificationException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.controller.NotificationController;
+import com.gamegoo.gamegoo_v2.notification.dto.NotificationPageListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.ReadNotificationResponse;
 import com.gamegoo.gamegoo_v2.notification.service.NotificationFacadeService;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -81,6 +84,65 @@ public class NotificationControllerTest extends ControllerTestSupport {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
                     .andExpect(jsonPath("$.data").value(5));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("알림 전체 목록 조회")
+    class GetNotificationPageListTest {
+
+        @DisplayName("알림 전체 목록 조회 성공")
+        @Test
+        void getNotificationPageListSucceeds() throws Exception {
+            // given
+            NotificationPageListResponse response = NotificationPageListResponse.builder()
+                    .notificationList(new ArrayList<>())
+                    .listSize(0)
+                    .totalPage(0)
+                    .totalElements(0)
+                    .isFirst(true)
+                    .isLast(true)
+                    .build();
+
+            given(notificationFacadeService.getNotificationPageList(any(Member.class), any(Integer.class))).willReturn(response);
+
+            // when // then
+            int pageIdx = 1;
+            mockMvc.perform(get(API_URL_PREFIX + "/total")
+                            .param("page", String.valueOf(pageIdx)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.notificationList").isEmpty())
+                    .andExpect(jsonPath("$.data.listSize").value(0))
+                    .andExpect(jsonPath("$.data.totalPage").value(0))
+                    .andExpect(jsonPath("$.data.totalElements").value(0))
+                    .andExpect(jsonPath("$.data.isFirst").value(true))
+                    .andExpect(jsonPath("$.data.isLast").value(true));
+        }
+
+        @DisplayName("알림 전체 목록 조회 실패: 페이지 번호가 1 미만인 경우 에러 응답을 반환한다")
+        @Test
+        void getNotificationPageListFailedWhenPageIsNotValid() throws Exception {
+            // given
+            NotificationPageListResponse response = NotificationPageListResponse.builder()
+                    .notificationList(new ArrayList<>())
+                    .listSize(0)
+                    .totalPage(0)
+                    .totalElements(0)
+                    .isFirst(true)
+                    .isLast(true)
+                    .build();
+
+            given(notificationFacadeService.getNotificationPageList(any(Member.class), any(Integer.class))).willReturn(response);
+
+
+            // when // then
+            int pageIdx = 0;
+            mockMvc.perform(get(API_URL_PREFIX + "/total")
+                            .param("page", String.valueOf(pageIdx)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("페이지 번호는 1 이상의 값이어야 합니다."));
         }
 
     }
