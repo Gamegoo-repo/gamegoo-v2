@@ -12,5 +12,4 @@ public interface EmailVerifyRecordRepository extends JpaRepository<EmailVerifyRe
     @Query("SELECT e FROM EmailVerifyRecord e WHERE e.email = :email ORDER BY e.updatedAt DESC")
     List<EmailVerifyRecord> findTop3ByEmailOrderByUpdatedAtDesc(@Param("email") String email);
 
-
 }
