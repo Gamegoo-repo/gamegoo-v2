@@ -46,6 +46,7 @@ public enum ErrorCode {
     EMAIL_CONTENT_LOAD_FAIL(NOT_FOUND, "EMAIL401", "이메일 본문을 읽어오는데 실패했습니다."),
     EMAIL_SEND_FAIL(NOT_FOUND, "EMAIL402", "이메일 전송에 실패했습니다"),
     EMAIL_LIMIT_EXCEEDED(BAD_REQUEST, "EMAIL_403", "3분 이내 3개 이상 이메일을 보냈습니다."),
+    EMAIL_ALREADY_EXISTS(BAD_REQUEST, "EMAIL_404", "이미 있는 사용자입니다."),
 
     /*
      * 차단 관련 에러

@@ -25,8 +25,10 @@ public class MemberService {
         return memberRepository.findById(memberId).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
-    public boolean checkExistMemberByEmail(String email) {
-        return memberRepository.findByEmail(email).isPresent();
+    public void checkExistMemberByEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new MemberException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
 }
