@@ -25,4 +25,10 @@ public class MemberService {
         return memberRepository.findById(memberId).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
+    public void checkExistMemberByEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new MemberException(ErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+    }
+
 }

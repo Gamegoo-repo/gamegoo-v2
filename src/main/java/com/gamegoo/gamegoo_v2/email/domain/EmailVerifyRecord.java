@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.auth.domain;
+package com.gamegoo.gamegoo_v2.email.domain;
 
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
 import jakarta.persistence.Column;
