@@ -7,6 +7,7 @@ import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
@@ -513,7 +514,7 @@ class FriendControllerTest extends ControllerTestSupport {
 
         @DisplayName("친구 목록 조회 실패: cursor가 음수인 경우")
         @Test
-        void getFriendListSucceedsWhenNegativeCursor() throws Exception {
+        void getFriendListFailedWhenNegativeCursor() throws Exception {
             // given
             List<Friend> friends = new ArrayList<>();
             Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
@@ -526,6 +527,42 @@ class FriendControllerTest extends ControllerTestSupport {
                             .param("cursor", "-1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("소환사명으로 친구 검색")
+    class searchFriendByGamename {
+
+        @DisplayName("소환사명으로 친구 검색 성공")
+        @Test
+        void searchFriendByGamenameSuccess() throws Exception {
+            // given
+            List<FriendInfoResponse> response = new ArrayList<>();
+
+            given(friendFacadeService.searchFriend(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/search")
+                            .param("query", "gamename"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data").isArray());
+        }
+
+        @DisplayName("소환사명으로 친구 검색 실패: query 파라미터가 없는 경우")
+        @Test
+        void searchFriendByGamenameFailed() throws Exception {
+            // given
+            List<FriendInfoResponse> response = new ArrayList<>();
+
+            given(friendFacadeService.searchFriend(any(), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/search"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("query 파라미터가 누락되었습니다."))
+                    .andExpect(jsonPath("$.code").value("VALUE_ERROR"));
         }
 
     }
