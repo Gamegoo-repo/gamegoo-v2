@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.friend.service;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
@@ -131,6 +132,19 @@ public class FriendFacadeService {
      */
     public FriendListResponse getFriends(Member member, Long cursor) {
         return FriendListResponse.of(friendService.getFriends(member, cursor));
+    }
+
+    /**
+     * 소환사명으로 친구 조회 Facade 메소드
+     *
+     * @param member
+     * @param query
+     * @return
+     */
+    public List<FriendInfoResponse> searchFriend(Member member, String query) {
+        return friendService.searchFriendByGamename(member, query).stream()
+                .map(FriendInfoResponse::of)
+                .toList();
     }
 
 }
