@@ -72,4 +72,8 @@ public class Notification extends BaseDateTimeEntity {
         member.getNotificationList().add(this);
     }
 
+    public void updateIsRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
 }
