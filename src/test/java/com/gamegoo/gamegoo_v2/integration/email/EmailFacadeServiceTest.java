@@ -55,10 +55,10 @@ class EmailFacadeServiceTest {
     }
 
     @Nested
-    @DisplayName("이메일 인증 코드 전송")
+    @DisplayName("중복확인 포함한 이메일 인증 코드 전송")
     class sendEmailVerificationCode {
 
-        @DisplayName("이메일 인증 코드 전송 성공")
+        @DisplayName("중복확인 포함한 이메일 인증 코드 전송 성공")
         @Test
         void sendEmailVerificationCode_ShouldSendSuccessfully() {
             // Given
@@ -70,14 +70,14 @@ class EmailFacadeServiceTest {
             doNothing().when(emailService).sendEmail(any(), any(), any(), any());
 
             // When // Then
-            assertDoesNotThrow(() -> emailFacadeService.sendEmailVerificationCode(request));
+            assertDoesNotThrow(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request));
 
             // 이메일 인증 레코드 저장 확인
             List<EmailVerifyRecord> recordList = emailVerifyRecordRepository.findAll();
             assertThat(recordList).hasSize(1);
         }
 
-        @DisplayName("이메일 인증 코드 전송 실패: 3분 이내에 3번 이상 요청을 보낸 경우 예외가 발생한다.")
+        @DisplayName("중복확인 포함한 이메일 인증 코드 전송 실패: 3분 이내에 3번 이상 요청을 보낸 경우 예외가 발생한다.")
         @Test
         void sendEmailVerificationCode_ShouldThrowWhenTooManyRequests() {
             // Given
@@ -94,12 +94,12 @@ class EmailFacadeServiceTest {
             emailVerifyRecordRepository.save(EmailVerifyRecord.create(EMAIL, "code3"));
 
             // When // Then
-            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
                     .isInstanceOf(EmailException.class)
                     .hasMessage(ErrorCode.EMAIL_LIMIT_EXCEEDED.getMessage());
         }
 
-        @DisplayName("이메일 인증 코드 전송 실패: 메일 서버 장애로 인해 이메일 전송에 실패한 경우 예외가 발생한다.")
+        @DisplayName("중복확인 포함한 이메일 인증 코드 전송 실패: 메일 서버 장애로 인해 이메일 전송에 실패한 경우 예외가 발생한다.")
         @Test
         void sendEmail_ShouldThrowWhenMailServerDown() {
             // Given
@@ -112,12 +112,12 @@ class EmailFacadeServiceTest {
                     .given(emailService).sendEmail(any(), any(), any(), any());
 
             // When // Then
-            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
                     .isInstanceOf(EmailException.class)
                     .hasMessage(ErrorCode.EMAIL_SEND_FAIL.getMessage());
         }
 
-        @DisplayName("이메일 인증 코드 전송 실패: 이미 등록된 메일인 경우 예외가 발생한다.")
+        @DisplayName("중복확인 포함한 이메일 인증 코드 전송 실패: 이미 등록된 메일인 경우 예외가 발생한다.")
         @Test
         void sendEmail_ShouldThrownWhenDuplicatedEmail() {
             // given
@@ -128,7 +128,7 @@ class EmailFacadeServiceTest {
             createMember(EMAIL, GAMENAME);
 
             // when // then
-            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCode(request))
+            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
                     .isInstanceOf(MemberException.class)
                     .hasMessage(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
         }
