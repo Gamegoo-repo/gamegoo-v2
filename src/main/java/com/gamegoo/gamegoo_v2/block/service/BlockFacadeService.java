@@ -63,6 +63,7 @@ public class BlockFacadeService {
      * @param member
      * @param targetMemberId
      */
+    @Transactional
     public void deleteBlock(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
         blockService.deleteBlock(member, targetMember);

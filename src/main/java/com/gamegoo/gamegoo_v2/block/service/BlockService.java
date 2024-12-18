@@ -66,6 +66,7 @@ public class BlockService {
      * @param member
      * @param targetMember
      */
+    @Transactional
     public void unBlockMember(Member member, Member targetMember) {
         // 대상 회원의 탈퇴 여부 검증
         memberValidator.validateTargetMemberIsNotBlind(targetMember);
@@ -85,6 +86,7 @@ public class BlockService {
      * @param member
      * @param targetMember
      */
+    @Transactional
     public void deleteBlock(Member member, Member targetMember) {
         // targetMember가 차단 목록에 존재하는지 검증 및 block 엔티티 조회
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
