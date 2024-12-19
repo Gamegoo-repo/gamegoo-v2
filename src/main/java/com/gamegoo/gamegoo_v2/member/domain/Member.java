@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -133,6 +134,17 @@ public class Member extends BaseDateTimeEntity {
 
     public void updateBlind(boolean blind) {
         this.blind = blind;
+    }
+
+    /**
+     * 삭제 상태가 아닌 block list 반환
+     *
+     * @return
+     */
+    public List<Block> getBlockList() {
+        return blockList.stream()
+                .filter(block -> !block.isDeleted())
+                .collect(Collectors.toList());
     }
 
 }

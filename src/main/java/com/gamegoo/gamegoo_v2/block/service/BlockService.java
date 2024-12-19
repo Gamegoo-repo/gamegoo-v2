@@ -30,7 +30,7 @@ public class BlockService {
      * @param targetMember
      */
     @Transactional
-    public void blockMember(Member member, Member targetMember) {
+    public Block blockMember(Member member, Member targetMember) {
         // 본인이 본인을 차단 시도하는 경우 검증
         validateNotSelfBlock(member, targetMember);
 
@@ -50,6 +50,7 @@ public class BlockService {
 
         // 차단 대상 회원에게 보냈던 친구 요청이 있는 경우, 해당 요청 취소 처리
 
+        return block;
     }
 
     /**
@@ -66,13 +67,13 @@ public class BlockService {
     }
 
     /**
-     * menber가 targetMember를 차단 해제 처하는 메소드
+     * menber가 targetMember를 차단 해제 처리하는 메소드
      *
      * @param member
      * @param targetMember
      */
     @Transactional
-    public void unBlockMember(Member member, Member targetMember) {
+    public Block unBlockMember(Member member, Member targetMember) {
         // 대상 회원의 탈퇴 여부 검증
         memberValidator.validateTargetMemberIsNotBlind(targetMember);
 
@@ -80,9 +81,10 @@ public class BlockService {
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
                 .orElseThrow(() -> new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED));
 
-        // 양방향 연관관계 제거 및 block 엔티티 삭제
-        block.removeBlockerMember(member);
-        blockRepository.delete(block);
+        // Block 엔티티의 deleted 필드 업데이트
+        block.updateDeleted(true);
+
+        return block;
     }
 
     /**
@@ -92,7 +94,7 @@ public class BlockService {
      * @param targetMember
      */
     @Transactional
-    public void deleteBlock(Member member, Member targetMember) {
+    public Block deleteBlock(Member member, Member targetMember) {
         // targetMember가 차단 목록에 존재하는지 검증 및 block 엔티티 조회
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
                 .orElseThrow(() -> new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED));
@@ -104,6 +106,8 @@ public class BlockService {
 
         // Block 엔티티의 deleted 필드 업데이트
         block.updateDeleted(true);
+        
+        return block;
     }
 
     private void validateNotSelfBlock(Member member, Member targetMember) {
