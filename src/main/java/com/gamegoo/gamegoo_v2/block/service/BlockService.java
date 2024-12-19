@@ -104,6 +104,17 @@ public class BlockService {
         return block;
     }
 
+    /**
+     * memer가 targetMember를 차단했는지 여부를 반환하는 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    public boolean isBlocked(Member member, Member targetMember) {
+        return blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
+    }
+
     private void validateNotSelfBlock(Member member, Member targetMember) {
         if (member.getId().equals(targetMember.getId())) {
             throw new BlockException(ErrorCode.BLOCK_MEMBER_BAD_REQUEST);
