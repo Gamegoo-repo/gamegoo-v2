@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.integration.block;
 
 import com.gamegoo.gamegoo_v2.block.domain.Block;
+import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
@@ -21,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -96,7 +97,7 @@ class BlockFacadeServiceTest {
 
             // then
             // 차단이 정상적으로 처리되었는지 검증
-            assertTrue(blockRepository.existsByBlockerMemberAndBlockedMember(member, targetMember));
+            assertThat(blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false)).isTrue();
 
             // 채팅방에서 퇴장 처리 되었는지 검증
 
@@ -175,7 +176,7 @@ class BlockFacadeServiceTest {
             // then
             // 차단 기록 엔티티의 delete 상태가 정상적으로 변경되었는지 검증
             Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember).get();
-            assertTrue(block.isDeleted());
+            assertThat(block.isDeleted()).isTrue();
         }
 
         @DisplayName("회원 차단 해제 실패: 대상 회원이 탈퇴한 경우 예외가 발생한다.")
@@ -243,7 +244,7 @@ class BlockFacadeServiceTest {
             // then
             // 차단 기록 엔티티의 delete 상태가 정상적으로 변경되었는지 검증
             Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember).get();
-            assertTrue(block.isDeleted());
+            assertThat(block.isDeleted()).isTrue();
         }
 
         @DisplayName("차단 목록에서 삭제 실패: 대상 회원이 탈퇴하지 않은 경우 예외가 발생한다.")
@@ -280,6 +281,50 @@ class BlockFacadeServiceTest {
             assertThatThrownBy(() -> blockFacadeService.deleteBlock(member, 100L))
                     .isInstanceOf(MemberException.class)
                     .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("차단한 회원 목록 조회")
+    class GetBlockListTest {
+
+        @DisplayName("차단한 회원 목록 조회 성공: 차단한 회원이 존재하는 경우")
+        @Test
+        void getBlockListSucceedsWhenBlockedMemberExists() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 내가 상대를 차단 처리
+                blockRepository.save(Block.create(member, targetMember));
+            }
+
+            // when
+            BlockListResponse blockList = blockFacadeService.getBlockList(member, 1);
+
+            // then
+            assertThat(blockList.getBlockedMemberList()).hasSize(5);
+            assertThat(blockList.getListSize()).isEqualTo(5);
+            assertThat(blockList.getTotalPage()).isEqualTo(1);
+            assertThat(blockList.getTotalElements()).isEqualTo(5);
+            assertThat(blockList.getIsFirst()).isTrue();
+            assertThat(blockList.getIsLast()).isTrue();
+        }
+
+        @DisplayName("차단한 회원 목록 조회 성공: 차단한 회원이 존재하지 않는 경우")
+        @Test
+        void getBlockListSucceedsWhenBlockedMemberNotExists() {
+            // when
+            BlockListResponse blockList = blockFacadeService.getBlockList(member, 1);
+
+            // then
+            assertThat(blockList.getBlockedMemberList()).isEmpty();
+            assertThat(blockList.getListSize()).isEqualTo(0);
+            assertThat(blockList.getTotalPage()).isEqualTo(0);
+            assertThat(blockList.getTotalElements()).isEqualTo(0);
+            assertThat(blockList.getIsFirst()).isTrue();
+            assertThat(blockList.getIsLast()).isTrue();
         }
 
     }

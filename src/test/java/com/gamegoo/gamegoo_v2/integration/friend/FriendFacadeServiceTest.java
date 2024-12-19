@@ -5,6 +5,9 @@ import com.gamegoo.gamegoo_v2.exception.FriendException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
@@ -21,10 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -41,9 +45,7 @@ class FriendFacadeServiceTest {
 
     @Autowired
     FriendRepository friendRepository;
-
-    private static final String MEMBER_EMAIL = "test@gmail.com";
-    private static final String MEMBER_GAMENAME = "member";
+    
     private static final String TARGET_EMAIL = "target@naver.com";
     private static final String TARGET_GAMENAME = "target";
 
@@ -51,7 +53,7 @@ class FriendFacadeServiceTest {
 
     @BeforeEach
     void setUp() {
-        member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        member = createMember("test@gmail.com", "member");
     }
 
     @AfterEach
@@ -79,9 +81,12 @@ class FriendFacadeServiceTest {
             StarFriendResponse response = friendFacadeService.reverseFriendLiked(member, targetMember.getId());
 
             // then
-            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
-            assertTrue(friend.isLiked());
             assertThat(response.getMessage()).isEqualTo("친구 즐겨찾기 설정 성공");
+            assertThat(response.getFriendMemberId()).isEqualTo(targetMember.getId());
+
+            // 즐겨찾기 처리 되었는지 검증
+            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+            assertThat(friend.isLiked()).isTrue();
         }
 
         @DisplayName("친구 즐겨찾기 해제 성공: 즐겨찾기 된 친구를 요청한 경우 즐겨찾기가 해제된다.")
@@ -102,9 +107,12 @@ class FriendFacadeServiceTest {
             StarFriendResponse response = friendFacadeService.reverseFriendLiked(member, targetMember.getId());
 
             // then
-            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
-            assertFalse(friend.isLiked());
             assertThat(response.getMessage()).isEqualTo("친구 즐겨찾기 해제 성공");
+            assertThat(response.getFriendMemberId()).isEqualTo(targetMember.getId());
+
+            // 즐겨찾기 처리 되었는지 검증
+            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+            assertThat(friend.isLiked()).isFalse();
         }
 
         @DisplayName("친구 즐겨찾기 설정/해제 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -161,11 +169,15 @@ class FriendFacadeServiceTest {
             friendRepository.save(Friend.create(targetMember, member));
 
             // when
-            friendFacadeService.deleteFriend(member, targetMember.getId());
+            DeleteFriendResponse response = friendFacadeService.deleteFriend(member, targetMember.getId());
 
             // then
-            assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
-            assertFalse(friendRepository.existsByFromMemberAndToMember(targetMember, member));
+            assertThat(response.getMessage()).isEqualTo("친구 삭제 성공");
+            assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+
+            // friend 엔티티 삭제 되었는지 검증
+            assertThat(friendRepository.existsByFromMemberAndToMember(member, targetMember)).isFalse();
+            assertThat(friendRepository.existsByFromMemberAndToMember(targetMember, member)).isFalse();
         }
 
         @DisplayName("친구 삭제 실패: 본인 id를 요청한 경우 예외가 발생한다.")
@@ -187,6 +199,159 @@ class FriendFacadeServiceTest {
             assertThatThrownBy(() -> friendFacadeService.deleteFriend(member, targetMember.getId()))
                     .isInstanceOf(FriendException.class)
                     .hasMessage(ErrorCode.MEMBERS_NOT_FRIEND.getMessage());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("모든 친구 id 조회")
+    class GetFriendIdList {
+
+        @DisplayName("모든 친구 id 조회 성공: 친구가 있는 경우")
+        @Test
+        void getFriendIdListSucceeds() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+            }
+
+            // when
+            List<Long> friendIdList = friendFacadeService.getFriendIdList(member);
+
+            // then
+            assertThat(friendIdList).hasSize(5);
+        }
+
+        @DisplayName("모든 친구 id 조회 성공: 친구가 없는 경우")
+        @Test
+        void getFriendIdListSucceedsWhenNoFriend() {
+            // when
+            List<Long> friendIdList = friendFacadeService.getFriendIdList(member);
+
+            // then
+            assertThat(friendIdList).hasSize(0);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("친구 목록 조회")
+    class GetFriendList {
+
+        @DisplayName("친구 목록 조회 성공: 친구가 없는 경우")
+        @Test
+        void getFriendListSucceedsWhenNoFriend() {
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, null);
+
+            // then
+            assertThat(friends.getFriendInfoList()).isEmpty();
+            assertThat(friends.getListSize()).isEqualTo(0);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isFalse();
+        }
+
+        @DisplayName("친구 목록 조회 성공: cursor를 입력하지 않은 경우")
+        @Test
+        void getFriendListSucceedsFirstPage() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+            }
+
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, null);
+
+            // then
+            assertThat(friends.getFriendInfoList()).hasSize(5);
+            assertThat(friends.getListSize()).isEqualTo(5);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isFalse();
+        }
+
+        @DisplayName("친구 목록 조회 성공: 친구가 page size 이상이고 cursor를 입력한 경우")
+        @Test
+        void getFriendListSucceedsNextPage() {
+            // given
+            List<Member> targetMembers = new ArrayList<>();
+            for (int i = 1; i <= 15; i++) {
+                Member targetMember = createMember("member" + i + "@gmail.com", "member" + i);
+
+                // 친구 관계 생성
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+
+                targetMembers.add(targetMember);
+            }
+
+            Long cursor = targetMembers.get(3).getId();
+
+            // when
+            FriendListResponse friends = friendFacadeService.getFriends(member, cursor);
+
+            // then
+            assertThat(friends.getFriendInfoList()).hasSize(5);
+            assertThat(friends.getListSize()).isEqualTo(5);
+            assertThat(friends.getNextCursor()).isNull();
+            assertThat(friends.isHasNext()).isFalse();
+        }
+
+    }
+
+    @Nested
+    @DisplayName("소환사명으로 친구 검색")
+    class searchFriendByGamename {
+
+        @DisplayName("소환사명으로 친구 검색 성공: 친구가 없는 경우")
+        @Test
+        void searchFriendByGamenameSucceedsNoResult() {
+            // given
+            String query = "targetMember";
+
+            // when
+            List<FriendInfoResponse> friendList = friendFacadeService.searchFriend(member, query);
+
+            // then
+            assertThat(friendList).isEmpty();
+        }
+
+        @DisplayName("소환사명으로 친구 검색 성공: 친구가 있는 경우")
+        @Test
+        void searchFriendByGamenameSucceeds() {
+            // given
+            String query = "target";
+
+            Member targetMember = createMember("targetMember@gmail.com", "targetMember");
+
+            // 친구 관계 생성
+            friendRepository.save(Friend.create(member, targetMember));
+            friendRepository.save(Friend.create(targetMember, member));
+
+            // when
+            List<FriendInfoResponse> friendList = friendFacadeService.searchFriend(member, query);
+
+            // then
+            assertThat(friendList).hasSize(1);
+        }
+
+        @DisplayName("소환사명으로 친구 검색 실패: query 길이 제한을 초과한 경우 예외가 발생한다.")
+        @Test
+        void searchFriendByGamename_shouldThrowWhenQueryTooLong() {
+            // given
+            String query = "a".repeat(101);
+
+            // when // then
+            assertThatThrownBy(() -> friendFacadeService.searchFriend(member, query))
+                    .isInstanceOf(FriendException.class)
+                    .hasMessage(ErrorCode.FRIEND_SEARCH_QUERY_BAD_REQUEST.getMessage());
         }
 
     }
