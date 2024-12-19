@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("test")
@@ -176,8 +173,9 @@ class BlockFacadeServiceTest {
             blockFacadeService.unBlockMember(member, targetMember.getId());
 
             // then
-            // 차단 기록이 정상적으로 삭제되었는지 검증
-            assertFalse(blockRepository.existsByBlockerMemberAndBlockedMember(member, targetMember));
+            // 차단 기록 엔티티의 delete 상태가 정상적으로 변경되었는지 검증
+            Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember).get();
+            assertTrue(block.isDeleted());
         }
 
         @DisplayName("회원 차단 해제 실패: 대상 회원이 탈퇴한 경우 예외가 발생한다.")
@@ -244,8 +242,8 @@ class BlockFacadeServiceTest {
 
             // then
             // 차단 기록 엔티티의 delete 상태가 정상적으로 변경되었는지 검증
-            Optional<Block> block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember);
-            assertTrue(block.get().isDeleted());
+            Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember).get();
+            assertTrue(block.isDeleted());
         }
 
         @DisplayName("차단 목록에서 삭제 실패: 대상 회원이 탈퇴하지 않은 경우 예외가 발생한다.")

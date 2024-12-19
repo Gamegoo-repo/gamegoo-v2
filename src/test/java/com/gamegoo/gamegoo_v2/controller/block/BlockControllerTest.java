@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.controller.block;
 
 import com.gamegoo.gamegoo_v2.block.controller.BlockController;
 import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
+import com.gamegoo.gamegoo_v2.block.dto.BlockResponse;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -42,13 +42,19 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void blockMemberSucceeds() throws Exception {
             // given
-            willDoNothing().given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+            BlockResponse response = BlockResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("회원 차단 성공")
+                    .build();
+
+            given(blockFacadeService.blockMember(any(), any())).willReturn(response);
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data").value("회원 차단 성공"));
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID))
+                    .andExpect(jsonPath("$.data.message").value("회원 차단 성공"));
         }
 
         @DisplayName("회원 차단 실패: 이미 차단한 회원인 경우 에러 응답을 반환한다.")
@@ -146,13 +152,19 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void unblockMemberSucceeds() throws Exception {
             // given
-            willDoNothing().given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+            BlockResponse response = BlockResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("회원 차단 해제 성공")
+                    .build();
+
+            given(blockFacadeService.unBlockMember(any(), any())).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data").value("회원 차단 해제 성공"));
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID))
+                    .andExpect(jsonPath("$.data.message").value("회원 차단 해제 성공"));
         }
 
         @DisplayName("회원 차단 해제 실패: 대상 회원을 차단한 상태가 아닌 경우 에러 응답을 반환한다.")
@@ -192,13 +204,19 @@ class BlockControllerTest extends ControllerTestSupport {
         @Test
         void deleteBlockSucceeds() throws Exception {
             // given
-            willDoNothing().given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+            BlockResponse response = BlockResponse.builder()
+                    .targetMemberId(TARGET_MEMBER_ID)
+                    .message("차단 목록에서 삭제 성공")
+                    .build();
+
+            given(blockFacadeService.deleteBlock(any(), any())).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data").value("차단 목록에서 삭제 성공"));
+                    .andExpect(jsonPath("$.data.targetMemberId").value(TARGET_MEMBER_ID))
+                    .andExpect(jsonPath("$.data.message").value("차단 목록에서 삭제 성공"));
         }
 
         @DisplayName("차단 목록에서 삭제 실패: 대상 회원을 차단한 상태가 아닌 경우 에러 응답을 반환한다.")

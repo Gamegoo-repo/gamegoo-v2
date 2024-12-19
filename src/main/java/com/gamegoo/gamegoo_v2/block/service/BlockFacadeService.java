@@ -1,6 +1,8 @@
 package com.gamegoo.gamegoo_v2.block.service;
 
+import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
+import com.gamegoo.gamegoo_v2.block.dto.BlockResponse;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,11 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void blockMember(Member member, Long targetMemberId) {
+    public BlockResponse blockMember(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.blockMember(member, targetMember);
+        Block block = blockService.blockMember(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "회원 차단 성공");
     }
 
     /**
@@ -48,9 +52,11 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void unBlockMember(Member member, Long targetMemberId) {
+    public BlockResponse unBlockMember(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.unBlockMember(member, targetMember);
+        Block block = blockService.unBlockMember(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "회원 차단 해제 성공");
     }
 
     /**
@@ -60,9 +66,11 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void deleteBlock(Member member, Long targetMemberId) {
+    public BlockResponse deleteBlock(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.deleteBlock(member, targetMember);
+        Block block = blockService.deleteBlock(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "차단 목록에서 삭제 성공");
     }
 
 }
