@@ -11,4 +11,6 @@ public interface FriendRepositoryCustom {
 
     List<Friend> findFriendsByQueryString(Long memberId, String queryString);
 
+    boolean isFriend(Long memberId, Long targetMemberId);
+
 }
