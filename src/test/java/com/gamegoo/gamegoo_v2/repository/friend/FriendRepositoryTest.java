@@ -51,7 +51,7 @@ class FriendRepositoryTest {
         @Test
         void findFriendsByCursorAndOrderedWhenNoFriend() {
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), null,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
                     PAGE_SIZE);
 
             // then
@@ -69,7 +69,7 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), null,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
                     PAGE_SIZE);
 
             // then
@@ -89,7 +89,7 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), null,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
                     PAGE_SIZE);
 
             // then
@@ -113,7 +113,7 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursorId,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursorId,
                     PAGE_SIZE);
 
             // then
@@ -134,7 +134,7 @@ class FriendRepositoryTest {
             Long cursorId = 100L;
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursorId,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursorId,
                     PAGE_SIZE);
 
             // then
@@ -155,7 +155,7 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursorAndOrdered(member.getId(), null,
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
                     PAGE_SIZE);
 
             // then
@@ -180,7 +180,7 @@ class FriendRepositoryTest {
             String query = "targetMember";
 
             // when
-            List<Friend> friendList = friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+            List<Friend> friendList = friendRepository.findFriendsByQueryString(member.getId(), query);
 
             // then
             assertThat(friendList).isEmpty();
@@ -207,7 +207,7 @@ class FriendRepositoryTest {
             String query = "target";
 
             // when
-            List<Friend> friendList = friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+            List<Friend> friendList = friendRepository.findFriendsByQueryString(member.getId(), query);
 
             // then
             assertThat(friendList).hasSize(3);

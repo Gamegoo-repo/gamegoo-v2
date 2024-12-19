@@ -120,7 +120,7 @@ public class FriendFacadeService {
      * @return
      */
     public List<Long> getFriendIdList(Member member) {
-        return member.getFriendList().stream().map(friend -> friend.getToMember().getId()).toList();
+        return friendService.getFriendIdList(member);
     }
 
     /**

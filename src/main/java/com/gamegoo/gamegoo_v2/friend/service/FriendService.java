@@ -208,7 +208,19 @@ public class FriendService {
      * @return
      */
     public Slice<Friend> getFriendSlice(Member member, Long cursor) {
-        return friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
+        return friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
+    }
+
+    /**
+     * 해당 회원의 모든 친구 id 리스트 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<Long> getFriendIdList(Member member) {
+        return member.getFriendList().stream()
+                .map(friend -> friend.getToMember().getId())
+                .toList();
     }
 
     /**
@@ -220,7 +232,7 @@ public class FriendService {
      */
     public List<Friend> searchFriendByGamename(Member member, String query) {
         validateSearchQuery(query);
-        return friendRepository.findFriendsByQueryStringAndOrdered(member.getId(), query);
+        return friendRepository.findFriendsByQueryString(member.getId(), query);
     }
 
     private void validateNotSelf(Member member, Member targetMember) {
