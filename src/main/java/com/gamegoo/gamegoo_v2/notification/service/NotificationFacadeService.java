@@ -38,7 +38,7 @@ public class NotificationFacadeService {
      * @param member
      * @return
      */
-    public Integer countUnreadNotification(Member member) {
+    public int countUnreadNotification(Member member) {
         return notificationService.countUnreadNotification(member);
     }
 
