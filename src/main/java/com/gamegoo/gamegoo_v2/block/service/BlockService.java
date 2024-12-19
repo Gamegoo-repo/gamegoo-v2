@@ -60,7 +60,7 @@ public class BlockService {
      * @param pageIdx
      * @return
      */
-    public Page<Member> getBlockedMemberPage(Long blockerId, Integer pageIdx) {
+    public Page<Member> getBlockedMemberPage(Long blockerId, int pageIdx) {
         PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         return blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blockerId, pageRequest);
@@ -77,7 +77,7 @@ public class BlockService {
         // 대상 회원의 탈퇴 여부 검증
         memberValidator.validateTargetMemberIsNotBlind(targetMember);
 
-        // targetMember가 차단 실제로 차단 목록에 존재하는지 검증 및 block 엔티티 조회
+        // targetMember가 실제로 차단 목록에 존재하는지 검증 및 block 엔티티 조회
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
                 .orElseThrow(() -> new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED));
 
@@ -106,7 +106,7 @@ public class BlockService {
 
         // Block 엔티티의 deleted 필드 업데이트
         block.updateDeleted(true);
-        
+
         return block;
     }
 

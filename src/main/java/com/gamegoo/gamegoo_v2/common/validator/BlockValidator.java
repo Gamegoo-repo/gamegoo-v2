@@ -4,11 +4,9 @@ import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.exception.common.GlobalException;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class BlockValidator {
 
     /**
