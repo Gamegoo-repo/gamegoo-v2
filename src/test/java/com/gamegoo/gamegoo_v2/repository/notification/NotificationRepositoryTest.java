@@ -21,15 +21,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@ActiveProfiles("test")
 @Import({QuerydslConfig.class, JpaAuditingConfig.class})
 class NotificationRepositoryTest {
 
@@ -52,35 +53,32 @@ class NotificationRepositoryTest {
 
     @Nested
     @DisplayName("알림 전체 목록 조회")
-    class findNotificationsByMemberTest {
+    class FindNotificationsByMemberTest {
 
-        @DisplayName("알림이 없는 경우")
+        @DisplayName("알림이 없는 경우 빈 page를 반환해야 한다.")
         @Test
-        void findNotificationsByMemberWhenNoResult() {
+        void findNotificationsByMemberNoResult() {
             // given
             PageRequest pageRequest = PageRequest.of(0, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
-            Page<Notification> notificationPage =
-                    notificationRepository.findNotificationsByMember(member, pageRequest);
+            Page<Notification> notificationPage = notificationRepository.findNotificationsByMember(member, pageRequest);
 
             // then
             assertThat(notificationPage).isEmpty();
             assertThat(notificationPage.getTotalElements()).isEqualTo(0);
             assertThat(notificationPage.getTotalPages()).isEqualTo(0);
-            assertTrue(notificationPage.isFirst());
-            assertTrue(notificationPage.isLast());
+            assertThat(notificationPage.isFirst()).isTrue();
+            assertThat(notificationPage.isLast()).isTrue();
         }
 
         @DisplayName("알림이 10개 이하일 때 첫번째 페이지 요청")
         @Test
         void findNotificationByMemberFirstPage() {
             // given
-            Notification testNotification1 = createTestNotification(member);
-            createTestNotification(member);
-            createTestNotification(member);
-            createTestNotification(member);
-            Notification testNotification5 = createTestNotification(member);
+            for (int i = 1; i <= 5; i++) {
+                createTestNotification(member);
+            }
 
             PageRequest pageRequest = PageRequest.of(0, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -126,11 +124,11 @@ class NotificationRepositoryTest {
 
     @Nested
     @DisplayName("알림 팝업 목록 조회")
-    class findNotificationsByCursorTest {
+    class FindNotificationsByCursorTest {
 
         @DisplayName("알림 팝업 목록 조회: 알림이 0개인 경우 빈 slice를 반환해야 한다.")
         @Test
-        void findNotificationsByCursorWhenNoNotification() {
+        void findNotificationsByCursorNoResult() {
             // when
             Slice<Notification> notificationSlice = notificationRepository.findNotificationsByCursor(member.getId(),
                     null, PAGE_SIZE);

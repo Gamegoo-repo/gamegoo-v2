@@ -488,7 +488,7 @@ class FriendControllerTest extends ControllerTestSupport {
             mockMvc.perform(get(API_URL_PREFIX))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.friendInfoList").isArray())
                     .andExpect(jsonPath("$.data.listSize").isNumber())
                     .andExpect(jsonPath("$.data.hasNext").isBoolean());
         }
@@ -508,7 +508,7 @@ class FriendControllerTest extends ControllerTestSupport {
                             .param("cursor", "1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.friendInfoList").isArray())
                     .andExpect(jsonPath("$.data.listSize").isNumber())
                     .andExpect(jsonPath("$.data.hasNext").isBoolean());
         }

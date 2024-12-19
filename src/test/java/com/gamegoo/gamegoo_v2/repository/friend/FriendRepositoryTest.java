@@ -17,11 +17,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -45,23 +45,22 @@ class FriendRepositoryTest {
 
     @Nested
     @DisplayName("친구 목록 조회")
-    class findFriendsByCursorAndOrderedTest {
+    class FindFriendsByCursorTest {
 
-        @DisplayName("친구 목록 조회: 친구가 0명인 경우")
+        @DisplayName("친구 목록 조회: 친구가 0명인 경우 빈 slice를 반환해야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedWhenNoFriend() {
+        void findFriendsByCursorNoResult() {
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).isEmpty();
-            assertFalse(friendSlice.hasNext());
+            assertThat(friendSlice.hasNext()).isFalse();
         }
 
-        @DisplayName("친구 목록 조회: 친구가 page size 이하이고 cursor로 null을 입력한 경우")
+        @DisplayName("친구 목록 조회: 친구가 page size 이하이고 cursor로 null을 입력한 경우 첫 페이지를 조회해야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedOnePage() {
+        void findFriendsByCursorOnePage() {
             // given
             for (int i = 1; i <= 10; i++) {
                 Member toMember = createMember("member" + i + "@gmail.com", "member" + i);
@@ -69,84 +68,85 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).hasSize(10);
-            assertThat(friendSlice.hasNext()).isEqualTo(false);
+            assertThat(friendSlice.hasNext()).isFalse();
             assertThat(friendSlice.getContent().get(0).getToMember().getGameName()).isEqualTo("member1");
             assertThat(friendSlice.getContent().get(9).getToMember().getGameName()).isEqualTo("member9");
         }
 
         @DisplayName("친구 목록 조회: 친구가 page size 이상이고 cursor로 null을 입력한 경우 첫 페이지를 조회해야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedFirstPage() {
+        void findFriendsByCursorFirstPage() {
             // given
+            List<Member> members = new ArrayList<>();
             for (int i = 1; i <= 20; i++) {
                 Member toMember = createMember("member" + i + "@gmail.com", "member" + i);
                 createFriend(member, toMember);
+                members.add(toMember);
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).hasSize(10);
             assertThat(friendSlice.hasNext()).isEqualTo(true);
-            assertThat(friendSlice.getContent().get(0).getToMember().getGameName()).isEqualTo("member1");
-            assertThat(friendSlice.getContent().get(9).getToMember().getGameName()).isEqualTo("member18");
+            assertThat(friendSlice.getContent().get(0).getToMember().getId()).isEqualTo(members.get(0).getId());
+            assertThat(friendSlice.getContent().get(9).getToMember().getId()).isEqualTo(members.get(17).getId());
         }
 
         @DisplayName("친구 목록 조회: 친구가 page size 이상이고 cursor를 정상 입력한 경우 다음 페이지를 조회해야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedNextPage() {
-            Long cursorId = 0L;
+        void findFriendsByCursorNextPage() {
             // given
+            List<Member> members = new ArrayList<>();
             for (int i = 1; i <= 20; i++) {
                 Member toMember = createMember("member" + i + "@gmail.com", "member" + i);
                 createFriend(member, toMember);
-                if (i == 18) {
-                    cursorId = toMember.getId();
-                }
+                members.add(toMember);
             }
 
+            Long cursor = members.get(17).getId();
+
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursorId,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).hasSize(10);
-            assertThat(friendSlice.hasNext()).isEqualTo(false);
-            assertThat(friendSlice.getContent().get(0).getToMember().getGameName()).isEqualTo("member19");
-            assertThat(friendSlice.getContent().get(9).getToMember().getGameName()).isEqualTo("member9");
+            assertThat(friendSlice.hasNext()).isFalse();
+            assertThat(friendSlice.getContent().get(0).getToMember().getId()).isEqualTo(members.get(18).getId());
+            assertThat(friendSlice.getContent().get(9).getToMember().getId()).isEqualTo(members.get(8).getId());
         }
 
         @DisplayName("친구 목록 조회: 친구가 page size 이상이고 cursor에 해당하는 회원이 없는 경우 첫 페이지를 조회해야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedFirstPageWhenNoCursorMember() {
+        void findFriendsByCursorFirstPageWhenNoCursorMember() {
             // given
+            List<Member> members = new ArrayList<>();
             for (int i = 1; i <= 20; i++) {
                 Member toMember = createMember("member" + i + "@gmail.com", "member" + i);
                 createFriend(member, toMember);
+                members.add(toMember);
             }
-            Long cursorId = 100L;
+
+            Long cursor = 100L;
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursorId,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).hasSize(10);
-            assertThat(friendSlice.hasNext()).isEqualTo(true);
-            assertThat(friendSlice.getContent().get(0).getToMember().getGameName()).isEqualTo("member1");
-            assertThat(friendSlice.getContent().get(9).getToMember().getGameName()).isEqualTo("member18");
+            assertThat(friendSlice.hasNext()).isTrue();
+            assertThat(friendSlice.getContent().get(0).getToMember().getId()).isEqualTo(members.get(0).getId());
+            assertThat(friendSlice.getContent().get(9).getToMember().getId()).isEqualTo(members.get(17).getId());
         }
 
         @DisplayName("친구 목록 조회: 조회 결과는 친구 회원의 소환사명에 대해 한>영>숫자 순으로 정렬되어야 한다.")
         @Test
-        void findFriendsByCursorAndOrderedByGameName() {
+        void findFriendsByCursorOrderByGameName() {
             // given
             List<String> gameNameList = Arrays.asList("가", "가1", "가2", "가10", "가a", "가가", "a", "가a1", "가aa", "123");
             for (int i = 0; i < gameNameList.size(); i++) {
@@ -155,12 +155,11 @@ class FriendRepositoryTest {
             }
 
             // when
-            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null,
-                    PAGE_SIZE);
+            Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), null, PAGE_SIZE);
 
             // then
             assertThat(friendSlice).hasSize(10);
-            assertThat(friendSlice.hasNext()).isEqualTo(false);
+            assertThat(friendSlice.hasNext()).isFalse();
             List<String> orderedGameName = Arrays.asList("가", "가가", "가a", "가aa", "가a1", "가1", "가10", "가2", "a", "123");
             for (int i = 0; i < orderedGameName.size(); i++) {
                 assertThat(friendSlice.getContent().get(i).getToMember().getGameName()).isEqualTo(orderedGameName.get(i));
@@ -171,11 +170,11 @@ class FriendRepositoryTest {
 
     @Nested
     @DisplayName("소환사명으로 친구 검색")
-    class searchFriendByGamename {
+    class FindFriendsByQueryStringTest {
 
         @DisplayName("소환사명으로 친구 검색: 검색 결과가 없는 경우 빈 리스트를 반환해야 한다.")
         @Test
-        void searchFriendByGamenameSucceedsNoResult() {
+        void findFriendsByQueryStringSucceedsNoResult() {
             // given
             String query = "targetMember";
 
@@ -184,19 +183,17 @@ class FriendRepositoryTest {
 
             // then
             assertThat(friendList).isEmpty();
-
         }
 
         @DisplayName("소환사명으로 친구 검색 성공: 검색한 결과가 있는 경우 결과 리스트를 반환해야 한다.")
         @Test
-        void searchFriendByGamenameSucceeds() {
+        void findFriendsByQueryStringSucceeds() {
             // given
             Member targetMember1 = createMember("targetMember1@gmail.com", "targetMember");
             Member targetMember2 = createMember("targetMember2@gmail.com", "target");
             Member targetMember3 = createMember("targetMember@gmail.com", "target3");
             Member targetMember4 = createMember("targetMember@gmail.com", "t");
             Member targetMember5 = createMember("targetMember@gmail.com", "TARGET");
-
 
             createFriend(member, targetMember1);
             createFriend(member, targetMember2);
