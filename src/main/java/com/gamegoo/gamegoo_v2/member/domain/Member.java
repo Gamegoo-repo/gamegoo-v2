@@ -1,6 +1,5 @@
 package com.gamegoo.gamegoo_v2.member.domain;
 
-import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
@@ -86,9 +85,6 @@ public class Member extends BaseDateTimeEntity {
 
     @Column(nullable = false)
     private boolean isAgree;
-
-    @OneToMany(mappedBy = "blockerMember", cascade = CascadeType.ALL)
-    private List<Block> blockList = new ArrayList<>();
 
     @OneToMany(mappedBy = "fromMember", cascade = CascadeType.ALL)
     private List<Friend> friendList = new ArrayList<>();

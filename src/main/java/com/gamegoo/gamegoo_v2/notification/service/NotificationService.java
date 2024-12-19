@@ -137,20 +137,6 @@ public class NotificationService {
     }
 
     /**
-     * 테스트 알림 생성 메소드
-     *
-     * @param member
-     * @return
-     */
-    @Transactional
-    public Notification createTestNotification(Member member) {
-        validateMember(member);
-
-        NotificationType notificationType = findNotificationType(NotificationTypeTitle.TEST_ALARM);
-        return saveNotification(notificationType, notificationType.getContent(), member, null);
-    }
-
-    /**
      * 알림 생성 및 저장 메소드
      *
      * @param type
@@ -186,7 +172,7 @@ public class NotificationService {
      * @param member
      * @return
      */
-    public Integer countUnreadNotification(Member member) {
+    public int countUnreadNotification(Member member) {
         long count = member.getNotificationList()
                 .stream()
                 .filter(notification -> !notification.isRead())

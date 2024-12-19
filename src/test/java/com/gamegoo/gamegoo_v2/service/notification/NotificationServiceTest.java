@@ -30,22 +30,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NotificationServiceTest {
 
     @Autowired
-    NotificationService notificationService;
+    private NotificationService notificationService;
 
     @Autowired
-    MemberRepository memberRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
-    NotificationTypeRepository notificationTypeRepository;
+    private NotificationTypeRepository notificationTypeRepository;
 
     @Autowired
-    NotificationRepository notificationRepository;
+    private NotificationRepository notificationRepository;
 
     @Autowired
-    MannerKeywordRepository mannerKeywordRepository;
+    private MannerKeywordRepository mannerKeywordRepository;
 
-    private static final String MEMBER_EMAIL = "test@gmail.com";
-    private static final String MEMBER_GAMENAME = "member";
     private static final String TARGET_EMAIL = "target@naver.com";
     private static final String TARGET_GAMENAME = "target";
 
@@ -53,7 +51,7 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        member = createMember("test@gmail.com", "member");
         initNotificationType();
     }
 
@@ -76,7 +74,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.FRIEND_REQUEST_SEND);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(member.getId());
         assertThat(notification.getSourceMember().getId()).isEqualTo(sourceMember.getId());
 
@@ -94,7 +92,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.FRIEND_REQUEST_RECEIVED);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(sourceMember.getId());
         assertThat(notification.getSourceMember().getId()).isEqualTo(member.getId());
 
@@ -112,7 +110,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.FRIEND_REQUEST_ACCEPTED);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(targetMember.getId());
         assertThat(notification.getSourceMember().getId()).isEqualTo(member.getId());
 
@@ -130,7 +128,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.FRIEND_REQUEST_REJECTED);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(targetMember.getId());
         assertThat(notification.getSourceMember().getId()).isEqualTo(member.getId());
 
@@ -149,7 +147,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.MANNER_LEVEL_UP);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(member.getId());
         assertThat(notification.getSourceMember()).isNull();
         assertThat(notification.getContent()).isEqualTo("매너레벨이 2단계로 올라갔어요!");
@@ -169,7 +167,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.MANNER_LEVEL_DOWN);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(member.getId());
         assertThat(notification.getSourceMember()).isNull();
         assertThat(notification.getContent()).isEqualTo("매너레벨이 1단계로 떨어졌어요.");
@@ -191,7 +189,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.MANNER_KEYWORD_RATED);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(member.getId());
         assertThat(notification.getSourceMember()).isNull();
         assertThat(notification.getContent()).isEqualTo("지난 매칭에서 캐리했어요 외 2개의 키워드를 받았어요. 자세한 내용은 내 평가에서 확인하세요!");
@@ -211,7 +209,7 @@ class NotificationServiceTest {
 
         // then
         assertThat(notification.getNotificationType().getTitle()).isEqualTo(NotificationTypeTitle.MANNER_KEYWORD_RATED);
-        assertThat(notification.isRead()).isEqualTo(false);
+        assertThat(notification.isRead()).isFalse();
         assertThat(notification.getMember().getId()).isEqualTo(member.getId());
         assertThat(notification.getSourceMember()).isNull();
         assertThat(notification.getContent()).isEqualTo("지난 매칭에서 캐리했어요 키워드를 받았어요. 자세한 내용은 내 평가에서 확인하세요!");

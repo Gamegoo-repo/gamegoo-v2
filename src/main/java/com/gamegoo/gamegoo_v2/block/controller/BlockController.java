@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.block.controller;
 
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
+import com.gamegoo.gamegoo_v2.block.dto.BlockResponse;
 import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
 import com.gamegoo.gamegoo_v2.common.annotation.ValidPage;
@@ -31,10 +32,9 @@ public class BlockController {
     @Operation(summary = "회원 차단 API", description = "대상 회원을 차단하는 API 입니다.")
     @Parameter(name = "memberId", description = "차단할 대상 회원의 id 입니다.")
     @PostMapping("/{memberId}")
-    public ApiResponse<String> blockMember(@PathVariable(name = "memberId") Long targetMemberId,
+    public ApiResponse<BlockResponse> blockMember(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
-        blockFacadeService.blockMember(member, targetMemberId);
-        return ApiResponse.ok("회원 차단 성공");
+        return ApiResponse.ok(blockFacadeService.blockMember(member, targetMemberId));
     }
 
     @Operation(summary = "차단 목록 조회 API", description = "내가 차단한 회원의 목록을 조회하는 API 입니다.")
@@ -48,19 +48,17 @@ public class BlockController {
     @Operation(summary = "회원 차단 해제 API", description = "해당 회원에 대한 차단을 해제하는 API 입니다.")
     @Parameter(name = "memberId", description = "차단을 해제할 대상 회원의 id 입니다.")
     @DeleteMapping("/{memberId}")
-    public ApiResponse<String> unblockMember(@PathVariable(name = "memberId") Long targetMemberId,
+    public ApiResponse<BlockResponse> unblockMember(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
-        blockFacadeService.unBlockMember(member, targetMemberId);
-        return ApiResponse.ok("회원 차단 해제 성공");
+        return ApiResponse.ok(blockFacadeService.unBlockMember(member, targetMemberId));
     }
 
     @Operation(summary = "차단 목록에서 탈퇴한 회원 삭제 API", description = "차단 목록에서 특정 회원이 탈퇴한 회원인 경우, 삭제하는 API 입니다. (차단 해제 아님)")
     @Parameter(name = "memberId", description = "목록에서 삭제할 대상 회원의 id 입니다.")
     @DeleteMapping("/delete/{memberId}")
-    public ApiResponse<String> deleteBlockMember(@PathVariable(name = "memberId") Long targetMemberId,
+    public ApiResponse<BlockResponse> deleteBlockMember(@PathVariable(name = "memberId") Long targetMemberId,
             @AuthMember Member member) {
-        blockFacadeService.deleteBlock(member, targetMemberId);
-        return ApiResponse.ok("차단 목록에서 삭제 성공");
+        return ApiResponse.ok(blockFacadeService.deleteBlock(member, targetMemberId));
     }
 
 }

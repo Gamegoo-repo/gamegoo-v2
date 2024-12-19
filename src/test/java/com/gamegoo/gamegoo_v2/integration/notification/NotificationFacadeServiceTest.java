@@ -35,28 +35,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class NotificationFacadeServiceTest {
 
     @Autowired
-    NotificationFacadeService notificationFacadeService;
+    private NotificationFacadeService notificationFacadeService;
 
     @Autowired
-    MemberRepository memberRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
-    NotificationRepository notificationRepository;
+    private NotificationRepository notificationRepository;
 
     @Autowired
-    NotificationTypeRepository notificationTypeRepository;
-
-    private static final String MEMBER_EMAIL = "test@gmail.com";
-    private static final String MEMBER_GAMENAME = "member";
+    private NotificationTypeRepository notificationTypeRepository;
 
     private Member member;
     private NotificationType testNotificationType;
 
     @BeforeEach
     void setUp() {
-        member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
-        testNotificationType =
-                notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.TEST_ALARM));
+        member = createMember("test@gmail.com", "member");
+        testNotificationType = notificationTypeRepository.save(
+                NotificationType.create(NotificationTypeTitle.TEST_ALARM));
     }
 
     @AfterEach
@@ -84,8 +81,9 @@ class NotificationFacadeServiceTest {
             assertThat(response.getNotificationId()).isEqualTo(notification.getId());
             assertThat(response.getMessage()).isEqualTo("알림 읽음 처리 성공");
 
+            // Notification 엔티티 상태가 정상 변경 되었는지 검증
             Notification updatedNotification = notificationRepository.findById(notification.getId()).get();
-            assertThat(updatedNotification.isRead()).isEqualTo(true);
+            assertThat(updatedNotification.isRead()).isTrue();
         }
 
         @DisplayName("알림 읽음 처리 실패: id에 해당하는 알림이 없는 경우 예외가 발생한다.")
@@ -121,7 +119,7 @@ class NotificationFacadeServiceTest {
             notificationRepository.save(notification2);
 
             // when
-            Integer count = notificationFacadeService.countUnreadNotification(member);
+            int count = notificationFacadeService.countUnreadNotification(member);
 
             // then
             assertThat(count).isEqualTo(3);
@@ -132,28 +130,6 @@ class NotificationFacadeServiceTest {
     @Nested
     @DisplayName("알림 전체 목록 조회")
     class GetNotificationPageListTest {
-
-        @DisplayName("알림 전체 목록 조회 성공: 알림이 존재하는 경우")
-        @Test
-        void getNotificationPageListSucceedsWhenNotificationExists() {
-            // given
-            createTestNotification(member);
-            createTestNotification(member);
-            createTestNotification(member);
-            createTestNotification(member);
-            createTestNotification(member);
-
-            // when
-            NotificationPageListResponse response = notificationFacadeService.getNotificationPageList(member, 1);
-
-            // then
-            assertThat(response.getNotificationList()).isNotEmpty();
-            assertThat(response.getListSize()).isEqualTo(5);
-            assertThat(response.getTotalPage()).isEqualTo(1);
-            assertThat(response.getTotalElements()).isEqualTo(5);
-            assertThat(response.getIsFirst()).isTrue();
-            assertThat(response.getIsLast()).isTrue();
-        }
 
         @DisplayName("알림 전체 목록 조회 성공: 알림이 존재하지 않는 경우")
         @Test
@@ -166,6 +142,26 @@ class NotificationFacadeServiceTest {
             assertThat(response.getListSize()).isEqualTo(0);
             assertThat(response.getTotalPage()).isEqualTo(0);
             assertThat(response.getTotalElements()).isEqualTo(0);
+            assertThat(response.getIsFirst()).isTrue();
+            assertThat(response.getIsLast()).isTrue();
+        }
+
+        @DisplayName("알림 전체 목록 조회 성공: 알림이 존재하는 경우")
+        @Test
+        void getNotificationPageListSucceedsWhenNotificationExists() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                createTestNotification(member);
+            }
+
+            // when
+            NotificationPageListResponse response = notificationFacadeService.getNotificationPageList(member, 1);
+
+            // then
+            assertThat(response.getNotificationList()).isNotEmpty();
+            assertThat(response.getListSize()).isEqualTo(5);
+            assertThat(response.getTotalPage()).isEqualTo(1);
+            assertThat(response.getTotalElements()).isEqualTo(5);
             assertThat(response.getIsFirst()).isTrue();
             assertThat(response.getIsLast()).isTrue();
         }
@@ -230,7 +226,6 @@ class NotificationFacadeServiceTest {
         }
 
     }
-
 
     private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()

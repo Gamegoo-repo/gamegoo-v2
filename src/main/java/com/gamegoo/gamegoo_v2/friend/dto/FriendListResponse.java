@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class FriendListResponse {
 
-    List<FriendInfoResponse> friendInfoDTOList;
+    List<FriendInfoResponse> friendInfoList;
     int listSize;
     boolean hasNext;
     Long nextCursor;
@@ -26,7 +26,7 @@ public class FriendListResponse {
                 : null;
 
         return FriendListResponse.builder()
-                .friendInfoDTOList(friendInfoResponseList)
+                .friendInfoList(friendInfoResponseList)
                 .listSize(friendInfoResponseList.size())
                 .hasNext(friends.hasNext())
                 .nextCursor(nextCursor)

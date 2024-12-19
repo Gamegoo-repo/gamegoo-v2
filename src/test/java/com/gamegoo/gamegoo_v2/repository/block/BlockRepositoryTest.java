@@ -16,12 +16,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@ActiveProfiles("test")
 @Import(QuerydslConfig.class)
 class BlockRepositoryTest {
 
@@ -42,26 +42,26 @@ class BlockRepositoryTest {
 
     @Nested
     @DisplayName("차단한 회원 목록 조회")
-    class findBlockedMembersByBlockerIdTest {
+    class FindBlockedMembersByBlockerMemberTest {
 
-        @DisplayName("차단한 회원이 없는 경우")
+        @DisplayName("차단한 회원이 없는 경우 빈 page를 반환해야 한다.")
         @Test
-        void findBlockedMembersByBlockerIdAndNotDeletedNoResult() {
+        void findBlockedMembersByBlockerMemberNoResult() {
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then
             assertThat(blockedMembers).isEmpty();
             assertThat(blockedMembers.getTotalElements()).isEqualTo(0);
             assertThat(blockedMembers.getTotalPages()).isEqualTo(0);
-            assertTrue(blockedMembers.isFirst());
-            assertTrue(blockedMembers.isLast());
+            assertThat(blockedMembers.isFirst()).isTrue();
+            assertThat(blockedMembers.isLast()).isTrue();
         }
 
         @DisplayName("차단한 회원이 10명 이하일 때 첫번째 페이지 요청")
         @Test
-        void findBlockedMembersByBlockerIdAndNotDeletedOnePage() {
+        void findBlockedMembersByBlockerMemberFirstPage() {
             // given
             for (int i = 1; i <= 10; i++) {
                 Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
@@ -69,20 +69,20 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then
             assertThat(blockedMembers).isNotEmpty();
             assertThat(blockedMembers.getTotalElements()).isEqualTo(10);
             assertThat(blockedMembers.getTotalPages()).isEqualTo(1);
-            assertTrue(blockedMembers.isFirst());
-            assertTrue(blockedMembers.isLast());
+            assertThat(blockedMembers.isFirst()).isTrue();
+            assertThat(blockedMembers.isLast()).isTrue();
         }
 
         @DisplayName("차단한 회원이 10명 초과일 때 두번째 페이지 요청")
         @Test
-        void findBlockedMembersByBlockerIdAndNotDeletedSecondPage() {
+        void findBlockedMembersByBlockerMemberSecondPage() {
             // given
             for (int i = 1; i <= 15; i++) {
                 Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
@@ -90,20 +90,20 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(1, PAGE_SIZE));
 
             // then
             assertThat(blockedMembers).isNotEmpty();
             assertThat(blockedMembers.getTotalElements()).isEqualTo(15);
             assertThat(blockedMembers.getTotalPages()).isEqualTo(2);
-            assertFalse(blockedMembers.isFirst());
-            assertTrue(blockedMembers.isLast());
+            assertThat(blockedMembers.isFirst()).isFalse();
+            assertThat(blockedMembers.isLast()).isTrue();
         }
 
-        @DisplayName("deleted 상태인 차단 내역을 제외하고 조회")
+        @DisplayName("deleted 상태인 차단 내역을 제외하고 조회해야 한다.")
         @Test
-        void findBlockedMembersByBlockerIdAndNotDeleted() {
+        void findBlockedMembersByBlockerMemberExceptDeleted() {
             // given
             for (int i = 1; i <= 10; i++) {
                 Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
@@ -112,15 +112,15 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then
             assertThat(blockedMembers).isEmpty();
             assertThat(blockedMembers.getTotalElements()).isEqualTo(0);
             assertThat(blockedMembers.getTotalPages()).isEqualTo(0);
-            assertTrue(blockedMembers.isFirst());
-            assertTrue(blockedMembers.isLast());
+            assertThat(blockedMembers.isFirst()).isTrue();
+            assertThat(blockedMembers.isLast()).isTrue();
         }
 
     }

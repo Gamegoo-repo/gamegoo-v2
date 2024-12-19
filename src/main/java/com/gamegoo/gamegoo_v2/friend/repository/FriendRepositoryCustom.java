@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface FriendRepositoryCustom {
 
-    Slice<Friend> findFriendsByCursorAndOrdered(Long memberId, Long cursor, Integer pageSize);
+    Slice<Friend> findFriendsByCursor(Long memberId, Long cursor, int pageSize);
 
-    List<Friend> findFriendsByQueryStringAndOrdered(Long memberId, String queryString);
+    List<Friend> findFriendsByQueryString(Long memberId, String queryString);
 
 }
