@@ -19,14 +19,19 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @Import({QuerydslConfig.class, JpaAuditingConfig.class})
-public class NotificationRepositoryTest {
+class NotificationRepositoryTest {
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -89,10 +94,8 @@ public class NotificationRepositoryTest {
             assertThat(notificationPage.getTotalPages()).isEqualTo(1);
             assertThat(notificationPage.isFirst()).isTrue();
             assertThat(notificationPage.isLast()).isTrue();
-
-            // 목록 정렬 검증
-            assertThat(notificationPage.getContent().get(0).getId()).isEqualTo(testNotification5.getId());
-            assertThat(notificationPage.getContent().get(4).getId()).isEqualTo(testNotification1.getId());
+            assertThat(notificationPage.getContent())
+                    .isSortedAccordingTo(Comparator.comparing(Notification::getId).reversed());
         }
 
         @DisplayName("알림이 10개 초과일 때 두번째 페이지 요청")
@@ -115,6 +118,75 @@ public class NotificationRepositoryTest {
             assertThat(notificationPage.getTotalPages()).isEqualTo(2);
             assertThat(notificationPage.isFirst()).isFalse();
             assertThat(notificationPage.isLast()).isTrue();
+            assertThat(notificationPage.getContent())
+                    .isSortedAccordingTo(Comparator.comparing(Notification::getId).reversed());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("알림 팝업 목록 조회")
+    class findNotificationsByCursorTest {
+
+        @DisplayName("알림 팝업 목록 조회: 알림이 0개인 경우 빈 slice를 반환해야 한다.")
+        @Test
+        void findNotificationsByCursorWhenNoNotification() {
+            // when
+            Slice<Notification> notificationSlice = notificationRepository.findNotificationsByCursor(member.getId(),
+                    null, PAGE_SIZE);
+
+            // then
+            assertThat(notificationSlice).isEmpty();
+            assertThat(notificationSlice.hasNext()).isFalse();
+        }
+
+        @DisplayName("알림 팝업 목록 조회: 알림 개수가 page size 이하이고 cursor로 null을 입력한 경우 첫 페이지를 조회해야 한다.")
+        @Test
+        void findNotificationsByCursorFirstPage() {
+            // given
+            List<Notification> notifications = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                notifications.add(createTestNotification(member));
+            }
+            Long oldestId = notifications.get(0).getId();
+            Long newestId = notifications.get(9).getId();
+
+            // when
+            Slice<Notification> notificationSlice = notificationRepository.findNotificationsByCursor(member.getId(),
+                    null, PAGE_SIZE);
+
+            // then
+            assertThat(notificationSlice).hasSize(10);
+            assertThat(notificationSlice.hasNext()).isFalse();
+            assertThat(notificationSlice.getContent().get(0).getId()).isEqualTo(newestId);
+            assertThat(notificationSlice.getContent().get(9).getId()).isEqualTo(oldestId);
+            assertThat(notificationSlice.getContent())
+                    .isSortedAccordingTo(Comparator.comparing(Notification::getId).reversed());
+        }
+
+        @DisplayName("알림 팝업 목록 조회: 알림 개수가 page size 이상이고 cursor를 정상 입력한 경우 다음 페이지를 조회해야 한다.")
+        @Test
+        void findNotificationsByCursorNextPage() {
+            // given
+            List<Notification> notifications = new ArrayList<>();
+            for (int i = 1; i <= 20; i++) {
+                notifications.add(createTestNotification(member));
+            }
+            Long newestId = notifications.get(9).getId();
+            Long oldestId = notifications.get(0).getId();
+            Long cursorId = notifications.get(10).getId();
+
+            // when
+            Slice<Notification> notificationSlice = notificationRepository.findNotificationsByCursor(member.getId(),
+                    cursorId, PAGE_SIZE);
+
+            // then
+            assertThat(notificationSlice).hasSize(10);
+            assertThat(notificationSlice.hasNext()).isFalse();
+            assertThat(notificationSlice.getContent().get(0).getId()).isEqualTo(newestId);
+            assertThat(notificationSlice.getContent().get(9).getId()).isEqualTo(oldestId);
+            assertThat(notificationSlice.getContent())
+                    .isSortedAccordingTo(Comparator.comparing(Notification::getId).reversed());
         }
 
     }
