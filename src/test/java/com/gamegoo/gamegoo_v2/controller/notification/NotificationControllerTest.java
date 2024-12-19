@@ -5,6 +5,8 @@ import com.gamegoo.gamegoo_v2.exception.NotificationException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.controller.NotificationController;
+import com.gamegoo.gamegoo_v2.notification.domain.Notification;
+import com.gamegoo.gamegoo_v2.notification.dto.NotificationCursorListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationPageListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.ReadNotificationResponse;
 import com.gamegoo.gamegoo_v2.notification.service.NotificationFacadeService;
@@ -12,9 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -143,6 +149,62 @@ public class NotificationControllerTest extends ControllerTestSupport {
                             .param("page", String.valueOf(pageIdx)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("페이지 번호는 1 이상의 값이어야 합니다."));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("알림 팝업 목록 조회")
+    class GetNotificationCursorListTest {
+
+        @DisplayName("알림 팝업 목록 조회 성공: cursor가 없는 경우")
+        @Test
+        void getNotificationCursorListSucceedsWhenNoCursor() throws Exception {
+            // given
+            List<Notification> notifications = new ArrayList<>();
+            Slice<Notification> notificationSlice = new SliceImpl<>(notifications, Pageable.unpaged(), false);
+            NotificationCursorListResponse response = NotificationCursorListResponse.of(notificationSlice);
+
+            given(notificationFacadeService.getNotificationCursorList(any(Member.class), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.notificationList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("알림 팝업 목록 조회 성공: cursor가 있는 경우")
+        @Test
+        void getNotificationCursorListSucceedsWithCursor() throws Exception {
+            // given
+            List<Notification> notifications = new ArrayList<>();
+            Slice<Notification> notificationSlice = new SliceImpl<>(notifications, Pageable.unpaged(), false);
+            NotificationCursorListResponse response = NotificationCursorListResponse.of(notificationSlice);
+
+            given(notificationFacadeService.getNotificationCursorList(any(Member.class), any())).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX)
+                            .param("cursor", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.notificationList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("알림 팝업 목록 조회 실패: cursor가 음수인 경우 에러 응답을 반환한다.")
+        @Test
+        void getNotificationCursorListFailedWhenNegativeCursor() throws Exception {
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX)
+                            .param("cursor", "-1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
+
         }
 
     }
