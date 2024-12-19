@@ -49,7 +49,7 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // 상대방의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // 두 회원의 차단 여부 검증
         validateBlockStatus(member, targetMember);
@@ -162,7 +162,7 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // targetMember의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // 두 회원이 친구 관계인지 검증
         friendValidator.validateIsFriend(member, targetMember);
