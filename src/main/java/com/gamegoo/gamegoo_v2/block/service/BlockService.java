@@ -117,8 +117,8 @@ public class BlockService {
     }
 
     private void validateNotBlocked(Member member, Member targetMember) {
-        boolean blocked = blockRepository.existsByBlockerMemberAndBlockedMember(member, targetMember);
-        if (blocked) {
+        boolean exists = blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
+        if (exists) {
             throw new BlockException(ErrorCode.ALREADY_BLOCKED);
         }
     }

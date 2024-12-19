@@ -12,7 +12,8 @@ import java.util.Optional;
 
 public interface BlockRepository extends JpaRepository<Block, Long> {
 
-    boolean existsByBlockerMemberAndBlockedMember(Member blockerMember, Member blockedMember);
+    boolean existsByBlockerMemberAndBlockedMemberAndDeleted(Member blockerMember, Member blockedMember,
+            Boolean deleted);
 
     @Query("SELECT m FROM Member m INNER JOIN Block b ON m.id = b.blockedMember.id WHERE b.blockerMember.id = " +
             ":blockerId AND b.deleted = false ORDER BY b.createdAt DESC")

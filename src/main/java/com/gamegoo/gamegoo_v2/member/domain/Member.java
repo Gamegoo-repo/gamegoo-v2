@@ -1,6 +1,5 @@
 package com.gamegoo.gamegoo_v2.member.domain;
 
-import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
@@ -21,7 +20,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -88,9 +86,6 @@ public class Member extends BaseDateTimeEntity {
     @Column(nullable = false)
     private boolean isAgree;
 
-    @OneToMany(mappedBy = "blockerMember", cascade = CascadeType.ALL)
-    private List<Block> blockList = new ArrayList<>();
-
     @OneToMany(mappedBy = "fromMember", cascade = CascadeType.ALL)
     private List<Friend> friendList = new ArrayList<>();
 
@@ -134,17 +129,6 @@ public class Member extends BaseDateTimeEntity {
 
     public void updateBlind(boolean blind) {
         this.blind = blind;
-    }
-
-    /**
-     * 삭제 상태가 아닌 block list 반환
-     *
-     * @return
-     */
-    public List<Block> getBlockList() {
-        return blockList.stream()
-                .filter(block -> !block.isDeleted())
-                .collect(Collectors.toList());
     }
 
 }
