@@ -40,15 +40,9 @@ public class BlockService {
         // 이미 차단한 회원인지 검증
         validateNotBlocked(member, targetMember);
 
-        // block 엔티티 생성 및 연관관계 매핑
+        // block 엔티티 생성
         Block block = Block.create(member, targetMember);
         blockRepository.save(block);
-
-        // 차단 대상 회원과의 채팅방이 존재하는 경우, 해당 채팅방 퇴장 처리
-
-        // 차단 대상 회원과 친구관계인 경우, 친구 관계 끊기
-
-        // 차단 대상 회원에게 보냈던 친구 요청이 있는 경우, 해당 요청 취소 처리
 
         return block;
     }

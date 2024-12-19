@@ -7,6 +7,11 @@ import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.friend.domain.FriendRequest;
+import com.gamegoo.gamegoo_v2.friend.domain.FriendRequestStatus;
+import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
+import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.domain.Tier;
@@ -38,6 +43,12 @@ class BlockFacadeServiceTest {
     @Autowired
     private BlockRepository blockRepository;
 
+    @Autowired
+    private FriendRepository friendRepository;
+
+    @Autowired
+    private FriendRequestRepository friendRequestRepository;
+
     private static final String MEMBER_EMAIL = "test@gmail.com";
     private static final String MEMBER_GAMENAME = "member";
     private static final String TARGET_EMAIL = "target@naver.com";
@@ -53,6 +64,8 @@ class BlockFacadeServiceTest {
     @AfterEach
     void tearDown() {
         blockRepository.deleteAllInBatch();
+        friendRepository.deleteAllInBatch();
+        friendRequestRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
 
@@ -62,18 +75,15 @@ class BlockFacadeServiceTest {
 
         @DisplayName("회원 차단 성공")
         @ParameterizedTest(name = "채팅방: {0}, 친구 관계: {1}, 친구 요청: {2}")
-        //@CsvSource({
-        //        "true, true, true",  // 채팅방 있음, 친구 관계 있음, 친구 요청 있음
-        //        "true, true, false", // 채팅방 있음, 친구 관계 있음, 친구 요청 없음
-        //        "true, false, true", // 채팅방 있음, 친구 관계 없음, 친구 요청 있음
-        //        "true, false, false",// 채팅방 있음, 친구 관계 없음, 친구 요청 없음
-        //        "false, true, true", // 채팅방 없음, 친구 관계 있음, 친구 요청 있음
-        //        "false, true, false",// 채팅방 없음, 친구 관계 있음, 친구 요청 없음
-        //        "false, false, true",// 채팅방 없음, 친구 관계 없음, 친구 요청 있음
-        //        "false, false, false"// 채팅방 없음, 친구 관계 없음, 친구 요청 없음
-        //})
         @CsvSource({
-                "false, false, false"
+                //"true, true, true",  // 채팅방 있음, 친구 관계 있음, 친구 요청 있음
+                //"true, true, false", // 채팅방 있음, 친구 관계 있음, 친구 요청 없음
+                //"true, false, true", // 채팅방 있음, 친구 관계 없음, 친구 요청 있음
+                //"true, false, false",// 채팅방 있음, 친구 관계 없음, 친구 요청 없음
+                "false, true, true", // 채팅방 없음, 친구 관계 있음, 친구 요청 있음
+                "false, true, false",// 채팅방 없음, 친구 관계 있음, 친구 요청 없음
+                "false, false, true",// 채팅방 없음, 친구 관계 없음, 친구 요청 있음
+                "false, false, false"// 채팅방 없음, 친구 관계 없음, 친구 요청 없음
         })
         void blockMemberSucceeds(boolean chatroomExists, boolean friendshipExists, boolean friendRequestExists) {
             // given
@@ -83,14 +93,15 @@ class BlockFacadeServiceTest {
             //if (chatroomExists) {
             //    //chatQueryService.createChatroom(member, targetMember);
             //}
-            //
-            //if (friendshipExists) {
-            //    //friendService.addFriend(member, targetMember);
-            //}
-            //
-            //if (friendRequestExists) {
-            //    //friendService.sendFriendRequest(member, targetMember);
-            //}
+
+            if (friendshipExists) {
+                friendRepository.save(Friend.create(member, targetMember));
+                friendRepository.save(Friend.create(targetMember, member));
+            }
+
+            if (friendRequestExists) {
+                friendRequestRepository.save(FriendRequest.create(member, targetMember));
+            }
 
             // when
             blockFacadeService.blockMember(member, targetMember.getId());
@@ -102,8 +113,17 @@ class BlockFacadeServiceTest {
             // 채팅방에서 퇴장 처리 되었는지 검증
 
             // 친구 관계가 끊어졌는지 검증
+            if (friendshipExists) {
+                boolean exists = friendRepository.existsByFromMemberAndToMember(member, targetMember);
+                assertThat(exists).isFalse();
+            }
 
             // 친구 요청이 취소되었는지 검증
+            if (friendRequestExists) {
+                boolean exists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(member, targetMember,
+                        FriendRequestStatus.CANCELLED);
+                assertThat(exists).isTrue();
+            }
         }
 
         @DisplayName("회원 차단 실패: 차단 대상으로 본인 id를 요청한 경우 예외가 발생한다.")

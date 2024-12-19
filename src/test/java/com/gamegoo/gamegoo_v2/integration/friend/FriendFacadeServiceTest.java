@@ -45,7 +45,7 @@ class FriendFacadeServiceTest {
 
     @Autowired
     FriendRepository friendRepository;
-    
+
     private static final String TARGET_EMAIL = "target@naver.com";
     private static final String TARGET_GAMENAME = "target";
 
@@ -85,7 +85,7 @@ class FriendFacadeServiceTest {
             assertThat(response.getFriendMemberId()).isEqualTo(targetMember.getId());
 
             // 즐겨찾기 처리 되었는지 검증
-            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember).get();
             assertThat(friend.isLiked()).isTrue();
         }
 
@@ -111,7 +111,7 @@ class FriendFacadeServiceTest {
             assertThat(response.getFriendMemberId()).isEqualTo(targetMember.getId());
 
             // 즐겨찾기 처리 되었는지 검증
-            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+            Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember).get();
             assertThat(friend.isLiked()).isFalse();
         }
 
