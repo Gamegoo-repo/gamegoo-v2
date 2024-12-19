@@ -48,7 +48,7 @@ class BlockRepositoryTest {
         @Test
         void findBlockedMembersByBlockerIdAndNotDeletedNoResult() {
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then
@@ -69,7 +69,7 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then
@@ -90,7 +90,7 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(1, PAGE_SIZE));
 
             // then
@@ -112,7 +112,7 @@ class BlockRepositoryTest {
             }
 
             // when
-            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blocker.getId(),
+            Page<Member> blockedMembers = blockRepository.findBlockedMembersByBlockerMember(blocker.getId(),
                     PageRequest.of(0, PAGE_SIZE));
 
             // then

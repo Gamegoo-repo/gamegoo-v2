@@ -63,7 +63,7 @@ public class BlockService {
     public Page<Member> getBlockedMemberPage(Long blockerId, int pageIdx) {
         PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blockerId, pageRequest);
+        return blockRepository.findBlockedMembersByBlockerMember(blockerId, pageRequest);
     }
 
     /**
