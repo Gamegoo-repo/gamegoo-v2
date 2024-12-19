@@ -12,6 +12,7 @@ import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -208,6 +209,17 @@ public class NotificationService {
     }
 
     /**
+     * 해당 회원의 알림 목록 Slice 객체 반환하는 메소드
+     *
+     * @param member
+     * @param cursor
+     * @return
+     */
+    public Slice<Notification> getNotificationSlice(Member member, Long cursor) {
+        return notificationRepository.findNotificationsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
+    }
+
+    /**
      * title로 NotificationType을 찾는 메소드
      *
      * @param title
@@ -235,7 +247,7 @@ public class NotificationService {
      * @param mannerKeywordList
      */
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
-        if (mannerKeywordList.size() == 0) {
+        if (mannerKeywordList.isEmpty()) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
         }
     }
