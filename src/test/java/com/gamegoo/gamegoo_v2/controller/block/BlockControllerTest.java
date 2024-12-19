@@ -7,6 +7,7 @@ import com.gamegoo.gamegoo_v2.block.service.BlockFacadeService;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
 import com.gamegoo.gamegoo_v2.exception.BlockException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class BlockControllerTest extends ControllerTestSupport {
     @DisplayName("회원 차단")
     class BlockMemberTest {
 
-        @DisplayName("회원 차단 성공: 차단 성공 메시지가 반환된다.")
+        @DisplayName("회원 차단 성공")
         @Test
         void blockMemberSucceeds() throws Exception {
             // given
@@ -47,7 +48,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .message("회원 차단 성공")
                     .build();
 
-            given(blockFacadeService.blockMember(any(), any())).willReturn(response);
+            given(blockFacadeService.blockMember(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -62,7 +63,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void blockMemberFailedWhenAlreadyBlocked() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.ALREADY_BLOCKED))
-                    .given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).blockMember(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -76,7 +77,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void blockMemberFailedWhenTargetIsBlind() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
-                    .given(blockFacadeService).blockMember(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).blockMember(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -103,7 +104,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .isLast(true)
                     .build();
 
-            given(blockFacadeService.getBlockList(any(), any())).willReturn(response);
+            given(blockFacadeService.getBlockList(any(Member.class), any(Integer.class))).willReturn(response);
 
             // when // then
             int pageIdx = 1;
@@ -122,18 +123,6 @@ class BlockControllerTest extends ControllerTestSupport {
         @DisplayName("차단한 회원 목록 조회 실패: 페이지 번호가 1 미만인 경우 에러 응답을 반환한다")
         @Test
         void getBlockListFailedWhenPageIsNotValid() throws Exception {
-            // given
-            BlockListResponse response = BlockListResponse.builder()
-                    .blockedMemberList(new ArrayList<>())
-                    .listSize(0)
-                    .totalPage(0)
-                    .totalElements(0)
-                    .isFirst(true)
-                    .isLast(true)
-                    .build();
-
-            given(blockFacadeService.getBlockList(any(), any())).willReturn(response);
-
             // when // then
             int pageIdx = 0;
             mockMvc.perform(get(API_URL_PREFIX)
@@ -157,7 +146,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .message("회원 차단 해제 성공")
                     .build();
 
-            given(blockFacadeService.unBlockMember(any(), any())).willReturn(response);
+            given(blockFacadeService.unBlockMember(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -172,7 +161,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void unblockMemberFailedWhenTargetMemberIsNotBlocked() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED))
-                    .given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).unBlockMember(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -186,7 +175,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void unblockMemberFailedWhenTargetIsBlind() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
-                    .given(blockFacadeService).unBlockMember(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).unBlockMember(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -209,7 +198,7 @@ class BlockControllerTest extends ControllerTestSupport {
                     .message("차단 목록에서 삭제 성공")
                     .build();
 
-            given(blockFacadeService.deleteBlock(any(), any())).willReturn(response);
+            given(blockFacadeService.deleteBlock(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
@@ -224,7 +213,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void deleteBlockFailedWhenTargetMemberIsNotBlocked() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.TARGET_MEMBER_NOT_BLOCKED))
-                    .given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).deleteBlock(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))
@@ -238,7 +227,7 @@ class BlockControllerTest extends ControllerTestSupport {
         void deleteBlockFailedWhenTargetIsBlind() throws Exception {
             // given
             willThrow(new BlockException(ErrorCode.DELETE_BLOCKED_MEMBER_FAILED))
-                    .given(blockFacadeService).deleteBlock(any(), eq(TARGET_MEMBER_ID));
+                    .given(blockFacadeService).deleteBlock(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/delete/{memberId}", TARGET_MEMBER_ID))

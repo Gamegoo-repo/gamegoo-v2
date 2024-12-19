@@ -31,10 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(NotificationController.class)
-public class NotificationControllerTest extends ControllerTestSupport {
+class NotificationControllerTest extends ControllerTestSupport {
 
     @MockitoBean
-    NotificationFacadeService notificationFacadeService;
+    private NotificationFacadeService notificationFacadeService;
 
     private static final String API_URL_PREFIX = "/api/v2/notification";
     private static final Long NOTIFICATION_ID = 1L;
@@ -130,19 +130,6 @@ public class NotificationControllerTest extends ControllerTestSupport {
         @DisplayName("알림 전체 목록 조회 실패: 페이지 번호가 1 미만인 경우 에러 응답을 반환한다")
         @Test
         void getNotificationPageListFailedWhenPageIsNotValid() throws Exception {
-            // given
-            NotificationPageListResponse response = NotificationPageListResponse.builder()
-                    .notificationList(new ArrayList<>())
-                    .listSize(0)
-                    .totalPage(0)
-                    .totalElements(0)
-                    .isFirst(true)
-                    .isLast(true)
-                    .build();
-
-            given(notificationFacadeService.getNotificationPageList(any(Member.class), any(Integer.class))).willReturn(response);
-
-
             // when // then
             int pageIdx = 0;
             mockMvc.perform(get(API_URL_PREFIX + "/total")
@@ -204,10 +191,8 @@ public class NotificationControllerTest extends ControllerTestSupport {
                             .param("cursor", "-1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
-
         }
 
     }
-
 
 }
