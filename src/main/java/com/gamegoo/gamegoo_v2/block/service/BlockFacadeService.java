@@ -5,7 +5,6 @@ import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +15,6 @@ public class BlockFacadeService {
 
     private final MemberService memberService;
     private final BlockService blockService;
-
-    private final static int PAGE_SIZE = 10;
 
     /**
      * 회원 차단 Facade 메소드
@@ -39,8 +36,7 @@ public class BlockFacadeService {
      * @return
      */
     public BlockListResponse getBlockList(Member member, Integer pageIdx) {
-        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE);
-        Page<Member> members = blockService.findBlockedMembersByBlockerId(member.getId(), pageRequest);
+        Page<Member> members = blockService.getBlockedMemberPage(member.getId(), pageIdx);
 
         return BlockListResponse.of(members);
     }

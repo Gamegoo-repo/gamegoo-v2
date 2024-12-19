@@ -26,7 +26,7 @@ public class BlockListResponse {
         int profileImg;
         String email;
         String name;
-        Boolean isBlind;
+        boolean isBlind;
 
         public static BlockedMemberResponse of(Member member) {
             String name = member.isBlind() ? "(탈퇴한 사용자)" : member.getGameName();

@@ -9,6 +9,8 @@ import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
+import com.gamegoo.gamegoo_v2.notification.dto.NotificationCursorListResponse;
+import com.gamegoo.gamegoo_v2.notification.dto.NotificationPageListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.ReadNotificationResponse;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository;
@@ -21,6 +23,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -45,12 +50,13 @@ class NotificationFacadeServiceTest {
     private static final String MEMBER_GAMENAME = "member";
 
     private Member member;
-    private NotificationType mannerLevelUpNotificationType;
+    private NotificationType testNotificationType;
 
     @BeforeEach
     void setUp() {
         member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
-        initNotificationType();
+        testNotificationType =
+                notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.TEST_ALARM));
     }
 
     @AfterEach
@@ -68,7 +74,7 @@ class NotificationFacadeServiceTest {
         @Test
         void readNotificationSucceeds() {
             // given
-            Notification notification = createMannerLevelUpNotification(member);
+            Notification notification = createTestNotification(member);
 
             // when
             ReadNotificationResponse response = notificationFacadeService.readNotification(member,
@@ -93,28 +99,136 @@ class NotificationFacadeServiceTest {
 
     }
 
-    @DisplayName("안읽은 알림 개수 조회 성공")
-    @Test
-    void countUnreadNotificationSucceeds() {
-        // given
-        // 알림 생성
-        Notification notification1 = createMannerLevelUpNotification(member);
-        Notification notification2 = createMannerLevelUpNotification(member);
-        Notification notification3 = createMannerLevelUpNotification(member);
-        Notification notification4 = createMannerLevelUpNotification(member);
-        Notification notification5 = createMannerLevelUpNotification(member);
+    @Nested
+    @DisplayName("안읽은 알림 개수 조회")
+    class CountUnreadNotificationTest {
 
-        // 알림 2개 읽음 처리
-        notification1.updateIsRead(true);
-        notification2.updateIsRead(true);
-        notificationRepository.save(notification1);
-        notificationRepository.save(notification2);
+        @DisplayName("안읽은 알림 개수 조회 성공")
+        @Test
+        void countUnreadNotificationSucceeds() {
+            // given
+            // 알림 생성
+            Notification notification1 = createTestNotification(member);
+            Notification notification2 = createTestNotification(member);
+            createTestNotification(member);
+            createTestNotification(member);
+            createTestNotification(member);
 
-        // when
-        Integer count = notificationFacadeService.countUnreadNotification(member);
+            // 알림 2개 읽음 처리
+            notification1.updateIsRead(true);
+            notification2.updateIsRead(true);
+            notificationRepository.save(notification1);
+            notificationRepository.save(notification2);
 
-        // then
-        assertThat(count).isEqualTo(3);
+            // when
+            Integer count = notificationFacadeService.countUnreadNotification(member);
+
+            // then
+            assertThat(count).isEqualTo(3);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("알림 전체 목록 조회")
+    class GetNotificationPageListTest {
+
+        @DisplayName("알림 전체 목록 조회 성공: 알림이 존재하는 경우")
+        @Test
+        void getNotificationPageListSucceedsWhenNotificationExists() {
+            // given
+            createTestNotification(member);
+            createTestNotification(member);
+            createTestNotification(member);
+            createTestNotification(member);
+            createTestNotification(member);
+
+            // when
+            NotificationPageListResponse response = notificationFacadeService.getNotificationPageList(member, 1);
+
+            // then
+            assertThat(response.getNotificationList()).isNotEmpty();
+            assertThat(response.getListSize()).isEqualTo(5);
+            assertThat(response.getTotalPage()).isEqualTo(1);
+            assertThat(response.getTotalElements()).isEqualTo(5);
+            assertThat(response.getIsFirst()).isTrue();
+            assertThat(response.getIsLast()).isTrue();
+        }
+
+        @DisplayName("알림 전체 목록 조회 성공: 알림이 존재하지 않는 경우")
+        @Test
+        void getNotificationPageListSucceedsWhenNotificationNotExists() {
+            // when
+            NotificationPageListResponse response = notificationFacadeService.getNotificationPageList(member, 1);
+
+            // then
+            assertThat(response.getNotificationList()).isEmpty();
+            assertThat(response.getListSize()).isEqualTo(0);
+            assertThat(response.getTotalPage()).isEqualTo(0);
+            assertThat(response.getTotalElements()).isEqualTo(0);
+            assertThat(response.getIsFirst()).isTrue();
+            assertThat(response.getIsLast()).isTrue();
+        }
+
+    }
+
+    @Nested
+    @DisplayName("알림 팝업 목록 조회")
+    class GetNotificationCursorListTest {
+
+        @DisplayName("알림 팝업 목록 조회 성공: 알림이 존재하지 않는 경우")
+        @Test
+        void getNotificationCursorListSucceedsWhenNotificationNotExists() {
+            // when
+            NotificationCursorListResponse response = notificationFacadeService.getNotificationCursorList(member, 1L);
+
+            // then
+            assertThat(response.getNotificationList()).isEmpty();
+            assertThat(response.getListSize()).isEqualTo(0);
+            assertThat(response.getNextCursor()).isNull();
+            assertThat(response.isHasNext()).isFalse();
+        }
+
+        @DisplayName("알림 팝업 목록 조회 성공: cursor를 입력하지 않은 경우")
+        @Test
+        void getNotificationCursorListSucceedsFirstPage() {
+            // given
+            for (int i = 1; i <= 5; i++) {
+                createTestNotification(member);
+            }
+
+            // when
+            NotificationCursorListResponse response = notificationFacadeService.getNotificationCursorList(member, null);
+
+            // then
+            assertThat(response.getNotificationList()).hasSize(5);
+            assertThat(response.getListSize()).isEqualTo(5);
+            assertThat(response.getNextCursor()).isNull();
+            assertThat(response.isHasNext()).isFalse();
+        }
+
+        @DisplayName("알림 팝업 목록 조회 성공: 알림 개수가 page size 이상이고 cursor를 입력한 경우")
+        @Test
+        void getNotificationCursorListSucceedsNextPage() {
+            // given
+            List<Notification> notifications = new ArrayList<>();
+            for (int i = 1; i <= 15; i++) {
+                notifications.add(createTestNotification(member));
+            }
+
+            Long cursor = notifications.get(5).getId();
+
+            // when
+            NotificationCursorListResponse response = notificationFacadeService.getNotificationCursorList(member,
+                    cursor);
+
+            // then
+            assertThat(response.getNotificationList()).hasSize(5);
+            assertThat(response.getListSize()).isEqualTo(5);
+            assertThat(response.getNextCursor()).isNull();
+            assertThat(response.isHasNext()).isFalse();
+        }
+
     }
 
 
@@ -134,28 +248,9 @@ class NotificationFacadeServiceTest {
                 .build());
     }
 
-    private void initNotificationType() {
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_SEND));
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_RECEIVED));
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_ACCEPTED));
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.FRIEND_REQUEST_REJECTED));
-        mannerLevelUpNotificationType =
-                notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_LEVEL_UP));
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_LEVEL_DOWN));
-        notificationTypeRepository.save(NotificationType.create(NotificationTypeTitle.MANNER_KEYWORD_RATED));
-    }
-
-    /**
-     * 매너 레벨 상승 알림 생성
-     *
-     * @param member
-     * @return
-     */
-    private Notification createMannerLevelUpNotification(Member member) {
-        String notificationContent = mannerLevelUpNotificationType.getContent().replace("n", Integer.toString(2));
-        Notification notification = Notification.create(member, null, mannerLevelUpNotificationType,
-                notificationContent);
-        return notificationRepository.save(notification);
+    private Notification createTestNotification(Member member) {
+        return notificationRepository.save(Notification.create(member, null, testNotificationType,
+                testNotificationType.getContent()));
     }
 
 }

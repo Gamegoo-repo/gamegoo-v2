@@ -207,7 +207,7 @@ public class FriendService {
      * @param member
      * @return
      */
-    public Slice<Friend> getFriends(Member member, Long cursor) {
+    public Slice<Friend> getFriendSlice(Member member, Long cursor) {
         return friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
     }
 

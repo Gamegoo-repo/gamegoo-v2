@@ -8,7 +8,8 @@ import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,8 @@ public class BlockService {
 
     private final BlockRepository blockRepository;
     private final MemberValidator memberValidator;
+
+    private final static int PAGE_SIZE = 10;
 
     /**
      * member가 targetMember를 차단 처리하는 메소드
@@ -53,11 +56,13 @@ public class BlockService {
      * 해당 회원이 차단한 회원의 목록 Page 객체 반환하는 메소드
      *
      * @param blockerId
-     * @param pageable
+     * @param pageIdx
      * @return
      */
-    public Page<Member> findBlockedMembersByBlockerId(Long blockerId, Pageable pageable) {
-        return blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blockerId, pageable);
+    public Page<Member> getBlockedMemberPage(Long blockerId, Integer pageIdx) {
+        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return blockRepository.findBlockedMembersByBlockerIdAndNotDeleted(blockerId, pageRequest);
     }
 
     /**

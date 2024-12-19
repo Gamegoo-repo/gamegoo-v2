@@ -10,6 +10,10 @@ import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +28,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     private static final String PLACEHOLDER = "n";
+    private final static int PAGE_SIZE = 10;
 
     /**
      * 친구 요청 전송됨 알림 생성 메소드
@@ -132,6 +137,20 @@ public class NotificationService {
     }
 
     /**
+     * 테스트 알림 생성 메소드
+     *
+     * @param member
+     * @return
+     */
+    @Transactional
+    public Notification createTestNotification(Member member) {
+        validateMember(member);
+
+        NotificationType notificationType = findNotificationType(NotificationTypeTitle.TEST_ALARM);
+        return saveNotification(notificationType, notificationType.getContent(), member, null);
+    }
+
+    /**
      * 알림 생성 및 저장 메소드
      *
      * @param type
@@ -177,6 +196,30 @@ public class NotificationService {
     }
 
     /**
+     * 해당 회원의 알림 목록 Page 객체 반환하는 메소드
+     *
+     * @param member
+     * @param pageIdx
+     * @return
+     */
+    public Page<Notification> getNotificationPage(Member member, Integer pageIdx) {
+        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return notificationRepository.findNotificationsByMember(member, pageRequest);
+    }
+
+    /**
+     * 해당 회원의 알림 목록 Slice 객체 반환하는 메소드
+     *
+     * @param member
+     * @param cursor
+     * @return
+     */
+    public Slice<Notification> getNotificationSlice(Member member, Long cursor) {
+        return notificationRepository.findNotificationsByCursor(member.getId(), cursor, PAGE_SIZE);
+    }
+
+    /**
      * title로 NotificationType을 찾는 메소드
      *
      * @param title
@@ -204,7 +247,7 @@ public class NotificationService {
      * @param mannerKeywordList
      */
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
-        if (mannerKeywordList.size() == 0) {
+        if (mannerKeywordList.isEmpty()) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
         }
     }

@@ -131,7 +131,7 @@ public class FriendFacadeService {
      * @return
      */
     public FriendListResponse getFriends(Member member, Long cursor) {
-        return FriendListResponse.of(friendService.getFriends(member, cursor));
+        return FriendListResponse.of(friendService.getFriendSlice(member, cursor));
     }
 
     /**
