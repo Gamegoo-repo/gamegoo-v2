@@ -5,6 +5,6 @@ import org.springframework.data.domain.Slice;
 
 public interface NotificationRepositoryCustom {
 
-    Slice<Notification> findNotificationsByCursorAndOrdered(Long memberId, Long cursor, Integer pageSize);
+    Slice<Notification> findNotificationsByCursor(Long memberId, Long cursor, int pageSize);
 
 }

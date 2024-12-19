@@ -18,8 +18,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Notification> findNotificationsByCursorAndOrdered(Long memberId, Long cursor, Integer pageSize) {
-
+    public Slice<Notification> findNotificationsByCursor(Long memberId, Long cursor, int pageSize) {
         List<Notification> result = queryFactory.selectFrom(notification)
                 .where(
                         notification.member.id.eq(memberId),

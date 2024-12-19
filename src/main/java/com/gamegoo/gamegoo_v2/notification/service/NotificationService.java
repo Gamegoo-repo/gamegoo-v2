@@ -216,7 +216,7 @@ public class NotificationService {
      * @return
      */
     public Slice<Notification> getNotificationSlice(Member member, Long cursor) {
-        return notificationRepository.findNotificationsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
+        return notificationRepository.findNotificationsByCursor(member.getId(), cursor, PAGE_SIZE);
     }
 
     /**
