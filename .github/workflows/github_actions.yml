@@ -19,6 +19,8 @@ jobs:
       DB_SCHEMA_NAME: ${{ secrets.DB_SCHEMA_NAME }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
+      RIOT_API: ${{ secrets.RIOT_API }}
 
     steps:
       # 1. GitHub Repository 파일 불러오기
