@@ -11,7 +11,7 @@ public class ChatMessageListResponse {
 
     List<ChatMessageResponse> chatMessageList;
     int listSize;
-    boolean hasNext;
+    Boolean hasNext;
     Long nextCursor;
 
 }
