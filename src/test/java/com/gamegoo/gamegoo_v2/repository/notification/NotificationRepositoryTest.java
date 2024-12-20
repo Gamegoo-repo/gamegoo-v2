@@ -1,27 +1,20 @@
 package com.gamegoo.gamegoo_v2.repository.notification;
 
-import com.gamegoo.gamegoo_v2.config.JpaAuditingConfig;
-import com.gamegoo.gamegoo_v2.config.QuerydslConfig;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
+import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,25 +22,17 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@Import({QuerydslConfig.class, JpaAuditingConfig.class})
-class NotificationRepositoryTest {
+class NotificationRepositoryTest extends RepositoryTestSupport {
 
     @Autowired
     private NotificationRepository notificationRepository;
 
-    @Autowired
-    private TestEntityManager em;
-
     private static final int PAGE_SIZE = 10;
 
     private NotificationType testNotificationType;
-    private Member member;
 
     @BeforeEach
     void setUp() {
-        member = createMember("test@gmail.com", "member");
         testNotificationType = em.persist(NotificationType.create(NotificationTypeTitle.TEST_ALARM));
     }
 
@@ -187,22 +172,6 @@ class NotificationRepositoryTest {
                     .isSortedAccordingTo(Comparator.comparing(Notification::getId).reversed());
         }
 
-    }
-
-    private Member createMember(String email, String gameName) {
-        return em.persist(Member.builder()
-                .email(email)
-                .password("testPassword")
-                .profileImage(1)
-                .loginType(LoginType.GENERAL)
-                .gameName(gameName)
-                .tag("TAG")
-                .tier(Tier.IRON)
-                .gameRank(0)
-                .winRate(0.0)
-                .gameCount(0)
-                .isAgree(true)
-                .build());
     }
 
     private Notification createTestNotification(Member member) {
