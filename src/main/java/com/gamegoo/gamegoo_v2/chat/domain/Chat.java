@@ -18,6 +18,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -80,6 +82,17 @@ public class Chat extends BaseDateTimeEntity {
     @PrePersist
     public void prePersist() {
         this.timestamp = TimestampUtil.getNowUtcTimeStamp();
+    }
+
+    /**
+     * 테스트 전용 createdAt 설정 메소드
+     *
+     * @param createdAt
+     * @return
+     */
+    public Chat withCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+        return this;
     }
 
 }
