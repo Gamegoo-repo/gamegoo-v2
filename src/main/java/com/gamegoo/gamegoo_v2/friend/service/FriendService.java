@@ -49,7 +49,7 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // 상대방의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // 두 회원의 차단 여부 검증
         validateBlockStatus(member, targetMember);
@@ -162,7 +162,7 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // targetMember의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // 두 회원이 친구 관계인지 검증
         friendValidator.validateIsFriend(member, targetMember);
@@ -238,6 +238,7 @@ public class FriendService {
      * @param fromMember
      * @param toMember
      */
+    @Transactional
     public void removeFriendshipIfPresent(Member fromMember, Member toMember) {
         Optional<Friend> optionalFriend = friendRepository.findByFromMemberAndToMember(fromMember, toMember);
         if (optionalFriend.isPresent()) {
@@ -258,9 +259,38 @@ public class FriendService {
      * @param fromMember
      * @param toMember
      */
+    @Transactional
     public void cancelPendingFriendRequest(Member fromMember, Member toMember) {
         friendRequestRepository.findByFromMemberAndToMemberAndStatus(fromMember, toMember, FriendRequestStatus.PENDING)
                 .ifPresent(friendRequest -> friendRequest.updateStatus(FriendRequestStatus.CANCELLED));
+    }
+
+    /**
+     * 두 회원이 서로 친구인지 여부를 반환하는 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    public boolean isFriend(Member member, Member targetMember) {
+        return friendRepository.isFriend(member.getId(), targetMember.getId());
+    }
+
+    /**
+     * 두 회원 사이 친구 요청이 존재하는 경우 친구 요청을 보낸 회원의 id를 반환하는 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    public Long getFriendRequestMemberId(Member member, Member targetMember) {
+        return friendRequestRepository
+                .findByFromMemberAndToMemberAndStatus(member, targetMember, FriendRequestStatus.PENDING)
+                .map(friendRequests -> member.getId())
+                .or(() -> friendRequestRepository
+                        .findByFromMemberAndToMemberAndStatus(targetMember, member, FriendRequestStatus.PENDING)
+                        .map(friendRequests -> targetMember.getId()))
+                .orElse(null); // 친구 요청이 없는 경우 null을 리턴
     }
 
     private void validateNotSelf(Member member, Member targetMember) {
@@ -270,9 +300,9 @@ public class FriendService {
     }
 
     private void validateBlockStatus(Member member, Member targetMember) {
-        blockValidator.validateIfBlocked(member, targetMember, FriendException.class,
+        blockValidator.throwIfBlocked(member, targetMember, FriendException.class,
                 ErrorCode.FRIEND_TARGET_IS_BLOCKED);
-        blockValidator.validateIfBlocked(targetMember, member, FriendException.class,
+        blockValidator.throwIfBlocked(targetMember, member, FriendException.class,
                 ErrorCode.BLOCKED_BY_FRIEND_TARGET);
     }
 

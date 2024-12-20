@@ -2,34 +2,22 @@ package com.gamegoo.gamegoo_v2.repository.block;
 
 import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
-import com.gamegoo.gamegoo_v2.config.QuerydslConfig;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@Import(QuerydslConfig.class)
-class BlockRepositoryTest {
+class BlockRepositoryTest extends RepositoryTestSupport {
 
     @Autowired
     private BlockRepository blockRepository;
-
-    @Autowired
-    private TestEntityManager em;
 
     private static final int PAGE_SIZE = 10;
 
@@ -123,22 +111,6 @@ class BlockRepositoryTest {
             assertThat(blockedMembers.isLast()).isTrue();
         }
 
-    }
-
-    private Member createMember(String email, String gameName) {
-        return em.persist(Member.builder()
-                .email(email)
-                .password("testPassword")
-                .profileImage(1)
-                .loginType(LoginType.GENERAL)
-                .gameName(gameName)
-                .tag("TAG")
-                .tier(Tier.IRON)
-                .gameRank(0)
-                .winRate(0.0)
-                .gameCount(0)
-                .isAgree(true)
-                .build());
     }
 
     private Block blockMember(Member blocker, Member blocked) {

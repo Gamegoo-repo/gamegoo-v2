@@ -63,6 +63,19 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
         return result;
     }
 
+    @Override
+    public boolean isFriend(Long memberId, Long targetMemberId) {
+        long count = queryFactory
+                .selectFrom(friend)
+                .where(
+                        (friend.fromMember.id.eq(memberId).and(friend.toMember.id.eq(targetMemberId)))
+                                .or(friend.fromMember.id.eq(targetMemberId).and(friend.toMember.id.eq(memberId)))
+                )
+                .fetch()
+                .size();
+
+        return count == 2;
+    }
 
     /**
      * cursorId에 해당하는 Friend 객체의 다음 인덱스 찾기

@@ -1,21 +1,14 @@
 package com.gamegoo.gamegoo_v2.repository.friend;
 
-import com.gamegoo.gamegoo_v2.config.QuerydslConfig;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
-import org.junit.jupiter.api.BeforeEach;
+import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Slice;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,25 +16,12 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@Import(QuerydslConfig.class)
-class FriendRepositoryTest {
+class FriendRepositoryTest extends RepositoryTestSupport {
 
     @Autowired
     private FriendRepository friendRepository;
 
-    @Autowired
-    private TestEntityManager em;
-
     private static final int PAGE_SIZE = 10;
-
-    private Member member;
-
-    @BeforeEach
-    void setUp() {
-        member = createMember("test@gmail.com", "member");
-    }
 
     @Nested
     @DisplayName("친구 목록 조회")
@@ -132,7 +112,7 @@ class FriendRepositoryTest {
                 members.add(toMember);
             }
 
-            Long cursor = 100L;
+            Long cursor = 999999L;
 
             // when
             Slice<Friend> friendSlice = friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
@@ -210,22 +190,6 @@ class FriendRepositoryTest {
             assertThat(friendList).hasSize(3);
         }
 
-    }
-
-    private Member createMember(String email, String gameName) {
-        return em.persist(Member.builder()
-                .email(email)
-                .password("testPassword")
-                .profileImage(1)
-                .loginType(LoginType.GENERAL)
-                .gameName(gameName)
-                .tag("TAG")
-                .tier(Tier.IRON)
-                .gameRank(0)
-                .winRate(0.0)
-                .gameCount(0)
-                .isAgree(true)
-                .build());
     }
 
     private Friend createFriend(Member fromMember, Member toMember) {
