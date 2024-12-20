@@ -34,13 +34,17 @@ public class RiotAccountService {
      */
     public String getPuuid(String gameName, String tag) {
         String url = String.format(RIOT_ACCOUNT_API_URL_TEMPLATE, gameName, tag, riotAPIKey);
-        RiotAccountResponse response = restTemplate.getForObject(url, RiotAccountResponse.class);
+        try {
+            RiotAccountResponse response = restTemplate.getForObject(url, RiotAccountResponse.class);
 
-        if (response == null) {
+            if (response == null) {
+                throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
+            }
+
+            return response.getPuuid();
+        } catch (Exception e) {
             throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
         }
-
-        return response.getPuuid();
     }
 
     /**
@@ -51,12 +55,16 @@ public class RiotAccountService {
      */
     public String getSummonerId(String puuid) {
         String url = String.format(RIOT_SUMMONER_API_URL_TEMPLATE, puuid, riotAPIKey);
-        RiotSummonerResponse summonerResponse = restTemplate.getForObject(url, RiotSummonerResponse.class);
+        try {
+            RiotSummonerResponse summonerResponse = restTemplate.getForObject(url, RiotSummonerResponse.class);
 
-        if (summonerResponse == null) {
+            if (summonerResponse == null) {
+                throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
+            }
+            return summonerResponse.getId();
+        } catch (Exception e) {
             throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
         }
-        return summonerResponse.getId();
     }
 
 }

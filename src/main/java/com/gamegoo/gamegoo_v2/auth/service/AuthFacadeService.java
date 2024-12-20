@@ -2,7 +2,9 @@ package com.gamegoo.gamegoo_v2.auth.service;
 
 import com.gamegoo.gamegoo_v2.auth.dto.JoinRequest;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
-import com.gamegoo.gamegoo_v2.riot.service.RiotService;
+import com.gamegoo.gamegoo_v2.riot.service.RiotAccountService;
+import com.gamegoo.gamegoo_v2.riot.service.RiotInfoService;
+import com.gamegoo.gamegoo_v2.riot.service.RiotRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AuthFacadeService {
 
-    private AuthService authService;
-    private MemberService memberService;
-    private RiotService riotService;
+    private final AuthService authService;
+    private final MemberService memberService;
+    private final RiotAccountService riotAccountService;
+    private final RiotRecordService riotRecordService;
+    private final RiotInfoService riotInfoService;
 
     /**
      * 회원가입
@@ -27,6 +31,7 @@ public class AuthFacadeService {
         memberService.checkExistMemberByEmail(request.getEmail());
 
         // 2. [Riot] 존재하는 소환사인지 검증 & puuid 얻기
+        String puuid = riotAccountService.getPuuid(request.getGameName(), request.getTag());
 
         // 3. [Riot] tier, rank, winrate 얻기
 
