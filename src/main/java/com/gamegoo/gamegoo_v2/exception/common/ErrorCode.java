@@ -75,37 +75,39 @@ public enum ErrorCode {
     /**
      * 알림 관련 에러
      */
-    NOTIFICATION_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI_401", "해당 알림 타입 데이터를 찾을 수 없습니다."),
-    NOTIFICATION_METHOD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "NOTI_402", "알림 생성 메소드 호출이 잘못되었습니다."),
-    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI_403", "해당 알림 내역을 찾을 수 없습니다."),
+    NOTIFICATION_TYPE_NOT_FOUND(NOT_FOUND, "NOTI_401", "해당 알림 타입 데이터를 찾을 수 없습니다."),
+    NOTIFICATION_METHOD_BAD_REQUEST(BAD_REQUEST, "NOTI_402", "알림 생성 메소드 호출이 잘못되었습니다."),
+    NOTIFICATION_NOT_FOUND(NOT_FOUND, "NOTI_403", "해당 알림 내역을 찾을 수 없습니다."),
 
-    CHAT_START_FAILED_CHAT_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_401",
-            "채팅 대상 회원을 찾을 수 없습니다."),
-    CHATROOM_NOT_EXIST(HttpStatus.NOT_FOUND, "CHAT_402", "채팅방을 찾을 수 없습니다."),
-    CHATROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, "CHAT_403", "접근할 수 없는 채팅방 입니다."),
-    CHAT_MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_404", "해당 메시지를 찾을 수 없습니다"),
-    CHAT_START_FAILED_CHAT_TARGET_IS_BLOCKED(HttpStatus.FORBIDDEN, "CHAT_405",
-            "채팅 상대 회원을 차단한 상태입니다. 채팅 시작이 불가능합니다."),
-    CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET(HttpStatus.FORBIDDEN, "CHAT_406",
-            "채팅 상대 회원이 나를 차단했습니다. 채팅 시작이 불가능합니다."),
-    CHAT_START_FAILED_TARGET_USER_DEACTIVATED(HttpStatus.NOT_FOUND, "CHAT_407",
-            "채팅 상대 회원이 탈퇴했습니다. 채팅 시작이 불가능합니다."),
-    CHAT_START_FAILED_BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_408",
-            "해당 게시글이 존재하지 않습니다. 채팅 시작이 불가능합니다."),
-    CHAT_START_FAILED_BOARD_CREATOR_IS_SELF(HttpStatus.BAD_REQUEST, "CHAT_409",
-            "해당 게시글의 작성자가 본인입니다. 채팅 시작이 불가능합니다."),
-    CHAT_START_FAILED_TARGET_USER_IS_SELF(HttpStatus.BAD_REQUEST, "CHAT_410",
-            "채팅 대상 회원이 본인입니다. 채팅 시작이 불가능합니다."),
-    CHAT_READ_FAILED_NOT_ENTERED_CHATROOM(HttpStatus.FORBIDDEN, "CHAT_411",
-            "해당 채팅방에 입장 상태가 아닙니다. 채팅방 입장 후 메시지 읽음 처리하세요."),
-    CHAT_READ_FAILED_CHAT_MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_412",
-            "해당 메시지를 찾을 수 없습니다. 채팅 메시지 읽음 처리 실패"),
-    CHAT_ADD_FAILED_TARGET_USER_DEACTIVATED(HttpStatus.BAD_REQUEST, "CHAT_413",
-            "채팅 상대 회원이 탈퇴했습니다. 채팅 전송이 불가능합니다."),
-    CHAT_ADD_FAILED_CHAT_TARGET_IS_BLOCKED(HttpStatus.FORBIDDEN, "CHAT_414",
-            "채팅 상대 회원을 차단한 상태입니다. 채팅 메시지 전송이 불가능합니다."),
-    CHAT_ADD_FAILED_BLOCKED_BY_CHAT_TARGET(HttpStatus.FORBIDDEN, "CHAT_415",
-            "채팅 상대 회원이 나를 차단했습니다. 채팅 메시지 전송이 불가능합니다.");
+    /**
+     * 채팅 관련 에러
+     */
+    CHATROOM_NOT_FOUND(NOT_FOUND, "CHAT_401", "채팅방을 찾을 수 없습니다."),
+    CHATROOM_ACCESS_DENIED(BAD_REQUEST, "CHAT_402", "접근할 수 없는 채팅방 입니다."),
+    CHAT_MESSAGE_NOT_FOUND(NOT_FOUND, "CHAT_403", "해당 메시지를 찾을 수 없습니다"),
+    CHAT_START_FAILED_TARGET_IS_BLOCKED(FORBIDDEN, "CHAT_404", "채팅 상대 회원을 차단한 상태입니다. 채팅 시작이 불가능합니다."),
+    CHAT_START_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_405", "채팅 상대 회원이 나를 차단했습니다. 채팅 시작이 불가능합니다."),
+    CHAT_START_FAILED_TARGET_DEACTIVATED(NOT_FOUND, "CHAT_406", "채팅 상대 회원이 탈퇴했습니다. 채팅 시작이 불가능합니다."),
+    CHAT_START_FAILED_BOARD_NOT_FOUND(NOT_FOUND, "CHAT_407", "해당 게시글이 존재하지 않습니다. 채팅 시작이 불가능합니다."),
+    CHAT_READ_FAILED_NOT_ENTERED_CHATROOM(FORBIDDEN, "CHAT_408", "해당 채팅방에 입장 상태가 아닙니다. 채팅방 입장 후 메시지 읽음 처리하세요."),
+    CHAT_READ_FAILED_CHAT_MESSAGE_NOT_FOUND(NOT_FOUND, "CHAT_409", "채팅 메시지 읽음 처리에 실패했습니다. 해당 메시지를 찾을 수 없습니다."),
+    CHAT_ADD_FAILED_TARGET_DEACTIVATED(BAD_REQUEST, "CHAT_410", "채팅 상대 회원이 탈퇴했습니다. 메시지 전송이 불가능합니다."),
+    CHAT_ADD_FAILED_TARGET_IS_BLOCKED(FORBIDDEN, "CHAT_411", "채팅 상대 회원을 차단한 상태입니다. 메시지 전송이 불가능합니다."),
+    CHAT_ADD_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_412", "채팅 상대 회원이 나를 차단했습니다. 메시지 전송이 불가능합니다."),
+
+    /**
+     * 게시판 관련 에러
+     */
+    BOARD_NOT_FOUND(NOT_FOUND, "BOARD_401", "게시글을 찾을 수 없습니다."),
+    BOARD_DELETED(NOT_FOUND, "BOARD_402", "삭제된 게시글입니다."),
+    UPDATE_BOARD_ACCESS_DENIED(UNAUTHORIZED, "BOARD_403", "게시글 수정 권한이 없습니다."),
+    DELETE_BOARD_ACCESS_DENIED(UNAUTHORIZED, "BOARD_404", "게시글 삭제 권한이 없습니다."),
+    BOARD_GAME_STYLE_BAD_REQUEST(BAD_REQUEST, "BOARD_405", "게임 스타일 최대 개수를 초과했습니다."),
+    BOARD_GAME_MODE_BAD_REQUEST(BAD_REQUEST, "BOARD_406", "게임모드 값은 1~4만 가능합니다."),
+    BOARD_MAIN_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_407", "주포지션 값은 0~5만 가능합니다."),
+    BOARD_SUB_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_408", "부포지션 값은 0~5만 가능합니다."),
+    BOARD_WANT_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_409", "상대포지션 값은 0~5만 가능합니다.");
+
 
     private final HttpStatus status;
     private final String code;
