@@ -2,7 +2,7 @@ package com.gamegoo.gamegoo_v2.riot.service;
 
 import com.gamegoo.gamegoo_v2.exception.RiotException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.riot.dto.RiotAccountResponse;
+import com.gamegoo.gamegoo_v2.riot.dto.RiotAuthResponse;
 import com.gamegoo.gamegoo_v2.riot.dto.RiotSummonerResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class RiotAccountService {
+public class RiotAuthService {
 
     private final RestTemplate restTemplate;
 
@@ -35,7 +35,7 @@ public class RiotAccountService {
     public String getPuuid(String gameName, String tag) {
         String url = String.format(RIOT_ACCOUNT_API_URL_TEMPLATE, gameName, tag, riotAPIKey);
         try {
-            RiotAccountResponse response = restTemplate.getForObject(url, RiotAccountResponse.class);
+            RiotAuthResponse response = restTemplate.getForObject(url, RiotAuthResponse.class);
 
             if (response == null) {
                 throw new RiotException(ErrorCode.RIOT_NOT_FOUND);

@@ -3,12 +3,14 @@ package com.gamegoo.gamegoo_v2.auth.service;
 import com.gamegoo.gamegoo_v2.auth.dto.JoinRequest;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.riot.dto.TierDetails;
-import com.gamegoo.gamegoo_v2.riot.service.RiotAccountService;
+import com.gamegoo.gamegoo_v2.riot.service.RiotAuthService;
 import com.gamegoo.gamegoo_v2.riot.service.RiotInfoService;
 import com.gamegoo.gamegoo_v2.riot.service.RiotRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class AuthFacadeService {
 
     private final AuthService authService;
     private final MemberService memberService;
-    private final RiotAccountService riotAccountService;
+    private final RiotAuthService riotAccountService;
     private final RiotRecordService riotRecordService;
     private final RiotInfoService riotInfoService;
 
@@ -45,8 +47,12 @@ public class AuthFacadeService {
                 , tierWinrateRank.getTier(), tierWinrateRank.getRank(), tierWinrateRank.getWinrate(),
                 tierWinrateRank.getGameCount(), request.getIsAgree());
 
-        // 5. [Riot] 최근 사용한 챔피언 3개 매핑
+        // 5. [Riot] 최근 사용한 챔피언 3개 가져오기
+        List<Integer> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(puuid,
+                request.getGameName());
 
+        // 6. [Member] Member Champion DB에서 매핑하기
+        
     }
 
 }
