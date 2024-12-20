@@ -51,7 +51,7 @@ public class RiotInfoService {
                 }
             }
         } catch (Exception e) {
-            log.error("RIOT API INTERNAL ERROR: ", e.getMessage());
+            log.error("RIOT API INTERNAL ERROR: ", e);
             throw new RiotException(ErrorCode.RIOT_ERROR);
         }
 
