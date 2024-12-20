@@ -96,8 +96,9 @@ public class Member extends BaseDateTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Notification> notificationList = new ArrayList<>();
 
+    // 회원가입용 create
     public static Member create(String email, String password, LoginType loginType, String gameName, String tag,
-            Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
+                                Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
         int randomProfileImage = ThreadLocalRandom.current().nextInt(1, 9);
 
         return Member.builder()
@@ -108,16 +109,17 @@ public class Member extends BaseDateTimeEntity {
                 .gameName(gameName)
                 .tag(tag)
                 .tier(tier)
+                .gameCount(gameCount)
                 .gameRank(gameRank)
                 .winRate(winRate)
-                .gameCount(gameCount)
                 .isAgree(isAgree)
                 .build();
     }
 
+    // 회원가입용 Builder
     @Builder
     private Member(String email, String password, int profileImage, LoginType loginType, String gameName,
-            String tag, Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
+                   String tag, Tier tier, int gameRank, double winRate, int gameCount, boolean isAgree) {
         this.email = email;
         this.password = password;
         this.profileImage = profileImage;
@@ -129,6 +131,13 @@ public class Member extends BaseDateTimeEntity {
         this.winRate = winRate;
         this.gameCount = gameCount;
         this.isAgree = isAgree;
+        this.blind = false;
+        this.mainPosition = 0;
+        this.subPosition = 0;
+        this.wantPosition = 0;
+        this.mannerScore = 0;
+        this.mike = false;
+
     }
 
     public void updateBlind(boolean blind) {

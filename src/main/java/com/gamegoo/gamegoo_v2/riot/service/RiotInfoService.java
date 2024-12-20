@@ -46,16 +46,16 @@ public class RiotInfoService {
                         Tier tier = Tier.valueOf(response.getTier().toUpperCase());
                         int rank = romanToIntMap.get(response.getRank());
 
-                        return new TierDetails(tier, winRate, rank);
+                        return new TierDetails(tier, winRate, rank, totalGames);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("RIOT API INTERNEL ERROR: ", e.getMessage(), e);
+            log.error("RIOT API INTERNAL ERROR: ", e.getMessage());
             throw new RiotException(ErrorCode.RIOT_ERROR);
         }
 
-        return new TierDetails(Tier.UNRANKED, 0, 0);
+        return new TierDetails(Tier.UNRANKED, 0, 0, 0);
 
     }
 

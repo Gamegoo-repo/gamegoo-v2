@@ -2,8 +2,11 @@ package com.gamegoo.gamegoo_v2.member.service;
 
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +18,13 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public void create(String email, String password, boolean isAgree) {
+    public void createMember(String email, String password, String gameName, String tag, Tier tier, int rank,
+                             double winrate, int gameCount, boolean isAgree) {
 
+        Member member = Member.create(email, PasswordUtil.encodePassword(password), LoginType.GENERAL, gameName, tag,
+                tier, rank, winrate, gameCount, isAgree);
+
+        memberRepository.save(member);
     }
 
     /**

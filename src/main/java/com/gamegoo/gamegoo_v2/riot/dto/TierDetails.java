@@ -11,5 +11,6 @@ public class TierDetails {
     Tier tier;
     double winrate;
     int rank;
+    int gameCount;
 
 }

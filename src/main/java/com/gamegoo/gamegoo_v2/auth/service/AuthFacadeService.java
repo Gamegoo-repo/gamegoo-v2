@@ -41,7 +41,9 @@ public class AuthFacadeService {
         TierDetails tierWinrateRank = riotInfoService.getTierWinrateRank(summonerId);
 
         // 4. [Member] member DB에 저장
-        
+        memberService.createMember(request.getEmail(), request.getPassword(), request.getGameName(), request.getTag()
+                , tierWinrateRank.getTier(), tierWinrateRank.getRank(), tierWinrateRank.getWinrate(),
+                tierWinrateRank.getGameCount(), request.getIsAgree());
 
         // 5. [Riot] 최근 사용한 챔피언 3개 매핑
 
