@@ -104,7 +104,7 @@ class ChatFacadeServiceTest {
             // when // then
             assertThatThrownBy(() -> chatFacadeService.startChatroomByMemberId(member, targetMember.getId()))
                     .isInstanceOf(ChatException.class)
-                    .hasMessage(ErrorCode.CHAT_START_FAILED_CHAT_TARGET_IS_BLOCKED.getMessage());
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_IS_BLOCKED.getMessage());
         }
 
         @DisplayName("성공: 기존 채팅방이 존재히는 경우 해당 채팅방에 입장 처리 및 최근 메시지 내역을 조회해야 한다.")
@@ -157,7 +157,7 @@ class ChatFacadeServiceTest {
             // when // then
             assertThatThrownBy(() -> chatFacadeService.startChatroomByMemberId(member, targetMember.getId()))
                     .isInstanceOf(ChatException.class)
-                    .hasMessage(ErrorCode.CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET.getMessage());
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET.getMessage());
         }
 
         @DisplayName("실패: 기존 채팅방이 존재하지 않으며 상대가 탈퇴한 경우 예외가 발생한다.")
@@ -169,7 +169,7 @@ class ChatFacadeServiceTest {
             // when // then
             assertThatThrownBy(() -> chatFacadeService.startChatroomByMemberId(member, targetMember.getId()))
                     .isInstanceOf(ChatException.class)
-                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_USER_DEACTIVATED.getMessage());
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED.getMessage());
         }
 
     }
