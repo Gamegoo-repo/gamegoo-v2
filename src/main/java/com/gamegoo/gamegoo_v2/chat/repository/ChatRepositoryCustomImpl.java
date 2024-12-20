@@ -29,7 +29,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
                         chat.chatroom.id.eq(chatroomId),
                         createdAtGreaterThanLastViewDateSubQuery(memberChatroomId),
                         createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
-                        isMySystemMessageOrNoToMember(memberId)
+                        isMemberMessageOrMySystemMessage(memberId)
                 )
                 .orderBy(chat.createdAt.desc())
                 .fetch();
@@ -47,7 +47,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
                     .where(
                             chat.chatroom.id.eq(chatroomId),
                             createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
-                            isMySystemMessageOrNoToMember(memberId)
+                            isMemberMessageOrMySystemMessage(memberId)
                     )
                     .orderBy(chat.createdAt.desc())
                     .limit(pageSize + 1) // 다음 페이지가 있는지 확인하기 위해 +1
@@ -79,7 +79,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
                         chat.chatroom.id.eq(cursorChat.getChatroom().getId()),
                         createdBefore(cursorChat.getTimestamp()),
                         createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
-                        isMySystemMessageOrNoToMember(memberId)
+                        isMemberMessageOrMySystemMessage(memberId)
                 )
                 .orderBy(chat.createdAt.desc())
                 .limit(1)
@@ -126,7 +126,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
      * @param memberId
      * @return
      */
-    private BooleanExpression isMySystemMessageOrNoToMember(Long memberId) {
+    private BooleanExpression isMemberMessageOrMySystemMessage(Long memberId) {
         return chat.toMember.isNull().or(chat.toMember.id.eq(memberId));
     }
 

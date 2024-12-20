@@ -54,10 +54,13 @@ public class ChatFacadeService {
         blockValidator.throwIfBlocked(member, targetMember, ChatException.class,
                 CHAT_START_FAILED_CHAT_TARGET_IS_BLOCKED);
 
+        Chatroom chatroom;
+        ChatMessageListResponse chatMessageListResponse;
+
         Optional<Chatroom> existingChatroom = chatQueryService.findExistingChatroom(member, targetMember);
 
         if (existingChatroom.isPresent()) { // 기존 채팅방이 존재하는 경우
-            Chatroom chatroom = existingChatroom.get();
+            chatroom = existingChatroom.get();
 
             // 기존 채팅방에 입장 처리
             MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember,
@@ -67,10 +70,7 @@ public class ChatFacadeService {
             Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
 
             // 응답 dto 생성
-            ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
-
-            return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), null,
-                    chatMessageListResponse);
+            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
         } else {// 기존에 채팅방이 존재하지 않는 경우
             // 상대가 나를 차단하지 않았는지 검증
             blockValidator.throwIfBlocked(targetMember, member, ChatException.class,
@@ -80,14 +80,14 @@ public class ChatFacadeService {
             memberValidator.throwIfBlind(targetMember, ChatException.class, CHAT_START_FAILED_TARGET_USER_DEACTIVATED);
 
             // 새 채팅방 생성
-            Chatroom chatroom = chatCommandService.createChatroom(member, targetMember);
+            chatroom = chatCommandService.createChatroom(member, targetMember);
 
             // 응답 dto 생성
-            ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse();
-
-            return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), null,
-                    chatMessageListResponse);
+            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse();
         }
+
+        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), null,
+                chatMessageListResponse);
     }
 
 }
