@@ -56,7 +56,7 @@ public class MemberChatroom extends BaseDateTimeEntity {
         this.chatroom = chatroom;
     }
 
-    public boolean isExit() {
+    public boolean exited() {
         return this.lastJoinDate == null;
     }
 

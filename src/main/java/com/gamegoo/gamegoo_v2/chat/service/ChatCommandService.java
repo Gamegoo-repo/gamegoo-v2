@@ -41,7 +41,7 @@ public class ChatCommandService {
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
 
         // 내가 해당 채팅방을 퇴장한 상태인 경우
-        if (memberChatroom.isExit()) {
+        if (memberChatroom.exited()) {
             // 상대방이 나를 차단한 경우
             blockValidator.throwIfBlocked(targetMember, member, ChatException.class,
                     ErrorCode.CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET);
