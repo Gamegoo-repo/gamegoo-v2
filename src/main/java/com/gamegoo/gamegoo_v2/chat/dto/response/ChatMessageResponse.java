@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.chat.dto;
+package com.gamegoo.gamegoo_v2.chat.dto.response;
 
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.utils.DateTimeUtil;

@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.controller;
 
 import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
-import com.gamegoo.gamegoo_v2.chat.dto.EnterChatroomResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
