@@ -74,4 +74,8 @@ public class ChatResponseFactory {
                 .build();
     }
 
+    public EnterChatroomResponse toEnterChatroomResponse(Member member, Member targetMember, String chatroomUuid, ChatMessageListResponse chatMessageListResponse) {
+        return toEnterChatroomResponse(member, targetMember, chatroomUuid, null, chatMessageListResponse);
+    }
+
 }

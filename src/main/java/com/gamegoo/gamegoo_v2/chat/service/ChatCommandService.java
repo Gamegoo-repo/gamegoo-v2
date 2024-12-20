@@ -44,11 +44,11 @@ public class ChatCommandService {
         if (memberChatroom.exited()) {
             // 상대방이 나를 차단한 경우
             blockValidator.throwIfBlocked(targetMember, member, ChatException.class,
-                    ErrorCode.CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET);
+                    ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET);
 
             // 상대방이 탈퇴한 경우
             memberValidator.throwIfBlind(targetMember, ChatException.class,
-                    ErrorCode.CHAT_START_FAILED_TARGET_USER_DEACTIVATED);
+                    ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED);
         }
 
         // lastViewDate 업데이트
