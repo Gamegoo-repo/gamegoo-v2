@@ -73,9 +73,9 @@ class ChatCommandServiceTest {
     @DisplayName("기존 채팅방 입장")
     class EnterExistingChatroomTest {
 
-        @DisplayName("기존 채팅방 입장 성공: lastViewDate가 업데이트되어야 한다.")
+        @DisplayName("성공: 채팅방에서 퇴장한 상태인 경우 lastViewDate가 업데이트 되어야 한다.")
         @Test
-        void enterExistingChatroomSucceeds() {
+        void enterExistingChatroomSucceedsWhenExited() {
             // given
             LocalDateTime now = LocalDateTime.now();
             Chatroom chatroom = createChatroom();
@@ -91,7 +91,48 @@ class ChatCommandServiceTest {
             assertThat(memberChatroom.getLastJoinDate()).isNull();
         }
 
-        @DisplayName("기존 채팅방 입장 실패: 채팅방을 찾을 수 없거나 해당 회원의 채팅방이 아닌 경우 예외가 발생한다.")
+        @DisplayName("성공: 채팅방에서 퇴장하지 않은 경우 상대가 나를 차단했어도 입장 가능하며 lastViewDate가 업데이트 되어야 한다.")
+        @Test
+        void enterExistingChatroomSucceedsWhenNotExitedAndBlockedByTarget() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, now.minusMinutes(10));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            blockMember(targetMember, member);
+
+            // when
+            MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+
+            // then
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isAfter(now);
+            assertThat(memberChatroom.getLastJoinDate()).isEqualTo(now.minusMinutes(10));
+        }
+
+        @DisplayName("성공: 채팅방에서 퇴장하지 않은 경우 상대가 탈퇴했어도 입장 가능하며 lastViewDate가 업데이트 되어야 한다.")
+        @Test
+        void enterExistingChatroomSucceedsWhenNotExistedAndTargetIsBlind() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, now.minusMinutes(10));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // 상대 회원 탈퇴 처리
+            blindMember(targetMember);
+
+            // when
+            MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+
+            // then
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isAfter(now);
+            assertThat(memberChatroom.getLastJoinDate()).isEqualTo(now.minusMinutes(10));
+        }
+
+        @DisplayName("실패: 채팅방을 찾을 수 없거나 해당 회원의 채팅방이 아닌 경우 예외가 발생한다.")
         @Test
         void enterExistingChatroom_shouldThrownWhenChatroomNotFound() {
             // when // then
@@ -100,7 +141,7 @@ class ChatCommandServiceTest {
                     .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
         }
 
-        @DisplayName("기존 채팅방 입장 실패: 채팅방을 퇴장한 상태이며 상대가 나를 차단한 경우 예외가 발생한다.")
+        @DisplayName("실패: 채팅방을 퇴장한 상태이며 상대가 나를 차단한 경우 예외가 발생한다.")
         @Test
         void enterExistingChatroom_shouldThrownWhenMemberIsBlockedByTarget() {
             // given
@@ -117,7 +158,7 @@ class ChatCommandServiceTest {
                     .hasMessage(ErrorCode.CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET.getMessage());
         }
 
-        @DisplayName("기존 채팅방 입장 실패: 채팅방을 퇴장한 상태이며 상대가 탈퇴한 경우 예외가 발생한다.")
+        @DisplayName("실패: 채팅방을 퇴장한 상태이며 상대가 탈퇴한 경우 예외가 발생한다.")
         @Test
         void enterExistingChatroom_shouldThrownWhenTargetMemberIsBlind() {
             // given
@@ -126,8 +167,7 @@ class ChatCommandServiceTest {
             createMemberChatroom(targetMember, chatroom, null);
 
             // 상대 회원 탈퇴 처리
-            targetMember.updateBlind(true);
-            memberRepository.save(targetMember);
+            blindMember(targetMember);
 
             // when // then
             assertThatThrownBy(() -> chatCommandService.enterExistingChatroom(member, targetMember, chatroom))
@@ -188,6 +228,11 @@ class ChatCommandServiceTest {
 
     private Block blockMember(Member member, Member targetMember) {
         return blockRepository.save(Block.create(member, targetMember));
+    }
+
+    private void blindMember(Member member) {
+        member.updateBlind(true);
+        memberRepository.save(member);
     }
 
 }
