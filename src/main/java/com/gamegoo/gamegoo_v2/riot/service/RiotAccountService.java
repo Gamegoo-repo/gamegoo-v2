@@ -17,7 +17,7 @@ public class RiotAccountService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${RIOT_API}")
+    @Value("${spring.riot.api.key}")
     private String riotAPIKey;
 
     private static final String RIOT_ACCOUNT_API_URL_TEMPLATE = "https://asia.api.riotgames" +

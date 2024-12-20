@@ -22,6 +22,12 @@ spring:
           starttls:
             enable: true
 
+
+  # RIOT 설정
+  riot:
+    api:
+      key: key
+
 jwt:
   secret: "secretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecretsecretjwttestjwtsecret"
   access_expiration_time: 600000 # 10분 (10 * 60 * 1000 밀리초)
