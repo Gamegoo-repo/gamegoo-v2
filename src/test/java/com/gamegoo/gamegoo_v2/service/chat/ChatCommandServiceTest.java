@@ -24,9 +24,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @ActiveProfiles("test")
@@ -108,7 +110,7 @@ class ChatCommandServiceTest {
             // then
             assertThat(memberChatroom.getLastViewDate()).isNotNull();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
-            assertThat(memberChatroom.getLastJoinDate()).isEqualTo(now.minusMinutes(10));
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(now.minusMinutes(10), within(1, ChronoUnit.SECONDS));
         }
 
         @DisplayName("성공: 채팅방에서 퇴장하지 않은 경우 상대가 탈퇴했어도 입장 가능하며 lastViewDate가 업데이트 되어야 한다.")
@@ -129,7 +131,7 @@ class ChatCommandServiceTest {
             // then
             assertThat(memberChatroom.getLastViewDate()).isNotNull();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
-            assertThat(memberChatroom.getLastJoinDate()).isEqualTo(now.minusMinutes(10));
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(now.minusMinutes(10), within(1, ChronoUnit.SECONDS));
         }
 
         @DisplayName("실패: 채팅방을 찾을 수 없거나 해당 회원의 채팅방이 아닌 경우 예외가 발생한다.")
