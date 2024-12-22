@@ -133,6 +133,35 @@ public class ChatFacadeService {
                 boardId, chatMessageListResponse);
     }
 
+    /**
+     * uuid에 해당하는 채팅방에 입장 처리 Facade 메소드
+     *
+     * @param member
+     * @param uuid
+     * @return
+     */
+    @Transactional
+    public EnterChatroomResponse enterChatroomByUuid(Member member, String uuid) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
+
+        // 상대가 나를 차단하지 않았는지 검증
+        Member targetMember = chatQueryService.getChatroomTargetMember(member, chatroom);
+        memberValidator.validateDifferentMembers(member, targetMember);
+
+        // 채팅방에 입장 처리
+        MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+
+        // 최근 메시지 내역 조회
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+
+        // 응답 dto 생성
+        ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
+
+        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
+                chatMessageListResponse);
+    }
+
     private int getSystemFlag(MemberChatroom memberChatroom) {
         if (memberChatroom.exited()) {
             return SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode();
