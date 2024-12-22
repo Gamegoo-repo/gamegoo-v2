@@ -61,21 +61,12 @@ public class ChatFacadeService {
         blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_START_FAILED_TARGET_IS_BLOCKED);
 
         Chatroom chatroom;
-        ChatMessageListResponse chatMessageListResponse;
 
         Optional<Chatroom> existingChatroom = chatQueryService.findExistingChatroom(member, targetMember);
 
         if (existingChatroom.isPresent()) { // 기존 채팅방이 존재하는 경우
             chatroom = existingChatroom.get();
 
-            // 기존 채팅방에 입장 처리
-            MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
-
-            // 최근 메시지 내역 조회
-            Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
-
-            // 응답 dto 생성
-            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
         } else {// 기존에 채팅방이 존재하지 않는 경우
             // 상대가 나를 차단하지 않았는지 검증
             blockValidator.throwIfBlocked(targetMember, member, ChatException.class,
@@ -86,10 +77,16 @@ public class ChatFacadeService {
 
             // 새 채팅방 생성
             chatroom = chatCommandService.createChatroom(member, targetMember);
-
-            // 응답 dto 생성
-            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse();
         }
+
+        // 채팅방에 입장 처리
+        MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+
+        // 최근 메시지 내역 조회
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+
+        // 응답 dto 생성
+        ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
 
         return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
                 chatMessageListResponse);
@@ -115,58 +112,30 @@ public class ChatFacadeService {
         // 상대가 탈퇴하지 않았는지 검증
         memberValidator.throwIfBlind(targetMember, ChatException.class, CHAT_START_FAILED_TARGET_DEACTIVATED);
 
+        // 상대가 나를 차단하지 않았는지 검증
+        blockValidator.throwIfBlocked(targetMember, member, ChatException.class, CHAT_START_FAILED_BLOCKED_BY_TARGET);
+
         // 내가 상대 회원을 차단하지 않았는지 검증
         blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_START_FAILED_TARGET_IS_BLOCKED);
 
-        Chatroom chatroom;
-        ChatMessageListResponse chatMessageListResponse;
-        SystemFlagResponse systemFlagResponse;
+        Chatroom chatroom = chatQueryService.findExistingChatroom(member, targetMember)
+                .orElseGet(() -> chatCommandService.createChatroom(member, targetMember));
 
-        Optional<Chatroom> existingChatroom = chatQueryService.findExistingChatroom(member, targetMember);
-        if (existingChatroom.isPresent()) { // 기존 채팅방이 존재하는 경우
-            chatroom = existingChatroom.get();
+        // 채팅방에 입장 처리
+        MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
 
-            // 기존 채팅방에 입장 처리
-            MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+        // 최근 메시지 내역 조회
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
 
-            // 최근 메시지 내역 조회
-            Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+        // 응답 dto 생성
+        ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
+        SystemFlagResponse systemFlagResponse = createSystemFlagResponse(memberChatroom, boardId);
 
-            // 응답 dto 생성
-            // chatMessageListResponse 생성
-            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
-
-            // systemFlagResponse 생성
-            systemFlagResponse = createSystemFlagResponse(member, targetMember, memberChatroom, boardId);
-
-        } else {// 기존에 채팅방이 존재하지 않는 경우
-            // 상대가 나를 차단하지 않았는지 검증
-            blockValidator.throwIfBlocked(targetMember, member, ChatException.class,
-                    CHAT_START_FAILED_BLOCKED_BY_TARGET);
-
-            // 새 채팅방 생성
-            chatroom = chatCommandService.createChatroom(member, targetMember);
-
-            // 응답 dto 생성
-            // chatMessageListResponse 생성
-            chatMessageListResponse = chatResponseFactory.toChatMessageListResponse();
-
-            // systemFlagResponse 생성
-            systemFlagResponse = SystemFlagResponse.of(SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode()
-                    , boardId);
-        }
-
-        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), systemFlagResponse,
-                chatMessageListResponse);
+        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
+                systemFlagResponse, chatMessageListResponse);
     }
 
-    private SystemFlagResponse createSystemFlagResponse(Member member, Member targetMember,
-            MemberChatroom memberChatroom, Long boardId) {
-        boolean blocked = blockService.isBlocked(targetMember, member);
-        if (blocked) {
-            return null;
-        }
-
+    private SystemFlagResponse createSystemFlagResponse(MemberChatroom memberChatroom, Long boardId) {
         if (memberChatroom.exited()) {
             return SystemFlagResponse.of(SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode(), boardId);
         }
