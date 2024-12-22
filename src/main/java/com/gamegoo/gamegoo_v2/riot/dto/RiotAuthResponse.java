@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class RiotAccountResponse {
+public class RiotAuthResponse {
 
     String puuid;
     String gameName;

@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,5 +32,27 @@ public class MemberGameStyle extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    public static MemberGameStyle create(GameStyle gameStyle, Member member) {
+        MemberGameStyle memberGameStyle = MemberGameStyle.builder()
+                .gameStyle(gameStyle)
+                .build();
+        memberGameStyle.setMember(member);
+        return memberGameStyle;
+    }
+
+    @Builder
+    private MemberGameStyle(GameStyle gameStyle, Member member) {
+        this.gameStyle = gameStyle;
+        this.member = member;
+    }
+
+    public void setMember(Member member) {
+        if (this.member != null) {
+            this.member.getMemberGameStyleList().remove(this);
+        }
+        this.member = member;
+        member.getMemberGameStyleList().add(this);
+    }
 
 }

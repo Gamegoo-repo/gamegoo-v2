@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RiotFacadeService {
 
-    private final RiotAccountService riotAccountService;
+    private final RiotAuthService riotAccountService;
 
     public void verifyRiotAccount(RiotVerifyExistUserRequest request) {
 
