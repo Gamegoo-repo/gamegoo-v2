@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,5 +32,27 @@ public class MemberChampion extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    public static MemberChampion create(Champion champion, Member member) {
+        MemberChampion memberChampion = MemberChampion.builder()
+                .champion(champion)
+                .build();
+        memberChampion.setMember(member);
+        return memberChampion;
+    }
+
+    @Builder
+    private MemberChampion(Champion champion, Member member) {
+        this.champion = champion;
+        this.member = member;
+    }
+
+    public void setMember(Member member) {
+        if (this.member != null) {
+            this.member.getMemberChampionList().remove(this);
+        }
+        this.member = member;
+        member.getMemberChampionList().add(this);
+    }
 
 }

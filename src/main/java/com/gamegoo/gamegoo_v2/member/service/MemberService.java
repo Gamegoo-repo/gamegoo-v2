@@ -18,13 +18,15 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public void createMember(String email, String password, String gameName, String tag, Tier tier, int rank,
-                             double winrate, int gameCount, boolean isAgree) {
+    public Member createMember(String email, String password, String gameName, String tag, Tier tier, int rank,
+                               double winrate, int gameCount, boolean isAgree) {
 
         Member member = Member.create(email, PasswordUtil.encodePassword(password), LoginType.GENERAL, gameName, tag,
                 tier, rank, winrate, gameCount, isAgree);
 
         memberRepository.save(member);
+
+        return member;
     }
 
     /**

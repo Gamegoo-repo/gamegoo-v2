@@ -1,6 +1,8 @@
 package com.gamegoo.gamegoo_v2.auth.service;
 
 import com.gamegoo.gamegoo_v2.auth.dto.JoinRequest;
+import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.riot.dto.TierDetails;
 import com.gamegoo.gamegoo_v2.riot.service.RiotAuthService;
@@ -17,11 +19,11 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AuthFacadeService {
 
-    private final AuthService authService;
     private final MemberService memberService;
     private final RiotAuthService riotAccountService;
     private final RiotRecordService riotRecordService;
     private final RiotInfoService riotInfoService;
+    private final MemberChampionService memberChampionService;
 
     /**
      * 회원가입
@@ -43,16 +45,17 @@ public class AuthFacadeService {
         TierDetails tierWinrateRank = riotInfoService.getTierWinrateRank(summonerId);
 
         // 4. [Member] member DB에 저장
-        memberService.createMember(request.getEmail(), request.getPassword(), request.getGameName(), request.getTag()
+        Member member = memberService.createMember(request.getEmail(), request.getPassword(), request.getGameName(),
+                request.getTag()
                 , tierWinrateRank.getTier(), tierWinrateRank.getRank(), tierWinrateRank.getWinrate(),
                 tierWinrateRank.getGameCount(), request.getIsAgree());
 
         // 5. [Riot] 최근 사용한 챔피언 3개 가져오기
-        List<Integer> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(puuid,
-                request.getGameName());
+        List<Integer> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(request.getGameName(),
+                puuid);
 
         // 6. [Member] Member Champion DB에서 매핑하기
-        
+        memberChampionService.saveMemberChampions(member, preferChampionfromMatch);
     }
 
 }
