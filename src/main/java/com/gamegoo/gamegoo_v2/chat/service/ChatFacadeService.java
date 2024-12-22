@@ -10,7 +10,6 @@ import com.gamegoo.gamegoo_v2.chat.domain.SystemMessageType;
 import com.gamegoo.gamegoo_v2.chat.dto.ChatResponseFactory;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
-import com.gamegoo.gamegoo_v2.chat.dto.response.SystemFlagResponse;
 import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.exception.ChatException;
@@ -129,18 +128,17 @@ public class ChatFacadeService {
 
         // 응답 dto 생성
         ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
-        SystemFlagResponse systemFlagResponse = createSystemFlagResponse(memberChatroom, boardId);
-
-        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
-                systemFlagResponse, chatMessageListResponse);
+        int systemFlag = getSystemFlag(memberChatroom);
+        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), systemFlag,
+                boardId, chatMessageListResponse);
     }
 
-    private SystemFlagResponse createSystemFlagResponse(MemberChatroom memberChatroom, Long boardId) {
+    private int getSystemFlag(MemberChatroom memberChatroom) {
         if (memberChatroom.exited()) {
-            return SystemFlagResponse.of(SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode(), boardId);
+            return SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode();
         }
 
-        return SystemFlagResponse.of(SystemMessageType.CHAT_STARTED_BY_BOARD_MESSAGE.getCode(), boardId);
+        return SystemMessageType.CHAT_STARTED_BY_BOARD_MESSAGE.getCode();
     }
 
 }
