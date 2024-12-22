@@ -14,6 +14,7 @@ public class RiotVerifyExistUserRequest {
 
     @NotBlank(message = "gameName 값은 비워둘 수 없습니다.")
     String gameName;
+    
     @NotBlank(message = "tag 값은 비워둘 수 없습니다.")
     String tag;
 

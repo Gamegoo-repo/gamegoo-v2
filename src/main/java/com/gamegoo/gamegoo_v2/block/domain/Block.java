@@ -37,11 +37,10 @@ public class Block extends BaseDateTimeEntity {
     private Member blockedMember;
 
     public static Block create(Member blockerMember, Member blockedMember) {
-        Block block = Block.builder()
+        return Block.builder()
+                .blockerMember(blockerMember)
                 .blockedMember(blockedMember)
                 .build();
-        block.setBlockerMember(blockerMember); // 양방향 관계 설정
-        return block;
     }
 
     @Builder
@@ -49,20 +48,6 @@ public class Block extends BaseDateTimeEntity {
         this.deleted = deleted;
         this.blockerMember = blockerMember;
         this.blockedMember = blockedMember;
-    }
-
-    public void setBlockerMember(Member member) {
-        if (this.blockerMember != null) {
-            this.blockerMember.getBlockList().remove(this);
-        }
-        this.blockerMember = member;
-        member.getBlockList().add(this);
-    }
-
-    // Block 엔티티 매핑 해제를 위한 메소드
-    public void removeBlockerMember(Member blockerMember) {
-        blockerMember.getBlockList().remove(this);
-        this.blockerMember = null;
     }
 
     // Block 엔티티의 deleted를 변경하는 메소드

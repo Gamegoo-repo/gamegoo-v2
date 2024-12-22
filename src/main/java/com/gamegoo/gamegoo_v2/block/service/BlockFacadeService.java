@@ -1,11 +1,13 @@
 package com.gamegoo.gamegoo_v2.block.service;
 
+import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.dto.BlockListResponse;
+import com.gamegoo.gamegoo_v2.block.dto.BlockResponse;
+import com.gamegoo.gamegoo_v2.friend.service.FriendService;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +18,7 @@ public class BlockFacadeService {
 
     private final MemberService memberService;
     private final BlockService blockService;
-
-    private final static int PAGE_SIZE = 10;
+    private final FriendService friendService;
 
     /**
      * 회원 차단 Facade 메소드
@@ -26,9 +27,21 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void blockMember(Member member, Long targetMemberId) {
+    public BlockResponse blockMember(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.blockMember(member, targetMember);
+
+        // 회원 차단 처리
+        Block block = blockService.blockMember(member, targetMember);
+
+        // 차단 대상 회원과의 채팅방이 존재하는 경우, 해당 채팅방 퇴장 처리
+
+        // 차단 대상 회원과 친구관계인 경우, 친구 관계 끊기
+        friendService.removeFriendshipIfPresent(member, targetMember);
+
+        // 차단 대상 회원에게 보냈던 친구 요청이 있는 경우, 해당 요청 취소 처리
+        friendService.cancelPendingFriendRequest(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "회원 차단 성공");
     }
 
     /**
@@ -39,8 +52,7 @@ public class BlockFacadeService {
      * @return
      */
     public BlockListResponse getBlockList(Member member, Integer pageIdx) {
-        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE);
-        Page<Member> members = blockService.findBlockedMembersByBlockerId(member.getId(), pageRequest);
+        Page<Member> members = blockService.getBlockedMemberPage(member.getId(), pageIdx);
 
         return BlockListResponse.of(members);
     }
@@ -52,9 +64,11 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void unBlockMember(Member member, Long targetMemberId) {
+    public BlockResponse unBlockMember(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.unBlockMember(member, targetMember);
+        Block block = blockService.unBlockMember(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "회원 차단 해제 성공");
     }
 
     /**
@@ -64,9 +78,11 @@ public class BlockFacadeService {
      * @param targetMemberId
      */
     @Transactional
-    public void deleteBlock(Member member, Long targetMemberId) {
+    public BlockResponse deleteBlock(Member member, Long targetMemberId) {
         Member targetMember = memberService.findMember(targetMemberId);
-        blockService.deleteBlock(member, targetMember);
+        Block block = blockService.deleteBlock(member, targetMember);
+
+        return BlockResponse.of(block.getBlockedMember().getId(), "차단 목록에서 삭제 성공");
     }
 
 }

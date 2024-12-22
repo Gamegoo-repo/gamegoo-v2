@@ -37,7 +37,7 @@ public class RiotAuthService {
         try {
             RiotAuthResponse response = restTemplate.getForObject(url, RiotAuthResponse.class);
 
-            if (response == null) {
+            if (response == null || response.getPuuid() == null) {
                 throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
             }
 
@@ -58,9 +58,10 @@ public class RiotAuthService {
         try {
             RiotSummonerResponse summonerResponse = restTemplate.getForObject(url, RiotSummonerResponse.class);
 
-            if (summonerResponse == null) {
+            if (summonerResponse == null || summonerResponse.getId() == null) {
                 throw new RiotException(ErrorCode.RIOT_NOT_FOUND);
             }
+            
             return summonerResponse.getId();
         } catch (Exception e) {
             throw new RiotException(ErrorCode.RIOT_NOT_FOUND);

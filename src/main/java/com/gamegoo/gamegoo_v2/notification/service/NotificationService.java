@@ -10,6 +10,10 @@ import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +21,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class NotificationService {
 
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
 
     private static final String PLACEHOLDER = "n";
+    private final static int PAGE_SIZE = 10;
 
     /**
      * 친구 요청 전송됨 알림 생성 메소드
@@ -32,6 +37,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createSendFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -47,6 +53,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createReceivedFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -62,6 +69,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createAcceptFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -77,6 +85,7 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
+    @Transactional
     public Notification createRejectFriendRequestNotification(Member member, Member sourceMember) {
         validateMember(member);
         validateMember(sourceMember);
@@ -93,6 +102,7 @@ public class NotificationService {
      * @param mannerLevel
      * @return
      */
+    @Transactional
     public Notification createMannerLevelNotification(NotificationTypeTitle notificationTypeTitle, Member member,
             int mannerLevel) {
         validateMember(member);
@@ -109,6 +119,7 @@ public class NotificationService {
      * @param member
      * @return
      */
+    @Transactional
     public Notification createMannerRatingNotification(List<MannerKeyword> mannerKeywordList, Member member) {
         validateMember(member);
         validateMannerKeywordList(mannerKeywordList);
@@ -134,8 +145,64 @@ public class NotificationService {
      * @param sourceMember
      * @return
      */
-    private Notification saveNotification(NotificationType type, String content, Member member, Member sourceMember) {
+    @Transactional
+    protected Notification saveNotification(NotificationType type, String content, Member member, Member sourceMember) {
         return notificationRepository.save(Notification.create(member, sourceMember, type, content));
+    }
+
+    /**
+     * 알림 읽음 처리 메소드
+     *
+     * @param member
+     * @param notificationId
+     */
+    @Transactional
+    public Notification readNotification(Member member, Long notificationId) {
+        validateNotificationExists(member, notificationId);
+
+        Notification notification = notificationRepository.findById(notificationId).get();
+        notification.updateIsRead(true);
+
+        return notification;
+    }
+
+    /**
+     * 안읽은 알림 개수 계산 메소드
+     *
+     * @param member
+     * @return
+     */
+    public int countUnreadNotification(Member member) {
+        long count = member.getNotificationList()
+                .stream()
+                .filter(notification -> !notification.isRead())
+                .count();
+
+        return Long.valueOf(count).intValue();
+    }
+
+    /**
+     * 해당 회원의 알림 목록 Page 객체 반환하는 메소드
+     *
+     * @param member
+     * @param pageIdx
+     * @return
+     */
+    public Page<Notification> getNotificationPage(Member member, Integer pageIdx) {
+        PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return notificationRepository.findNotificationsByMember(member, pageRequest);
+    }
+
+    /**
+     * 해당 회원의 알림 목록 Slice 객체 반환하는 메소드
+     *
+     * @param member
+     * @param cursor
+     * @return
+     */
+    public Slice<Notification> getNotificationSlice(Member member, Long cursor) {
+        return notificationRepository.findNotificationsByCursor(member.getId(), cursor, PAGE_SIZE);
     }
 
     /**
@@ -166,8 +233,21 @@ public class NotificationService {
      * @param mannerKeywordList
      */
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
-        if (mannerKeywordList.size() == 0) {
+        if (mannerKeywordList.isEmpty()) {
             throw new NotificationException(ErrorCode.NOTIFICATION_METHOD_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * notificationId에 해당하는 알림 내역 존재 여부 검증
+     *
+     * @param member
+     * @param notificationId
+     */
+    private void validateNotificationExists(Member member, Long notificationId) {
+        boolean exists = notificationRepository.existsByMemberAndId(member, notificationId);
+        if (!exists) {
+            throw new NotificationException(ErrorCode.NOTIFICATION_NOT_FOUND);
         }
     }
 

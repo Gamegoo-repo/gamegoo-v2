@@ -4,6 +4,7 @@ import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.common.ApiResponse;
 import com.gamegoo.gamegoo_v2.common.annotation.ValidCursor;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
@@ -91,11 +92,19 @@ public class FriendController {
 
     @Operation(summary = "친구 목록 조회 API", description = "해당 회원의 친구 목록을 조회하는 API 입니다. 이름 오름차순(한글-영문-숫자 순)으로 정렬해 제공합니다."
             + "cursor를 보내지 않으면 상위 10개 친구 목록을 조회합니다.")
-    @Parameter(name = "cursor", description = "페이징을 위한 커서, 이전 친구 목록 조회에서 응답받은 next_cursor를 보내주세요.")
+    @Parameter(name = "cursor", description = "페이징을 위한 커서, 이전 친구 목록 조회에서 응답받은 nextCursor를 보내주세요.")
     @GetMapping
     public ApiResponse<FriendListResponse> getFriendList(
             @ValidCursor @RequestParam(name = "cursor", required = false) Long cursor, @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.getFriends(member, cursor));
+    }
+
+    @Operation(summary = "소환사명으로 친구 검색 API", description = "해당 회원의 친구 중, query string으로 시작하는 소환사명을 가진 모든 친구 목록을 조회합니다.")
+    @Parameter(name = "query", description = "친구 목록 검색을 위한 소환사명 string으로, 100자 이하여야 합니다.")
+    @GetMapping("/search")
+    public ApiResponse<List<FriendInfoResponse>> searchFriend(@RequestParam(name = "query") String query,
+            @AuthMember Member member) {
+        return ApiResponse.ok(friendFacadeService.searchFriend(member, query));
     }
 
 }

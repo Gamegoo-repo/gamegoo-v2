@@ -15,10 +15,13 @@ import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.friend.repository.FriendRequestRepository;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Slice;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -161,11 +164,11 @@ public class FriendService {
         // targetMember의 탈퇴 여부 검증
         memberValidator.validateTargetMemberIsNotBlind(targetMember);
 
-        // 두 회원이 친구 관계가 맞는지 검증
+        // 두 회원이 친구 관계인지 검증
         friendValidator.validateIsFriend(member, targetMember);
 
         // liked 상태 변경
-        Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember).get();
         friend.reverseLiked();
 
         return friend;
@@ -183,20 +186,16 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // 두 회원이 친구 관계인지 검증
-        Friend friend1 = friendRepository.findByFromMemberAndToMember(member, targetMember);
-        Friend friend2 = friendRepository.findByFromMemberAndToMember(targetMember, member);
+        Optional<Friend> optionalFriend1 = friendRepository.findByFromMemberAndToMember(member, targetMember);
+        Optional<Friend> optionalFriend2 = friendRepository.findByFromMemberAndToMember(targetMember, member);
 
-        if (friend1 == null && friend2 == null) {
+        if (optionalFriend1.isEmpty() && optionalFriend2.isEmpty()) {
             throw new FriendException(ErrorCode.MEMBERS_NOT_FRIEND);
         }
 
         // 친구 관계 삭제
-        if (friend1 != null) {
-            friendRepository.delete(friend1);
-        }
-        if (friend2 != null) {
-            friendRepository.delete(friend2);
-        }
+        optionalFriend1.ifPresent(friendRepository::delete);
+        optionalFriend2.ifPresent(friendRepository::delete);
     }
 
     /**
@@ -205,8 +204,63 @@ public class FriendService {
      * @param member
      * @return
      */
-    public Slice<Friend> getFriends(Member member, Long cursor) {
-        return friendRepository.findFriendsByCursorAndOrdered(member.getId(), cursor, PAGE_SIZE);
+    public Slice<Friend> getFriendSlice(Member member, Long cursor) {
+        return friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
+    }
+
+    /**
+     * 해당 회원의 모든 친구 id 리스트 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<Long> getFriendIdList(Member member) {
+        return member.getFriendList().stream()
+                .map(friend -> friend.getToMember().getId())
+                .toList();
+    }
+
+    /**
+     * 소환사명으로 친구 목록 조회하는 메소드
+     *
+     * @param member
+     * @param query
+     * @return
+     */
+    public List<Friend> searchFriendByGamename(Member member, String query) {
+        validateSearchQuery(query);
+        return friendRepository.findFriendsByQueryString(member.getId(), query);
+    }
+
+    /**
+     * fromMember와 toMember가 서로 친구 관계이면, 친구 관계 삭제하는 메소드
+     *
+     * @param fromMember
+     * @param toMember
+     */
+    public void removeFriendshipIfPresent(Member fromMember, Member toMember) {
+        Optional<Friend> optionalFriend = friendRepository.findByFromMemberAndToMember(fromMember, toMember);
+        if (optionalFriend.isPresent()) {
+            Friend friend = optionalFriend.get();
+            friendRepository.deleteById(friend.getId());
+        }
+
+        Optional<Friend> reverseFriend = friendRepository.findByFromMemberAndToMember(toMember, fromMember);
+        if (reverseFriend.isPresent()) {
+            Friend friend = reverseFriend.get();
+            friendRepository.deleteById(friend.getId());
+        }
+    }
+
+    /**
+     * fromMember가 toMember에게 보낸 PENDING 상태인 친구 요청을 취소 처리하는 메소드
+     *
+     * @param fromMember
+     * @param toMember
+     */
+    public void cancelPendingFriendRequest(Member fromMember, Member toMember) {
+        friendRequestRepository.findByFromMemberAndToMemberAndStatus(fromMember, toMember, FriendRequestStatus.PENDING)
+                .ifPresent(friendRequest -> friendRequest.updateStatus(FriendRequestStatus.CANCELLED));
     }
 
     private void validateNotSelf(Member member, Member targetMember) {
@@ -220,6 +274,12 @@ public class FriendService {
                 ErrorCode.FRIEND_TARGET_IS_BLOCKED);
         blockValidator.validateIfBlocked(targetMember, member, FriendException.class,
                 ErrorCode.BLOCKED_BY_FRIEND_TARGET);
+    }
+
+    private void validateSearchQuery(String query) {
+        if (query.length() > 100) {
+            throw new FriendException(ErrorCode.FRIEND_SEARCH_QUERY_BAD_REQUEST);
+        }
     }
 
 }

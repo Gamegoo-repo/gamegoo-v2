@@ -38,8 +38,6 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,28 +48,26 @@ import static org.mockito.Mockito.verify;
 class FriendRequestFacadeServiceTest {
 
     @Autowired
-    FriendFacadeService friendFacadeService;
+    private FriendFacadeService friendFacadeService;
 
     @Autowired
-    MemberRepository memberRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
     BlockRepository blockRepository;
 
     @Autowired
-    FriendRepository friendRepository;
+    private FriendRepository friendRepository;
 
     @Autowired
-    FriendRequestRepository friendRequestRepository;
+    private FriendRequestRepository friendRequestRepository;
 
     @MockitoSpyBean
-    NotificationRepository notificationRepository;
+    private NotificationRepository notificationRepository;
 
     @Autowired
-    NotificationTypeRepository notificationTypeRepository;
+    private NotificationTypeRepository notificationTypeRepository;
 
-    private static final String MEMBER_EMAIL = "test@gmail.com";
-    private static final String MEMBER_GAMENAME = "member";
     private static final String TARGET_EMAIL = "target@naver.com";
     private static final String TARGET_GAMENAME = "target";
 
@@ -79,7 +75,7 @@ class FriendRequestFacadeServiceTest {
 
     @BeforeEach
     void setUp() {
-        member = createMember(MEMBER_EMAIL, MEMBER_GAMENAME);
+        member = createMember("test@gmail.com", "member");
     }
 
     @AfterEach
@@ -113,6 +109,11 @@ class FriendRequestFacadeServiceTest {
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
             assertThat(response.getMessage()).isEqualTo("친구 요청 전송 성공");
+
+            // friendRequest 엔티티가 저장되었는지 검증
+            boolean exists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(member, targetMember,
+                    FriendRequestStatus.PENDING);
+            assertThat(exists).isTrue();
 
             // event로 인해 알림 2개가 저장되었는지 검증
             await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -149,6 +150,7 @@ class FriendRequestFacadeServiceTest {
         @Test
         void sendFriendRequest_shouldThrowWhenTargetIsBlocked() {
             // given
+            member = createMember("test@<EMAIL>", "member");
             Member targetMember = createMember(TARGET_EMAIL, TARGET_GAMENAME);
 
             // 내가 상대를 차단 처리
@@ -246,7 +248,16 @@ class FriendRequestFacadeServiceTest {
 
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
-            assertTrue(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+            assertThat(response.getMessage()).isEqualTo("친구 요청 수락 성공");
+
+            // FriendRequest 엔티티 상태가 정상 변경 되었는지 검증
+            boolean exists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(targetMember, member,
+                    FriendRequestStatus.ACCEPTED);
+            assertThat(exists).isTrue();
+
+            // Friend 엔티티가 정상 생성 되었는지 검증
+            assertThat(friendRepository.existsByFromMemberAndToMember(member, targetMember)).isTrue();
+            assertThat(friendRepository.existsByFromMemberAndToMember(targetMember, member)).isTrue();
 
             // event로 인해 알림 1개가 저장되었는지 검증
             await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -300,7 +311,12 @@ class FriendRequestFacadeServiceTest {
 
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
-            assertFalse(friendRepository.existsByFromMemberAndToMember(member, targetMember));
+            assertThat(response.getMessage()).isEqualTo("친구 요청 거절 성공");
+
+            // FriendRequest 엔티티 상태가 정상 변경 되었는지 검증
+            boolean exists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(targetMember, member,
+                    FriendRequestStatus.REJECTED);
+            assertThat(exists).isTrue();
 
             // event로 인해 알림 1개가 저장되었는지 검증
             await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -349,8 +365,12 @@ class FriendRequestFacadeServiceTest {
 
             // then
             assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
-            assertThat(friendRequestRepository.findByFromMemberAndToMemberAndStatus(member, targetMember,
-                    FriendRequestStatus.CANCELLED)).isNotEmpty();
+            assertThat(response.getMessage()).isEqualTo("친구 요청 취소 성공");
+
+            // FriendRequest 엔티티 상태가 정상 변경 되었는지 검증
+            boolean exists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(member, targetMember,
+                    FriendRequestStatus.CANCELLED);
+            assertThat(exists).isTrue();
         }
 
         @DisplayName("친구 요청 취소 실패: 본인 id를 요청한 경우 예외가 발생한다.")

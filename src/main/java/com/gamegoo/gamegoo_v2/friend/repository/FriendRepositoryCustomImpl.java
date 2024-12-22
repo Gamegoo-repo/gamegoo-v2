@@ -19,7 +19,7 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Friend> findFriendsByCursorAndOrdered(Long memberId, Long cursorId, Integer pageSize) {
+    public Slice<Friend> findFriendsByCursor(Long memberId, Long cursorId, int pageSize) {
         // 전체 친구 목록 조회
         List<Friend> allFriends = queryFactory.selectFrom(friend)
                 .where(friend.fromMember.id.eq(memberId))
@@ -45,6 +45,22 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
         }
 
         return new SliceImpl<>(pagedFriends, Pageable.unpaged(), hasNext);
+    }
+
+    @Override
+    public List<Friend> findFriendsByQueryString(Long memberId, String queryString) {
+        // query string으로 시작하는 소환사명을 갖는 모든 친구 목록 조회
+        List<Friend> result = queryFactory.selectFrom(friend)
+                .where(friend.fromMember.id.eq(memberId)
+                        .and(friend.toMember.gameName.startsWith(queryString))
+                )
+                .fetch();
+
+        result.sort(
+                (f1, f2) -> memberNameComparator.compare(f1.getToMember().getGameName(),
+                        f2.getToMember().getGameName()));
+
+        return result;
     }
 
 
@@ -123,6 +139,5 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
                 (c >= 0xAC00 && c <= 0xD7AF) || // 한글 음절
                 (c >= 0x3130 && c <= 0x318F);   // 한글 호환 자모
     }
-
 
 }

@@ -7,10 +7,12 @@ import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.friend.controller.FriendController;
 import com.gamegoo.gamegoo_v2.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.friend.dto.DeleteFriendResponse;
+import com.gamegoo.gamegoo_v2.friend.dto.FriendInfoResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendFacadeService;
+import com.gamegoo.gamegoo_v2.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FriendControllerTest extends ControllerTestSupport {
 
     @MockitoBean
-    FriendFacadeService friendFacadeService;
+    private FriendFacadeService friendFacadeService;
 
     private static final String API_URL_PREFIX = "/api/v2/friends";
     private static final Long TARGET_MEMBER_ID = 2L;
@@ -56,7 +58,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 전송 성공")
                     .build();
 
-            given(friendFacadeService.sendFriendRequest(any(), any())).willReturn(response);
+            given(friendFacadeService.sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -71,7 +73,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -84,7 +86,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenTargetIsBlind() throws Exception {
             // given
             willThrow(new MemberException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -97,7 +99,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenTargetIsBlocked() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_TARGET_IS_BLOCKED))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -110,7 +112,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenBlockedByTarget() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.BLOCKED_BY_FRIEND_TARGET))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -123,7 +125,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenAlreadyFriend() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.ALREADY_FRIEND))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -136,7 +138,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenPendingRequestToTargetExists() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.MY_PENDING_FRIEND_REQUEST_EXIST))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -149,7 +151,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void sendFriendRequestFailedWhenPendingRequestToMeExists() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.TARGET_PENDING_FRIEND_REQUEST_EXIST))
-                    .given(friendFacadeService).sendFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).sendFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(post(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -172,7 +174,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 수락 성공")
                     .build();
 
-            given(friendFacadeService.acceptFriendRequest(any(), any())).willReturn(response);
+            given(friendFacadeService.acceptFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
@@ -187,7 +189,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void acceptFriendRequestFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).acceptFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).acceptFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
@@ -200,7 +202,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void acceptFriendRequestFailedWhenNoPendingRequest() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
-                    .given(friendFacadeService).acceptFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).acceptFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
@@ -223,7 +225,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 거절 성공")
                     .build();
 
-            given(friendFacadeService.rejectFriendRequest(any(), any())).willReturn(response);
+            given(friendFacadeService.rejectFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
@@ -238,7 +240,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void rejectFriendRequestFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).rejectFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).rejectFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
@@ -251,7 +253,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void rejectFriendRequestFailedWhenNoPendingRequest() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
-                    .given(friendFacadeService).rejectFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).rejectFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
@@ -274,7 +276,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 취소 성공")
                     .build();
 
-            given(friendFacadeService.cancelFriendRequest(any(), any())).willReturn(response);
+            given(friendFacadeService.cancelFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -289,7 +291,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void cancelFriendRequestFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).cancelFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).cancelFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -302,7 +304,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void cancelFriendRequestFailedWhenNoPendingRequest() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.PENDING_FRIEND_REQUEST_NOT_EXIST))
-                    .given(friendFacadeService).cancelFriendRequest(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).cancelFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))
@@ -325,7 +327,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 즐겨찾기 설정 성공")
                     .build();
 
-            given(friendFacadeService.reverseFriendLiked(any(), any())).willReturn(response);
+            given(friendFacadeService.reverseFriendLiked(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/{memberId}/star", TARGET_MEMBER_ID))
@@ -344,7 +346,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 즐겨찾기 해제 성공")
                     .build();
 
-            given(friendFacadeService.reverseFriendLiked(any(), any())).willReturn(response);
+            given(friendFacadeService.reverseFriendLiked(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/{memberId}/star", TARGET_MEMBER_ID))
@@ -360,7 +362,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void reverseFriendLikedFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).reverseFriendLiked(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).reverseFriendLiked(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/{memberId}/star", TARGET_MEMBER_ID))
@@ -373,7 +375,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void reverseFriendLikedFailedWhenTargetIsBlind() throws Exception {
             // given
             willThrow(new MemberException(ErrorCode.TARGET_MEMBER_DEACTIVATED))
-                    .given(friendFacadeService).reverseFriendLiked(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).reverseFriendLiked(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/{memberId}/star", TARGET_MEMBER_ID))
@@ -381,12 +383,12 @@ class FriendControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.message").value(ErrorCode.TARGET_MEMBER_DEACTIVATED.getMessage()));
         }
 
-        @DisplayName("친구 즐겨찾기 설정/해제 실패: 상대가 친구가 아닌 경우 예외가 발생한다.")
+        @DisplayName("친구 즐겨찾기 설정/해제 실패: 상대가 친구가 아닌 경우 에러 응답을 반환한다.")
         @Test
         void reverseFriendLikedFailedWhenNotFriend() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.MEMBERS_NOT_FRIEND))
-                    .given(friendFacadeService).reverseFriendLiked(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).reverseFriendLiked(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/{memberId}/star", TARGET_MEMBER_ID))
@@ -409,7 +411,7 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 삭제 성공")
                     .build();
 
-            given(friendFacadeService.deleteFriend(any(), any())).willReturn(response);
+            given(friendFacadeService.deleteFriend(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -424,7 +426,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void deleteFriendFailedWhenTargetIsSelf() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.FRIEND_BAD_REQUEST))
-                    .given(friendFacadeService).deleteFriend(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).deleteFriend(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -437,7 +439,7 @@ class FriendControllerTest extends ControllerTestSupport {
         void deleteFriendFailedWhenNotFriend() throws Exception {
             // given
             willThrow(new FriendException(ErrorCode.MEMBERS_NOT_FRIEND))
-                    .given(friendFacadeService).deleteFriend(any(), eq(TARGET_MEMBER_ID));
+                    .given(friendFacadeService).deleteFriend(any(Member.class), eq(TARGET_MEMBER_ID));
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/{memberId}", TARGET_MEMBER_ID))
@@ -457,7 +459,7 @@ class FriendControllerTest extends ControllerTestSupport {
             // given
             List<Long> response = new ArrayList<>();
 
-            given(friendFacadeService.getFriendIdList(any())).willReturn(response);
+            given(friendFacadeService.getFriendIdList(any(Member.class))).willReturn(response);
 
             // when // then
             mockMvc.perform(get(API_URL_PREFIX + "/ids"))
@@ -480,13 +482,13 @@ class FriendControllerTest extends ControllerTestSupport {
             Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
             FriendListResponse response = FriendListResponse.of(friendSlice);
 
-            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
+            given(friendFacadeService.getFriends(any(Member.class), any())).willReturn(response);
 
             // when // then
             mockMvc.perform(get(API_URL_PREFIX))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.friendInfoList").isArray())
                     .andExpect(jsonPath("$.data.listSize").isNumber())
                     .andExpect(jsonPath("$.data.hasNext").isBoolean());
         }
@@ -499,33 +501,57 @@ class FriendControllerTest extends ControllerTestSupport {
             Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
             FriendListResponse response = FriendListResponse.of(friendSlice);
 
-            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
+            given(friendFacadeService.getFriends(any(Member.class), any(Long.class))).willReturn(response);
 
             // when // then
             mockMvc.perform(get(API_URL_PREFIX)
                             .param("cursor", "1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.friendInfoDTOList").isArray())
+                    .andExpect(jsonPath("$.data.friendInfoList").isArray())
                     .andExpect(jsonPath("$.data.listSize").isNumber())
                     .andExpect(jsonPath("$.data.hasNext").isBoolean());
         }
 
-        @DisplayName("친구 목록 조회 실패: cursor가 음수인 경우")
+        @DisplayName("친구 목록 조회 실패: cursor가 음수인 경우 에러 응답을 반환한다.")
         @Test
-        void getFriendListSucceedsWhenNegativeCursor() throws Exception {
-            // given
-            List<Friend> friends = new ArrayList<>();
-            Slice<Friend> friendSlice = new SliceImpl<>(friends, Pageable.unpaged(), false);
-            FriendListResponse response = FriendListResponse.of(friendSlice);
-
-            given(friendFacadeService.getFriends(any(), any())).willReturn(response);
-
+        void getFriendListFailedWhenNegativeCursor() throws Exception {
             // when // then
             mockMvc.perform(get(API_URL_PREFIX)
                             .param("cursor", "-1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("소환사명으로 친구 검색")
+    class searchFriendByGamename {
+
+        @DisplayName("소환사명으로 친구 검색 성공")
+        @Test
+        void searchFriendByGamenameSuccess() throws Exception {
+            // given
+            List<FriendInfoResponse> response = new ArrayList<>();
+
+            given(friendFacadeService.searchFriend(any(Member.class), any(String.class))).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/search")
+                            .param("query", "gamename"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data").isArray());
+        }
+
+        @DisplayName("소환사명으로 친구 검색 실패: query 파라미터가 없는 경우 에러 응답을 반환한다.")
+        @Test
+        void searchFriendByGamenameFailed() throws Exception {
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/search"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("query 파라미터가 누락되었습니다."))
+                    .andExpect(jsonPath("$.code").value("VALUE_ERROR"));
         }
 
     }

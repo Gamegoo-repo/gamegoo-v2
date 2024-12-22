@@ -3,13 +3,9 @@ package com.gamegoo.gamegoo_v2.common.validator;
 import com.gamegoo.gamegoo_v2.exception.MemberException;
 import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MemberValidator {
 
     /**

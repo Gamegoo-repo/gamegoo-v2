@@ -32,19 +32,24 @@ public class NotificationType extends BaseDateTimeEntity {
 
     private String sourceUrl;
 
+    @Column(nullable = false)
+    private int imgType;
+
     public static NotificationType create(NotificationTypeTitle title) {
         return NotificationType.builder()
                 .title(title)
                 .content(title.getMessage())
                 .sourceUrl(title.getSourceUrl())
+                .imgType(title.getImgType())
                 .build();
     }
 
     @Builder
-    private NotificationType(NotificationTypeTitle title, String content, String sourceUrl) {
+    private NotificationType(NotificationTypeTitle title, String content, String sourceUrl, int imgType) {
         this.title = title;
         this.content = content;
         this.sourceUrl = sourceUrl;
+        this.imgType = imgType;
     }
 
 }
