@@ -35,7 +35,7 @@ public class BlockService {
         validateNotSelfBlock(member, targetMember);
 
         // 대상 회원의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // 이미 차단한 회원인지 검증
         validateNotBlocked(member, targetMember);
@@ -69,7 +69,7 @@ public class BlockService {
     @Transactional
     public Block unBlockMember(Member member, Member targetMember) {
         // 대상 회원의 탈퇴 여부 검증
-        memberValidator.validateTargetMemberIsNotBlind(targetMember);
+        memberValidator.validateMemberIsNotBlind(targetMember);
 
         // targetMember가 실제로 차단 목록에 존재하는지 검증 및 block 엔티티 조회
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
@@ -102,6 +102,17 @@ public class BlockService {
         block.updateDeleted(true);
 
         return block;
+    }
+
+    /**
+     * memer가 targetMember를 차단했는지 여부를 반환하는 메소드
+     *
+     * @param member
+     * @param targetMember
+     * @return
+     */
+    public boolean isBlocked(Member member, Member targetMember) {
+        return blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
     }
 
     private void validateNotSelfBlock(Member member, Member targetMember) {

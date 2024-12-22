@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.chat.domain;
 import com.gamegoo.gamegoo_v2.board.domain.Board;
 import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.utils.TimestampUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,9 +12,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -48,5 +53,46 @@ public class Chat extends BaseDateTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_board_id")
     private Board sourceBoard;
+
+    public static Chat create(String contents, Integer systemType, Chatroom chatroom, Member fromMember,
+            Member toMember, Board sourceBoard) {
+        return Chat.builder()
+                .contents(contents)
+                .systemType(systemType)
+                .chatroom(chatroom)
+                .fromMember(fromMember)
+                .toMember(toMember)
+                .sourceBoard(sourceBoard)
+                .build();
+    }
+
+    @Builder
+    private Chat(String contents, long timestamp, Integer systemType, Chatroom chatroom, Member fromMember,
+            Member toMember, Board sourceBoard) {
+        this.contents = contents;
+        this.timestamp = timestamp;
+        this.systemType = systemType;
+        this.chatroom = chatroom;
+        this.fromMember = fromMember;
+        this.toMember = toMember;
+        this.sourceBoard = sourceBoard;
+    }
+
+    // repository에 저장되기 전에 해당 timestamp를 자동으로 설정
+    @PrePersist
+    public void prePersist() {
+        this.timestamp = TimestampUtil.getNowUtcTimeStamp();
+    }
+
+    /**
+     * 테스트 전용 createdAt 설정 메소드
+     *
+     * @param createdAt
+     * @return
+     */
+    public Chat withCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
 
 }
