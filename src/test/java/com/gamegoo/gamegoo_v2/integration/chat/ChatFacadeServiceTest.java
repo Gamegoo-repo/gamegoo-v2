@@ -95,7 +95,7 @@ class ChatFacadeServiceTest {
                     .hasMessage(ErrorCode._BAD_REQUEST.getMessage());
         }
 
-        @DisplayName("내가 상대를 차단한 경우 예외가 발생한다.")
+        @DisplayName("실패: 내가 상대를 차단한 경우 예외가 발생한다.")
         @Test
         void startChatroomByMemberId_shouldThrownWhenTargetMemberIsBlockedByMe() {
             // given
@@ -129,9 +129,12 @@ class ChatFacadeServiceTest {
             assertEnterChatroomResponse(response, chatroom, targetMember);
         }
 
-        @DisplayName("성공: 기존 채팅방이 존재하지 않는 경우 새 채팅방이 생성되어야 한다.")
+        @DisplayName("성공: 기존 채팅방이 존재하지 않는 경우 새 채팅방 생성 후 입장 처리되어야 한다.")
         @Test
         void startChatroomByMemberIdSucceedsWhenNoExistingChatroom() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+
             // when
             EnterChatroomResponse response = chatFacadeService.startChatroomByMemberId(member, targetMember.getId());
 
@@ -141,7 +144,7 @@ class ChatFacadeServiceTest {
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
                     chatroom.getId()).get();
 
-            assertThat(memberChatroom.getLastViewDate()).isNull();
+            assertThat(memberChatroom.getLastViewDate()).isAfter(now);
             assertThat(memberChatroom.getLastJoinDate()).isNull();
 
             // response 검증
@@ -171,6 +174,92 @@ class ChatFacadeServiceTest {
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED.getMessage());
         }
+
+    }
+
+    @Nested
+    @DisplayName("특정 글을 통한 채팅방 시작")
+    class StartChatroomByBoardIdTest {
+        @DisplayName("실패: 해당 글을 찾을 수 없는 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenBoardNotFound() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("실패: 게시글 작성자를 찾을 수 없는 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenMemberNotFound() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("실패: 게시글 작성자가 본인인 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenWriterIsSelf() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("실패: 게시글 작성자가 탈퇴한 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenWriterIsBlind() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("실패: 상대가 나를 차단한 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenNoExistingChatroomAndBlockedByTarget() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("실패: 내가 상대를 차단한 경우 예외가 발생한다.")
+        @Test
+        void startChatroomByBoardId_shouldThrownWhenTargetIsBlocked() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("성공: 기존 채팅방이 존재히는 경우 해당 채팅방에 입장 처리 및 최근 메시지 내역을 조회해야 한다. systemFlag로는 2를 반환해야 한다.")
+        @Test
+        void startChatroomByBoardIdSucceedsWhenExistingChatroom() {
+            // given
+
+            // when
+
+            // then
+        }
+
+        @DisplayName("성공: 기존 채팅방이 존재하지 않는 경우 새 채팅방 생성 후 입장 처리되어야 한다. systemFlag로는 1을 반환해야 한다.")
+        @Test
+        void startChatroomByBoardIdSucceedsWhenNoExistingChatroom() {
+            // given
+
+            // when
+
+            // then
+        }
+
 
     }
 
