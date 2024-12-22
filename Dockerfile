@@ -12,6 +12,8 @@ ARG RDS_PORT
 ARG DB_SCHEMA_NAME
 ARG DB_USERNAME
 ARG DB_PASSWORD
+ARG GMAIL_PWD
+ARG RIOT_API
 
 # 라이브러리 설치에 필요한 파일만 복사
 COPY build.gradle settings.gradle ./
