@@ -21,6 +21,7 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
       RIOT_API: ${{ secrets.RIOT_API }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
       # 1. GitHub Repository 파일 불러오기
@@ -96,3 +97,12 @@ jobs:
             -e GMAIL_PWD=${{ secrets.GMAIL_PWD }} \
             -e RIOT_API=${{ secrets.RIOT_API }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/gamegoov2-api:${{ github.sha }}
+
+      # 실패 시 디스코드에 알림 보내기
+      - name: Notify Discord on failure
+        if: failure() # 이전 스텝이 실패한 경우에만 실행
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{\"content\": \"🚨 **Gamegoo v2 API 배포 실패** 🚨\n브랜치: '${{ github.ref }}'\n커밋: '${{ github.sha }}'\nPR 제목: '${PR_TITLE}'\n[로그 확인하기]('${{ github.run_url }}')\"}" \
+          $DISCORD_WEBHOOK_URL
