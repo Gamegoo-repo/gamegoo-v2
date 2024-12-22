@@ -29,9 +29,20 @@ public class ChatController {
     @Parameter(name = "memberId", description = "채팅방을 시작할 대상 회원의 id 입니다.")
     @GetMapping("/chat/start/member/{memberId}")
     public ApiResponse<EnterChatroomResponse> startChatroomByMemberId(
-            @PathVariable(name = "memberId") Long targetMemberId,
-            @AuthMember Member member) {
+            @PathVariable(name = "memberId") Long targetMemberId, @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.startChatroomByMemberId(member, targetMemberId));
+    }
+
+
+    @Operation(summary = "특정 글을 통한 채팅방 시작 API",
+            description = "특정 글에서 말 걸어보기 버튼을 통해 채팅방을 시작하는 API 입니다.\n\n" +
+                    "대상 회원과의 채팅방이 이미 존재하는 경우, 채팅방 uuid, 상대 회원 정보와 채팅 메시지 내역 등을 리턴합니다.\n\n" +
+                    "대상 회원과의 채팅방이 존재하지 않는 경우, 채팅방을 새로 생성해 해당 채팅방의 uuid, 상대 회원 정보 등을 리턴합니다.")
+    @Parameter(name = "boardId", description = "말 걸어보기 버튼을 누른 게시글의 id 입니다.")
+    @GetMapping("/chat/start/board/{boardId}")
+    public ApiResponse<EnterChatroomResponse> startChatroomByBoardId(@PathVariable(name = "boardId") Long boardId,
+            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.startChatroomByBoardId(member, boardId));
     }
 
 }

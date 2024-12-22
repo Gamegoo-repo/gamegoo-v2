@@ -157,7 +157,7 @@ class ChatCommandServiceTest {
             // when // then
             assertThatThrownBy(() -> chatCommandService.enterExistingChatroom(member, targetMember, chatroom))
                     .isInstanceOf(ChatException.class)
-                    .hasMessage(ErrorCode.CHAT_START_FAILED_BLOCKED_BY_CHAT_TARGET.getMessage());
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET.getMessage());
         }
 
         @DisplayName("실패: 채팅방을 퇴장한 상태이며 상대가 탈퇴한 경우 예외가 발생한다.")
@@ -174,7 +174,7 @@ class ChatCommandServiceTest {
             // when // then
             assertThatThrownBy(() -> chatCommandService.enterExistingChatroom(member, targetMember, chatroom))
                     .isInstanceOf(ChatException.class)
-                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_USER_DEACTIVATED.getMessage());
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED.getMessage());
         }
 
     }

@@ -180,7 +180,7 @@ class ChatResponseFactoryTest {
 
             // when
             EnterChatroomResponse response = chatResponseFactory.toEnterChatroomResponse(member, targetMember,
-                    chatroomUuid, null, chatMessageListResponse);
+                    chatroomUuid, chatMessageListResponse);
 
             // then
             assertThat(response.getUuid()).isEqualTo(chatroomUuid);
@@ -206,7 +206,7 @@ class ChatResponseFactoryTest {
 
             // when
             EnterChatroomResponse response = chatResponseFactory.toEnterChatroomResponse(member, targetMember,
-                    chatroomUuid, null, chatMessageListResponse);
+                    chatroomUuid, chatMessageListResponse);
 
             // then
             assertThat(response.getGameName()).isEqualTo("(탈퇴한 사용자)");

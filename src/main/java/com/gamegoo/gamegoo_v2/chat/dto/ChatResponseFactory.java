@@ -5,7 +5,6 @@ import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
-import com.gamegoo.gamegoo_v2.chat.dto.response.SystemFlagResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.SystemMessageResponse;
 import com.gamegoo.gamegoo_v2.friend.service.FriendService;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
@@ -55,7 +54,31 @@ public class ChatResponseFactory {
     }
 
     public EnterChatroomResponse toEnterChatroomResponse(Member member, Member targetMember, String chatroomUuid,
-            SystemFlagResponse system, ChatMessageListResponse chatMessageListResponse) {
+                                                         Integer systemFlag, Long boardId,
+                                                         ChatMessageListResponse chatMessageListResponse) {
+        String gameName = targetMember.isBlind()
+                ? "(탈퇴한 사용자)"
+                : targetMember.getGameName();
+
+        EnterChatroomResponse.SystemFlagResponse systemFlagResponse =
+                EnterChatroomResponse.SystemFlagResponse.of(systemFlag, boardId);
+
+        return EnterChatroomResponse.builder()
+                .uuid(chatroomUuid)
+                .memberId(targetMember.getId())
+                .gameName(gameName)
+                .memberProfileImg(targetMember.getProfileImage())
+                .friend(friendService.isFriend(member, targetMember))
+                .blocked(blockService.isBlocked(member, targetMember))
+                .blind(targetMember.isBlind())
+                .friendRequestMemberId(friendService.getFriendRequestMemberId(member, targetMember))
+                .system(systemFlagResponse)
+                .chatMessageListResponse(chatMessageListResponse)
+                .build();
+    }
+
+    public EnterChatroomResponse toEnterChatroomResponse(Member member, Member targetMember, String chatroomUuid,
+                                                         ChatMessageListResponse chatMessageListResponse) {
         String gameName = targetMember.isBlind()
                 ? "(탈퇴한 사용자)"
                 : targetMember.getGameName();
@@ -69,7 +92,7 @@ public class ChatResponseFactory {
                 .blocked(blockService.isBlocked(member, targetMember))
                 .blind(targetMember.isBlind())
                 .friendRequestMemberId(friendService.getFriendRequestMemberId(member, targetMember))
-                .system(system)
+                .system(null)
                 .chatMessageListResponse(chatMessageListResponse)
                 .build();
     }
