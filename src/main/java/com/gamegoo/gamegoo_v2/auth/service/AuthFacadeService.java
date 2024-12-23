@@ -50,7 +50,7 @@ public class AuthFacadeService {
                 tierWinrateRank.getGameCount(), request.getIsAgree());
 
         // 5. [Riot] 최근 사용한 챔피언 3개 가져오기
-        List<Integer> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(request.getGameName(),
+        List<Long> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(request.getGameName(),
                 puuid);
 
         // 6. [Member] Member Champion DB에서 매핑하기
