@@ -21,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,7 +57,7 @@ public class MemberServiceFacadeTest {
 
         championRepository.saveAll(List.of(annie, olaf, galio));
 
-        List<Integer> championIds = Arrays.asList(1, 2, 3); // 또는 List.of(103, 268, 112);
+        List<Integer> championIds = Arrays.asList(1, 2, 3);
         memberChampionService.saveMemberChampions(member, championIds);
     }
 
@@ -100,7 +99,7 @@ public class MemberServiceFacadeTest {
             assertThat(response.getChampionResponseList()).hasSize(3);
 
             List<Long> championIds =
-                    member.getMemberChampionList().stream().map(MemberChampion::getId).collect(Collectors.toList());
+                    member.getMemberChampionList().stream().map(MemberChampion::getId).toList();
 
             for (int i = 0; i < championIds.size(); i++) {
                 assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
