@@ -57,7 +57,7 @@ public class MemberServiceFacadeTest {
 
         championRepository.saveAll(List.of(annie, olaf, galio));
 
-        List<Integer> championIds = Arrays.asList(1, 2, 3);
+        List<Long> championIds = Arrays.asList(1L, 2L, 3L);
         memberChampionService.saveMemberChampions(member, championIds);
     }
 
