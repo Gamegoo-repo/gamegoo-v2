@@ -40,7 +40,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(NOT_FOUND, "MEMBER_401", "사용자를 찾을 수 없습니다."),
     TARGET_MEMBER_DEACTIVATED(FORBIDDEN, "MEMBER_402", "대상 회원이 탈퇴했습니다."),
     MEMBER_ALREADY_EXISTS(BAD_REQUEST, "MEMBER_403", "이미 존재하는 사용자입니다."),
-    
+
     /**
      * 이메일 관련 에러
      */
@@ -65,8 +65,8 @@ public enum ErrorCode {
     RIOT_MATCH_IDS_NOT_FOUND(HttpStatus.NOT_FOUND, "RIOTMATCH_402", "Riot 매칭 id 들을 불러오는 도중 에러가 발생했습니다."),
     RIOT_PREFER_CHAMPION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "RIOTCHAMPION_401",
             "선호 챔피언을 연동하는 도중 에러가 발생했습니다"),
-    RIOT_MATCH_CHAMPION_NOT_FOUND(HttpStatus.NOT_FOUND, "RIOTCHAMPION_401", "매칭 정보에서 챔피언 정보를 불러오는 도중 에러가 발생했습니다."),
-    CHAMPION_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAMPION_404", "해당 챔피언이 존재하지 않습니다."),
+    RIOT_MATCH_CHAMPION_NOT_FOUND(HttpStatus.NOT_FOUND, "RIOTCHAMPION_402", "매칭 정보에서 챔피언 정보를 불러오는 도중 에러가 발생했습니다."),
+    CHAMPION_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAMPION_401", "해당 챔피언이 존재하지 않습니다."),
 
     /**
      * 차단 관련 에러
