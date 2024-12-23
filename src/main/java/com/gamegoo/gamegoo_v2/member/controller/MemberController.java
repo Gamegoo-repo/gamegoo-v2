@@ -25,10 +25,7 @@ public class MemberController {
     @Operation(summary = "내 프로필 조회 API 입니다. (jwt 토큰 O)", description = "API for looking up member with jwt")
     @GetMapping("")
     public ApiResponse<MyProfileResponse> getMemberJWT(@AuthMember Member member) {
-
-        //TODO: mannerRank 로직 추가
-
-        return ApiResponse.ok(MyProfileResponse.of(member, 1.0));
+        return ApiResponse.ok(memberFacadeService.getMyProfile(member));
     }
 
 }
