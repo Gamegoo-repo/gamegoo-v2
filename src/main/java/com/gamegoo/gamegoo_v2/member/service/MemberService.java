@@ -18,6 +18,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    @Transactional
     public Member createMember(String email, String password, String gameName, String tag, Tier tier, int rank,
                                double winrate, int gameCount, boolean isAgree) {
 
