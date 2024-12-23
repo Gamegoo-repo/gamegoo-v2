@@ -7,7 +7,6 @@ import com.gamegoo.gamegoo_v2.member.domain.Tier;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -36,17 +35,13 @@ public class MyProfileResponse {
     List<ChampionResponse> championResponseList;
 
     public static MyProfileResponse of(Member member, Double mannerRank) {
-        List<GameStyleResponse> gameStyleResponseList = member.getMemberGameStyleList() != null
-                ? member.getMemberGameStyleList().stream()
+        List<GameStyleResponse> gameStyleResponseList = member.getMemberGameStyleList().stream()
                 .map(memberGameStyle -> GameStyleResponse.of(memberGameStyle.getGameStyle()))
-                .toList()
-                : new ArrayList<>();
+                .toList();
 
-        List<ChampionResponse> championResponseList = member.getMemberChampionList() != null
-                ? member.getMemberChampionList().stream()
+        List<ChampionResponse> championResponseList = member.getMemberChampionList().stream()
                 .map(memberChampion -> ChampionResponse.of(memberChampion.getChampion()))
-                .toList()
-                : new ArrayList<>();
+                .toList();
 
         return MyProfileResponse.builder()
                 .id(member.getId())

@@ -68,8 +68,6 @@ public class MemberServiceFacadeTest {
         @DisplayName("내 프로필 조회 성공")
         @Test
         void getProfile() {
-            // given
-
             // when
             MyProfileResponse response = memberFacadeService.getMyProfile(member);
 
