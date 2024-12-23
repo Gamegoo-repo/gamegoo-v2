@@ -5,6 +5,9 @@ import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
+import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
+import com.gamegoo.gamegoo_v2.exception.ChatException;
+import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -22,6 +25,7 @@ public class ChatQueryService {
     private final ChatRepository chatRepository;
 
     private static final int PAGE_SIZE = 20;
+    private final MemberChatroomRepository memberChatroomRepository;
 
     /**
      * 두 회원 사이에 존재하는 chatroom을 반환하는 메소드
@@ -44,6 +48,28 @@ public class ChatQueryService {
      */
     public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom, MemberChatroom memberChatroom) {
         return chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(), member.getId(), PAGE_SIZE);
+    }
+
+    /**
+     * uuid에 해당하는 chatroom을 반환하는 메소드
+     *
+     * @param uuid
+     * @return
+     */
+    public Chatroom getChatroomByUuid(String uuid) {
+        return chatroomRepository.findByUuid(uuid).orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_NOT_FOUND));
+    }
+
+    /**
+     * 해당 chatrooom의 상대 회원을 반환하는 메소드
+     *
+     * @param member
+     * @param chatroom
+     * @return
+     */
+    public Member getChatroomTargetMember(Member member, Chatroom chatroom) {
+        return memberChatroomRepository.findTargetMemberByChatroomIdAndMemberId(chatroom.getId(), member.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_NOT_FOUND));
     }
 
 }

@@ -137,4 +137,51 @@ class ChatControllerTest extends ControllerTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("특정 채팅방 입장")
+    class EnterChatroomTest {
+        @DisplayName("성공: 채팅방 및 상대 회원 정보, 대화 내역이 반환된다.")
+        @Test
+        void enterChatroomSucceeds() throws Exception {
+            // given
+            ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
+                    .chatMessageList(new ArrayList<>())
+                    .listSize(0)
+                    .hasNext(false)
+                    .nextCursor(null)
+                    .build();
+
+            EnterChatroomResponse response = EnterChatroomResponse.builder()
+                    .memberId(TARGET_MEMBER_ID)
+                    .gameName(TARGET_GAMENAME)
+                    .memberProfileImg(1)
+                    .blind(false)
+                    .blocked(false)
+                    .friend(false)
+                    .friendRequestMemberId(null)
+                    .uuid(TARGET_CHATROOM_UUID)
+                    .system(null)
+                    .chatMessageListResponse(chatMessageListResponse)
+                    .build();
+
+            given(chatFacadeService.enterChatroomByUuid(any(Member.class), eq(TARGET_CHATROOM_UUID))).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/enter", TARGET_CHATROOM_UUID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
+                    .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
+                    .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
+                    .andExpect(jsonPath("$.data.memberProfileImg").value(1))
+                    .andExpect(jsonPath("$.data.blind").value(false))
+                    .andExpect(jsonPath("$.data.blocked").value(false))
+                    .andExpect(jsonPath("$.data.friend").value(false))
+                    .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
+                    .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
+                    .andExpect(jsonPath("$.data.system").isEmpty());
+
+        }
+    }
+
 }
