@@ -40,13 +40,24 @@ public class MemberService {
     }
 
     /**
-     * Email 중복 확인
+     * Email 중복 확인하기
+     *
+     * @param email email
+     */
+    public void checkDuplicateMemberByEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new MemberException(ErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+    }
+
+    /**
+     * DB에 없는 사용자일 경우 예외 발생
      *
      * @param email email
      */
     public void checkExistMemberByEmail(String email) {
-        if (memberRepository.existsByEmail(email)) {
-            throw new MemberException(ErrorCode.MEMBER_ALREADY_EXISTS);
+        if (!memberRepository.existsByEmail(email)) {
+            throw new MemberException(ErrorCode.MEMBER_NOT_FOUND);
         }
     }
 

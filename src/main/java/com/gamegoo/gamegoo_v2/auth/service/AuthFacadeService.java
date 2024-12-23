@@ -33,7 +33,7 @@ public class AuthFacadeService {
     @Transactional
     public void join(JoinRequest request) {
         // 1. [Member] 중복확인
-        memberService.checkExistMemberByEmail(request.getEmail());
+        memberService.checkDuplicateMemberByEmail(request.getEmail());
 
         // 2. [Riot] 존재하는 소환사인지 검증 & puuid 얻기
         String puuid = riotAccountService.getPuuid(request.getGameName(), request.getTag());

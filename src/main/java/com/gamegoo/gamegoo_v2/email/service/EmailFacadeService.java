@@ -2,7 +2,6 @@ package com.gamegoo.gamegoo_v2.email.service;
 
 import com.gamegoo.gamegoo_v2.email.dto.EmailCodeRequest;
 import com.gamegoo.gamegoo_v2.email.dto.EmailRequest;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,14 +21,15 @@ public class EmailFacadeService {
     }
 
     @Transactional
-    public void sendVerificationCodeWithDuplicationCheck(EmailRequest request) {
-        memberService.checkExistMemberByEmail(request.getEmail());
+    public void sendEmailVerificationCodeCheckDuplication(EmailRequest request) {
+        memberService.checkDuplicateMemberByEmail(request.getEmail());
         emailService.sendEmailVerificationCode(request.getEmail());
     }
 
     @Transactional
-    public void sendEmailVerificationCode(Member member) {
-        emailService.sendEmailVerificationCode(member.getEmail());
+    public void sendEmailVerificationCodeCheckExistence(EmailRequest request) {
+        memberService.checkExistMemberByEmail(request.getEmail());
+        emailService.sendEmailVerificationCode(request.getEmail());
     }
 
 }
