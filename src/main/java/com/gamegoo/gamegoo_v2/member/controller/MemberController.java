@@ -23,7 +23,7 @@ public class MemberController {
     private final MemberFacadeService memberFacadeService;
 
     @Operation(summary = "내 프로필 조회 API 입니다. (jwt 토큰 O)", description = "API for looking up member with jwt")
-    @GetMapping("")
+    @GetMapping
     public ApiResponse<MyProfileResponse> getMemberJWT(@AuthMember Member member) {
         return ApiResponse.ok(memberFacadeService.getMyProfile(member));
     }
