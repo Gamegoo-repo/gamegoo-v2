@@ -14,6 +14,7 @@ ARG DB_USERNAME
 ARG DB_PASSWORD
 ARG GMAIL_PWD
 ARG RIOT_API
+ARG SOCKET_SERVER_URL
 
 # 라이브러리 설치에 필요한 파일만 복사
 COPY build.gradle settings.gradle ./
