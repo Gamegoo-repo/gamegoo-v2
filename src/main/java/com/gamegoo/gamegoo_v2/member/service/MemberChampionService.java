@@ -27,17 +27,21 @@ public class MemberChampionService {
      * @param member          대상 멤버
      * @param top3ChampionIds 챔피언 ID 목록
      */
-    public void saveMemberChampions(Member member, List<Integer> top3ChampionIds) {
-        if (top3ChampionIds != null && !top3ChampionIds.isEmpty()) {
-            top3ChampionIds.forEach(championId -> {
-                Champion champion = championRepository.findById(Long.valueOf(championId))
-                        .orElseThrow(() -> new RiotException(ErrorCode.CHAMPION_NOT_FOUND));
-
-                MemberChampion memberChampion = MemberChampion.create(champion, member);
-
-                memberChampionRepository.save(memberChampion);
-            });
+    @Transactional
+    public void saveMemberChampions(Member member, List<Long> top3ChampionIds) {
+        if (top3ChampionIds == null || top3ChampionIds.isEmpty()) {
+            throw new RiotException(ErrorCode.CHAMPION_NOT_FOUND);
         }
+        
+        top3ChampionIds.forEach(championId -> {
+            Champion champion = championRepository.findById(championId)
+                    .orElseThrow(() -> new RiotException(ErrorCode.CHAMPION_NOT_FOUND));
+
+            MemberChampion memberChampion = MemberChampion.create(champion, member);
+
+            memberChampionRepository.save(memberChampion);
+        });
+
     }
 
 }

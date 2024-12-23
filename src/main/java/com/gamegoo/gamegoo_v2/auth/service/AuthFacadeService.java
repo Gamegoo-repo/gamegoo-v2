@@ -46,12 +46,11 @@ public class AuthFacadeService {
 
         // 4. [Member] member DB에 저장
         Member member = memberService.createMember(request.getEmail(), request.getPassword(), request.getGameName(),
-                request.getTag()
-                , tierWinrateRank.getTier(), tierWinrateRank.getRank(), tierWinrateRank.getWinrate(),
+                request.getTag(), tierWinrateRank.getTier(), tierWinrateRank.getRank(), tierWinrateRank.getWinrate(),
                 tierWinrateRank.getGameCount(), request.getIsAgree());
 
         // 5. [Riot] 최근 사용한 챔피언 3개 가져오기
-        List<Integer> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(request.getGameName(),
+        List<Long> preferChampionfromMatch = riotRecordService.getPreferChampionfromMatch(request.getGameName(),
                 puuid);
 
         // 6. [Member] Member Champion DB에서 매핑하기

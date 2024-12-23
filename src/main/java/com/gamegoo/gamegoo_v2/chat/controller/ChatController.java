@@ -41,8 +41,16 @@ public class ChatController {
     @Parameter(name = "boardId", description = "말 걸어보기 버튼을 누른 게시글의 id 입니다.")
     @GetMapping("/chat/start/board/{boardId}")
     public ApiResponse<EnterChatroomResponse> startChatroomByBoardId(@PathVariable(name = "boardId") Long boardId,
-            @AuthMember Member member) {
+                                                                     @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.startChatroomByBoardId(member, boardId));
+    }
+
+    @Operation(summary = "채팅방 입장 API",
+            description = "특정 채팅방에 입장하는 API 입니다. 상대 회원 정보와 채팅 메시지 내역 등을 리턴합니다.")
+    @GetMapping("/chat/{chatroomUuid}/enter")
+    public ApiResponse<EnterChatroomResponse> enterChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
+                                                            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.enterChatroomByUuid(member, chatroomUuid));
     }
 
 }

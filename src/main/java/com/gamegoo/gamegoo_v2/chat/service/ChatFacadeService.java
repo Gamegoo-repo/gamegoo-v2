@@ -11,6 +11,7 @@ import com.gamegoo.gamegoo_v2.chat.dto.ChatResponseFactory;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
+import com.gamegoo.gamegoo_v2.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.exception.ChatException;
 import com.gamegoo.gamegoo_v2.member.domain.Member;
@@ -39,6 +40,7 @@ public class ChatFacadeService {
 
     private final MemberValidator memberValidator;
     private final BlockValidator blockValidator;
+    private final ChatValidator chatValidator;
 
     private final ChatResponseFactory chatResponseFactory;
 
@@ -131,6 +133,38 @@ public class ChatFacadeService {
         int systemFlag = getSystemFlag(memberChatroom);
         return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(), systemFlag,
                 boardId, chatMessageListResponse);
+    }
+
+    /**
+     * uuid에 해당하는 채팅방에 입장 처리 Facade 메소드
+     *
+     * @param member
+     * @param uuid
+     * @return
+     */
+    @Transactional
+    public EnterChatroomResponse enterChatroomByUuid(Member member, String uuid) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
+
+        // 해당 채팅방이 회원의 것이 맞는지 검증
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+
+        // 내가 상대 회원을 차단하지 않았는지 검증
+        Member targetMember = chatQueryService.getChatroomTargetMember(member, chatroom);
+        blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_START_FAILED_TARGET_IS_BLOCKED);
+
+        // 채팅방에 입장 처리
+        MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
+
+        // 최근 메시지 내역 조회
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+
+        // 응답 dto 생성
+        ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
+
+        return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
+                chatMessageListResponse);
     }
 
     private int getSystemFlag(MemberChatroom memberChatroom) {

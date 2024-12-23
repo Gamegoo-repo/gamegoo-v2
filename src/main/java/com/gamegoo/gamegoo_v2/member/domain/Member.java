@@ -8,7 +8,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -44,7 +43,7 @@ public class Member extends BaseDateTimeEntity {
     @Column(nullable = false)
     private int mannerLevel = 1;
 
-    private Integer mannerScore;
+    private int mannerScore = 0;
 
     @Column(nullable = false)
     private boolean blind = false;
@@ -93,7 +92,7 @@ public class Member extends BaseDateTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Notification> notificationList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberChampion> memberChampionList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
@@ -134,13 +133,6 @@ public class Member extends BaseDateTimeEntity {
         this.winRate = winRate;
         this.gameCount = gameCount;
         this.isAgree = isAgree;
-        this.blind = false;
-        this.mainPosition = 0;
-        this.subPosition = 0;
-        this.wantPosition = 0;
-        this.mannerScore = 0;
-        this.mike = false;
-
     }
 
     public void updateBlind(boolean blind) {
