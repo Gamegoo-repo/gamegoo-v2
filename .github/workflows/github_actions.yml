@@ -61,7 +61,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/gamegoov2-api:${{ github.sha }} # 이미지 태그
           platforms: linux/amd64
           build-args: |  # Dockerfile에서 사용할 환경 변수 전달
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_SECRET= ${{ secrets.JWT_SECRET }}
             RDS_PRIVATE_IP= ${{ secrets.RDS_PRIVATE_IP }}
             RDS_PORT= ${{ secrets.RDS_PORT }}
             DB_SCHEMA_NAME= ${{ secrets.DB_SCHEMA_NAME }}
