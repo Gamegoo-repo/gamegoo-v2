@@ -2,6 +2,10 @@ package com.gamegoo.gamegoo_v2.chat.domain;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Getter
 public enum SystemMessageType {
 
@@ -16,5 +20,17 @@ public enum SystemMessageType {
     SystemMessageType(int code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    // code로 GameMode 객체 조회하기 위한 map
+    private static final Map<Integer, SystemMessageType> SYSTEM_MESSAGE_TYPE_MAP = Arrays.stream(values())
+            .collect(Collectors.toUnmodifiableMap(SystemMessageType::getCode, systemMessageType -> systemMessageType));
+
+    public static SystemMessageType of(int id) {
+        SystemMessageType systemMessageType = SYSTEM_MESSAGE_TYPE_MAP.get(id);
+        if (systemMessageType == null) {
+            throw new IllegalArgumentException("Invalid id: " + id);
+        }
+        return systemMessageType;
     }
 }
