@@ -68,7 +68,7 @@ public class ChatQueryService {
      * @return
      */
     public Member getChatroomTargetMember(Member member, Chatroom chatroom) {
-        return memberChatroomRepository.findTargetMemberByChatroomIdAndMemberId(member.getId(), chatroom.getId())
+        return memberChatroomRepository.findTargetMemberByChatroomIdAndMemberId(chatroom.getId(), member.getId())
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_NOT_FOUND));
     }
 
