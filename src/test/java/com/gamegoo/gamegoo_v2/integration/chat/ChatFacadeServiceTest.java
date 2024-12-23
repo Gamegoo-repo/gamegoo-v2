@@ -154,7 +154,8 @@ class ChatFacadeServiceTest {
 
             // then
             // 생성된 엔티티 검증
-            Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId()).get();
+            Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId())
+                    .get();
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
                     chatroom.getId()).get();
 
@@ -339,7 +340,8 @@ class ChatFacadeServiceTest {
 
             // then
             // lastViewDate 업데이트 검증
-            Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId()).get();
+            Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId())
+                    .get();
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
                     chatroom.getId()).get();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
@@ -348,6 +350,77 @@ class ChatFacadeServiceTest {
             assertEnterChatroomResponse(response, chatroom, targetMember);
             assertThat(response.getSystem().getFlag()).isEqualTo(1);
             assertThat(response.getSystem().getBoardId()).isEqualTo(board.getId());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("특정 채팅방 입장")
+    class EnterChatroomTest {
+
+        @DisplayName("실패: uuid에 해당하는 채팅방이 없는 경우 예외가 발생한다.")
+        @Test
+        void enterChatroom_shouldThrownWhenChatroomNotFound() {
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.enterChatroomByUuid(member, "notExistUuid"))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
+        }
+
+        @DisplayName("실패: 내가 상대를 차단한 경우 예외가 발생한다.")
+        @Test
+        void enterChatroom_shouldThrownWhenTargetIsBlocked() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            blockMember(member, targetMember);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.enterChatroomByUuid(member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_START_FAILED_TARGET_IS_BLOCKED.getMessage());
+        }
+
+        @DisplayName("실패: 해당 채팅방이 본인의 채팅방이 아닌 경우 예외가 발생한다.")
+        @Test
+        void enterChatroom_shouldThrownWhenAccessDenied() {
+            // given
+            Member otherMember = createMember("other@gmail.com", "otherMember");
+
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(otherMember, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.enterChatroomByUuid(member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
+        }
+
+        @DisplayName("성공: 채팅방에 입장 처리 및 최근 메시지 내역을 조회해야 한다.")
+        @Test
+        void enterChatroomSucceeds() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            EnterChatroomResponse response = chatFacadeService.enterChatroomByUuid(member, chatroom.getUuid());
+
+            // then
+            // lastViewDate 업데이트 검증
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).get();
+            assertThat(memberChatroom.getLastViewDate()).isAfter(now);
+
+            // response 검증
+            assertEnterChatroomResponse(response, chatroom, targetMember);
+            assertThat(response.getSystem()).isNull();
         }
 
     }
