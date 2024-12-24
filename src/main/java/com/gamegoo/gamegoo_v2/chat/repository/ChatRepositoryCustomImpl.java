@@ -65,6 +65,31 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
         }
     }
 
+    @Override
+    public Slice<Chat> findChatsByCursor(Long cursor, Long chatroomId, Long memberChatroomId, Long memberId,
+                                         int pageSize) {
+        List<Chat> chats = queryFactory.selectFrom(chat)
+                .where(
+                        chat.chatroom.id.eq(chatroomId),
+                        createdBefore(cursor),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        isMemberMessageOrMySystemMessage(memberId)
+                )
+                .orderBy(chat.createdAt.desc())
+                .limit(pageSize + 1) // 다음 페이지가 있는지 확인하기 위해 +1
+                .fetch();
+
+        boolean hasNext = chats.size() > pageSize;
+        if (hasNext) {
+            chats.remove(chats.size() - 1); // 다음 페이지가 있으면 마지막 요소를 제거
+        }
+
+        // createdAt 오름차순으로 정렬
+        Collections.reverse(chats);
+
+        return new SliceImpl<>(chats, Pageable.unpaged(), hasNext);
+    }
+
     /**
      * cursorChat 보다 예전 메시지가 있는지 여부를 반환
      *
