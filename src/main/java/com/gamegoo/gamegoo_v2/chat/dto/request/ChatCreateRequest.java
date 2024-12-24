@@ -9,7 +9,7 @@ import lombok.Getter;
 @Builder
 public class ChatCreateRequest {
 
-    @NotEmpty
+    @NotEmpty(message = "message는 필수 값 입니다.")
     String message;
 
     @Valid
