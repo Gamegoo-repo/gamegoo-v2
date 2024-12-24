@@ -113,6 +113,7 @@ public enum ErrorCode {
     CHAT_ADD_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_412", "채팅 상대 회원이 나를 차단했습니다. 메시지 전송이 불가능합니다."),
     ADD_BOARD_SYSTEM_CHAT_FAILED(BAD_REQUEST, "CHAT_413", "해당 게시글을 찾을 수 없습니다. 게시글 시스템 메시지 등록에 실패했습니다."),
     SYSTEM_MEMBER_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_414", "시스템 메시지 등록에 실패했습니다. 관리자에게 문의 바랍니다."),
+    SYSTEM_MESSAGE_TYPE_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_415", "시스템 메시지 타입 조회에 실패했습니다. 관리자에게 문의 바랍니다."),
 
     /**
      * 게시판 관련 에러

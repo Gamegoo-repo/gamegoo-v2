@@ -14,7 +14,7 @@ public class ChatCreateResponse {
     int senderProfileImg;
     String message;
     String createdAt;
-    Long timestamp;
+    long timestamp;
 
     public static ChatCreateResponse of(Chat chat) {
         return ChatCreateResponse.builder()

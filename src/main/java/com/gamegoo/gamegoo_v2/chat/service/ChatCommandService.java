@@ -98,11 +98,7 @@ public class ChatCommandService {
      * @return
      */
     public Chat createMemberChat(Member member, Chatroom chatroom, String content) {
-        return chatRepository.save(Chat.builder()
-                .chatroom(chatroom)
-                .fromMember(member)
-                .contents(content)
-                .build());
+        return chatRepository.save(Chat.create(content, null, chatroom, member, null, null));
     }
 
     /**
@@ -223,14 +219,7 @@ public class ChatCommandService {
         Member systemMember = memberRepository.findById(0L)
                 .orElseThrow(() -> new ChatException(ErrorCode.SYSTEM_MEMBER_NOT_FOUND));
 
-        return chatRepository.save(Chat.builder()
-                .contents(content)
-                .chatroom(chatroom)
-                .fromMember(systemMember)
-                .toMember(toMember)
-                .sourceBoard(sourceBoard)
-                .systemType(systemType)
-                .build());
+        return chatRepository.save(Chat.create(content, systemType, chatroom, systemMember, toMember, sourceBoard));
     }
 
     /**

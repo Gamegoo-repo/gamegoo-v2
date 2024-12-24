@@ -1,5 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.domain;
 
+import com.gamegoo.gamegoo_v2.core.exception.ChatException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -29,7 +31,7 @@ public enum SystemMessageType {
     public static SystemMessageType of(int id) {
         SystemMessageType systemMessageType = SYSTEM_MESSAGE_TYPE_MAP.get(id);
         if (systemMessageType == null) {
-            throw new IllegalArgumentException("Invalid id: " + id);
+            throw new ChatException(ErrorCode.SYSTEM_MESSAGE_TYPE_NOT_FOUND);
         }
         return systemMessageType;
     }
