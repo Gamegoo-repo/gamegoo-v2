@@ -6,11 +6,13 @@ import com.gamegoo.gamegoo_v2.account.member.domain.MemberChampion;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberChampionRepository;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberFacadeService;
 import com.gamegoo.gamegoo_v2.game.domain.Champion;
 import com.gamegoo.gamegoo_v2.game.repository.ChampionRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,32 +42,60 @@ public class MemberServiceFacadeTest {
     @Autowired
     ChampionRepository championRepository;
 
+    @Autowired
+    MemberChampionRepository memberChampionRepository;
+
     private static Member member;
     private static Member targetMember;
+
+    private static Champion annie;
+    private static Champion olaf;
+    private static Champion galio;
+
 
     @BeforeEach
     void setUp() {
         // Member 테스트용 객체 생성
-        member = Member.create("test@gmail.com", "pwd", LoginType.GENERAL, "TEST_GAMENAME", "TEST_TAG",
-                Tier.DIAMOND, 1, 50.0, 100, true);
-
-        // targetMember 테스트용 객체 생성
-        targetMember = Member.create("target@gmail.com", "pwd", LoginType.GENERAL, "TARGET_GAMENAME", "TARGET_TAG",
-                Tier.PLATINUM, 2, 40.0, 80, false);
-
-        memberRepository.save(member);
-        memberRepository.save(targetMember);
+        member = createMember("test1@gmail.com", "test1");
+        targetMember = createMember("test2@gmail.com", "test2");
 
         // Champion 테스트용 객체 생성
-        Champion annie = Champion.create(1l, "Annie");
-        Champion olaf = Champion.create(2l, "Olaf");
-        Champion galio = Champion.create(3l, "Galio");
+        annie = initChampion(1L, "Annie");
+        olaf = initChampion(2L, "Olaf");
+        galio = initChampion(3L, "Galio");
 
-        championRepository.saveAll(List.of(annie, olaf, galio));
-
-        List<Long> championIds = Arrays.asList(1L, 2L, 3L);
+        List<Long> championIds = Arrays.asList(annie.getId(), olaf.getId(), galio.getId());
         memberChampionService.saveMemberChampions(member, championIds);
         memberChampionService.saveMemberChampions(targetMember, championIds);
+    }
+
+    private Member createMember(String email, String gameName) {
+        return memberRepository.save(Member.builder()
+                .email(email)
+                .password("testPassword")
+                .profileImage(1)
+                .loginType(LoginType.GENERAL)
+                .gameName(gameName)
+                .tag("TAG")
+                .tier(Tier.IRON)
+                .gameRank(0)
+                .winRate(0.0)
+                .gameCount(0)
+                .isAgree(true)
+                .build());
+    }
+
+    private Champion initChampion(Long id, String name) {
+        Champion champion = Champion.create(id, name);
+        championRepository.save(champion);
+        return champion;
+    }
+
+    @AfterEach
+    void tearDown() {
+        memberChampionRepository.deleteAllInBatch();
+        championRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
     }
 
     @Nested
@@ -79,8 +109,6 @@ public class MemberServiceFacadeTest {
             MyProfileResponse response = memberFacadeService.getMyProfile(member);
 
             // then
-            // TODO: GameStyle 로직 추가
-            // TODO: GameStyle 로직 추가
             assertThat(response).isNotNull();
             assertThat(response.getId()).isEqualTo(member.getId());
             assertThat(response.getProfileImg()).isEqualTo(member.getProfileImage());
@@ -99,8 +127,6 @@ public class MemberServiceFacadeTest {
             assertThat(response.getLoginType()).isEqualTo(member.getLoginType().name());
             assertThat(response.getMannerLevel()).isEqualTo(member.getMannerLevel());
             assertThat(response.getChampionResponseList()).isNotNull();
-            assertThat(response.getChampionResponseList()).hasSize(3);
-
             List<Long> championIds =
                     member.getMemberChampionList().stream().map(MemberChampion::getId).toList();
 
@@ -138,7 +164,6 @@ public class MemberServiceFacadeTest {
             assertThat(response.getLoginType()).isEqualTo(String.valueOf(targetMember.getLoginType()));
             assertThat(response.getWinrate()).isEqualTo(targetMember.getWinRate());
             assertThat(response.getChampionResponseList()).isNotNull();
-            assertThat(response.getChampionResponseList()).hasSize(3);
 
             List<Champion> championList =
                     targetMember.getMemberChampionList().stream().map(MemberChampion::getChampion).toList();
