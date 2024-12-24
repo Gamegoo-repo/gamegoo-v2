@@ -34,8 +34,8 @@ public class OtherProfileResponse {
     Boolean blocked; // 해당 회원을 차단했는지 여부
     Boolean friend; // 해당 회원과의 친구 여부
     Long friendRequestMemberId; // 해당 회원과의 친구 요청 상태
-    List<GameStyleResponse> gameStyleResponseDTOList;
-    List<ChampionResponse> championResponseDTOList;
+    List<GameStyleResponse> gameStyleResponseList;
+    List<ChampionResponse> championResponseList;
 
     public static OtherProfileResponse of(Member targetMember, Double managerRank,
                                           Long mannerRatingCount, Boolean isFriend, Long friendRequestMemberId,
@@ -70,8 +70,8 @@ public class OtherProfileResponse {
                 .blocked(isBlocked)
                 .friend(isFriend)
                 .friendRequestMemberId(friendRequestMemberId)
-                .gameStyleResponseDTOList(gameStyleResponseList)
-                .championResponseDTOList(championResponseList)
+                .gameStyleResponseList(gameStyleResponseList)
+                .championResponseList(championResponseList)
                 .build();
     }
 
