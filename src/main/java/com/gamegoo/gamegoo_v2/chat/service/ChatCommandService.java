@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -89,61 +90,6 @@ public class ChatCommandService {
     }
 
     /**
-     * 시스템 메시지 등록 처리 메소드
-     *
-     * @param request
-     * @param member
-     * @param targetMember
-     * @param chatroom
-     */
-    public void processSystemMessages(SystemFlagRequest request, Member member, Member targetMember,
-                                      Chatroom chatroom) {
-        Board board = boardRepository.findById(request.getBoardId())
-                .orElseThrow(() -> new ChatException(ErrorCode.ADD_BOARD_SYSTEM_CHAT_FAILED));
-
-        // member에게 보낼 시스템 메시지 생성 및 저장
-        SystemMessageType systemType = SystemMessageType.of(request.getFlag());
-        String memberMessage = systemType.getMessage();
-        Chat systemChatToMember = createAndSaveSystemChat(chatroom, member, memberMessage, board, systemType.getCode());
-
-        // targetMember에게 보낼 시스템 메시지 생성 및 저장
-        SystemMessageType targetSystemType = SystemMessageType.INCOMING_CHAT_BY_BOARD_MESSAGE;
-        Chat systemChatToTargetMember = createAndSaveSystemChat(chatroom, targetMember, targetSystemType.getMessage(),
-                board, targetSystemType.getCode());
-
-        // lastJoinDate 업데이트
-        updateLastJoinDates(member, targetMember, systemChatToMember.getCreatedAt(),
-                systemChatToTargetMember.getCreatedAt(), chatroom);
-    }
-
-    /**
-     * MemberChatroom의 lastViewDate 및 lastJoinDate 업데이트
-     *
-     * @param chat
-     * @param member
-     * @param targetMember
-     * @param isSystemMessage
-     */
-    public void updateMemberChatroomDates(Chat chat, Member member, Member targetMember, boolean isSystemMessage) {
-        MemberChatroom memberChatroom = memberChatroomRepository
-                .findByMemberIdAndChatroomId(member.getId(), chat.getChatroom().getId())
-                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
-
-        if (isSystemMessage) {
-            memberChatroom.updateLastViewDate(chat.getCreatedAt());
-        } else {
-            updateLastViewAndJoinDates(memberChatroom, chat.getCreatedAt());
-            MemberChatroom targetMemberChatroom = memberChatroomRepository
-                    .findByMemberIdAndChatroomId(targetMember.getId(), chat.getChatroom().getId())
-                    .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
-
-            if (targetMemberChatroom.getLastJoinDate() == null) {
-                updateLastViewAndJoinDates(targetMemberChatroom, chat.getCreatedAt());
-            }
-        }
-    }
-
-    /**
      * 회원 메시지 생성 및 저장 메소드
      *
      * @param member
@@ -157,6 +103,99 @@ public class ChatCommandService {
                 .fromMember(member)
                 .contents(content)
                 .build());
+    }
+
+    /**
+     * 시스템 메시지 생성 및 저장 메소드
+     *
+     * @param request
+     * @param member
+     * @param targetMember
+     * @param chatroom
+     */
+    public List<Chat> createSystemChat(SystemFlagRequest request, Member member, Member targetMember,
+                                       Chatroom chatroom) {
+        Board board = boardRepository.findById(request.getBoardId())
+                .orElseThrow(() -> new ChatException(ErrorCode.ADD_BOARD_SYSTEM_CHAT_FAILED));
+
+        // member에게 보낼 시스템 메시지 생성 및 저장
+        SystemMessageType systemType = SystemMessageType.of(request.getFlag());
+        String memberMessage = systemType.getMessage();
+        Chat systemChatToMember = createAndSaveSystemChat(chatroom, member, memberMessage, board, systemType.getCode());
+
+        // targetMember에게 보낼 시스템 메시지 생성 및 저장
+        SystemMessageType targetSystemType = SystemMessageType.INCOMING_CHAT_BY_BOARD_MESSAGE;
+        Chat systemChatToTargetMember = createAndSaveSystemChat(chatroom, targetMember, targetSystemType.getMessage(),
+                board, targetSystemType.getCode());
+
+        return List.of(systemChatToMember, systemChatToTargetMember);
+    }
+
+    /**
+     * member의 lastViewDate 업데이트 메소드
+     *
+     * @param member
+     * @param chatroom
+     * @param lastViewDate
+     * @return
+     */
+    public MemberChatroom updateLastViewDate(Member member, Chatroom chatroom, LocalDateTime lastViewDate) {
+        MemberChatroom memberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+
+        memberChatroom.updateLastViewDate(lastViewDate);
+
+        return memberChatroom;
+    }
+
+    /**
+     * member와 targetMember의 lastJoinDate 업데이트 및 socket join 이벤트 발생
+     *
+     * @param member
+     * @param targetMember
+     * @param memberCreatedAt
+     * @param targetCreatedAt
+     * @param chatroom
+     */
+    public void updateLastJoinDates(Member member, Member targetMember, LocalDateTime memberCreatedAt,
+                                    LocalDateTime targetCreatedAt, Chatroom chatroom) {
+        MemberChatroom memberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+
+        MemberChatroom targetMemberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(targetMember.getId(), chatroom.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+
+        updateLastJoinDate(member, memberChatroom, memberCreatedAt);
+        updateLastJoinDate(targetMember, targetMemberChatroom, targetCreatedAt);
+    }
+
+    /**
+     * 새로운 채팅 등록 시 member의 lastViewDate, member와 targetMember의 lastJoinDate 업데이트
+     *
+     * @param member
+     * @param targetMember
+     * @param chat
+     */
+    public void updateMemberChatroomDatesByAddChat(Member member, Member targetMember, Chat chat) {
+        // member의 lastViewDate 업데이트
+        MemberChatroom memberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(member.getId(), chat.getChatroom().getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+
+        memberChatroom.updateLastViewDate(chat.getCreatedAt());
+
+        // member의 lastJoinDate 업데이트
+        updateLastJoinDate(member, memberChatroom, chat.getCreatedAt());
+
+        // targetMember의 lastJoinDate 업데이트
+        MemberChatroom targetMemberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(targetMember.getId(), chat.getChatroom().getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+
+        updateLastJoinDate(targetMember, targetMemberChatroom, chat.getCreatedAt());
     }
 
     /**
@@ -195,53 +234,18 @@ public class ChatCommandService {
     }
 
     /**
-     * 회원과 상대 회원의 lastJoinDate 업데이트 및 socket join 이벤트 발생
+     * 기존 lastJoinDate가 null인 경우 업데이트 및 socket join 이벤트 발생
      *
      * @param member
-     * @param targetMember
-     * @param memberCreatedAt
-     * @param targetCreatedAt
-     * @param chatroom
+     * @param memberChatroom
+     * @param date
      */
-    private void updateLastJoinDates(Member member, Member targetMember, LocalDateTime memberCreatedAt,
-                                     LocalDateTime targetCreatedAt, Chatroom chatroom) {
-        MemberChatroom memberChatroom = memberChatroomRepository
-                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
-                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
-
-        MemberChatroom targetMemberChatroom = memberChatroomRepository
-                .findByMemberIdAndChatroomId(targetMember.getId(), chatroom.getId())
-                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
-
+    private void updateLastJoinDate(Member member, MemberChatroom memberChatroom, LocalDateTime date) {
         if (memberChatroom.getLastJoinDate() == null) {
-            memberChatroom.updateLastJoinDate(memberCreatedAt);
+            memberChatroom.updateLastJoinDate(date);
 
             // socket join API 요청
-            eventPublisher.publishEvent(new SocketJoinEvent(member.getId(), chatroom.getUuid()));
-        }
-
-        if (targetMemberChatroom.getLastJoinDate() == null) {
-            targetMemberChatroom.updateLastJoinDate(targetCreatedAt);
-
-            // socket join API 요청
-            eventPublisher.publishEvent(new SocketJoinEvent(targetMember.getId(), chatroom.getUuid()));
+            eventPublisher.publishEvent(new SocketJoinEvent(member.getId(), memberChatroom.getChatroom().getUuid()));
         }
     }
-
-    /**
-     * lastViewDate 및 lastJoinDate 업데이트
-     *
-     * @param chatroom 회원의 MemberChatroom 엔티티
-     * @param date     업데이트할 날짜
-     */
-    private void updateLastViewAndJoinDates(MemberChatroom chatroom, LocalDateTime date) {
-        chatroom.updateLastViewDate(date);
-        if (chatroom.getLastJoinDate() == null) {
-            chatroom.updateLastJoinDate(date);
-
-            eventPublisher.publishEvent(
-                    new SocketJoinEvent(chatroom.getMember().getId(), chatroom.getChatroom().getUuid()));
-        }
-    }
-
 }

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET;
@@ -194,16 +195,31 @@ public class ChatFacadeService {
         blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_ADD_FAILED_TARGET_IS_BLOCKED);
         blockValidator.throwIfBlocked(targetMember, member, ChatException.class, CHAT_ADD_FAILED_BLOCKED_BY_TARGET);
 
+        Chat chat;
         // 등록해야 할 시스템 메시지가 있는 경우
         if (request.getSystem() != null) {
-            chatCommandService.processSystemMessages(request.getSystem(), member, targetMember, chatroom);
+            // 시스템 메시지 생성
+            List<Chat> chats = chatCommandService.createSystemChat(request.getSystem(), member, targetMember,
+                    chatroom);
+
+            // member와 targetMember의 lastJoinDate 업데이트
+            Chat systemChatToMember = chats.get(0);
+            Chat systemChatToTargetMember = chats.get(1);
+            chatCommandService.updateLastJoinDates(member, targetMember, systemChatToMember.getCreatedAt(),
+                    systemChatToTargetMember.getCreatedAt(), chatroom);
+
+            // 채팅 생성 및 저장
+            chat = chatCommandService.createMemberChat(member, chatroom, request.getMessage());
+
+            // member의 lastViewDate 업데이트
+            chatCommandService.updateLastViewDate(member, chatroom, chat.getCreatedAt());
+        } else {
+            // 채팅 생성 및 저장
+            chat = chatCommandService.createMemberChat(member, chatroom, request.getMessage());
+
+            // member와 targetMember의 lastViewDate 및 lastJoinDate 업데이트
+            chatCommandService.updateMemberChatroomDatesByAddChat(member, targetMember, chat);
         }
-
-        // 채팅 생성 및 저장
-        Chat chat = chatCommandService.createMemberChat(member, chatroom, request.getMessage());
-
-        // MemberChatroom의 lastViewDate 업데이트
-        chatCommandService.updateMemberChatroomDates(chat, member, targetMember, request.getSystem() != null);
 
         return ChatCreateResponse.of(chat);
     }
