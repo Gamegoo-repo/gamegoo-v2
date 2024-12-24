@@ -1,7 +1,7 @@
-package com.gamegoo.gamegoo_v2.exception;
+package com.gamegoo.gamegoo_v2.core.exception;
 
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.exception.common.GlobalException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
 
 public class SocketException extends GlobalException {
 

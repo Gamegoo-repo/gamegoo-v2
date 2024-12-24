@@ -1,10 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.service;
 
-import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
-import com.gamegoo.gamegoo_v2.content.board.domain.Board;
-import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
-import com.gamegoo.gamegoo_v2.board.domain.Board;
-import com.gamegoo.gamegoo_v2.board.service.BoardService;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
@@ -14,12 +11,12 @@ import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
 import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -28,15 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET;
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_DEACTIVATED;
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_IS_BLOCKED;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_IS_BLOCKED;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_DEACTIVATED;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_IS_BLOCKED;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED;
-import static com.gamegoo.gamegoo_v2.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_IS_BLOCKED;
 
 @Service
 @RequiredArgsConstructor

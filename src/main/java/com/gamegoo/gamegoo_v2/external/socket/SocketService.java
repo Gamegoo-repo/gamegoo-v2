@@ -1,7 +1,7 @@
-package com.gamegoo.gamegoo_v2.socket;
+package com.gamegoo.gamegoo_v2.external.socket;
 
-import com.gamegoo.gamegoo_v2.exception.SocketException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.core.exception.SocketException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

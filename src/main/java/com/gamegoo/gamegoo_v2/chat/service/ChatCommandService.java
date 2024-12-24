@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.service;
 
-import com.gamegoo.gamegoo_v2.board.domain.Board;
-import com.gamegoo.gamegoo_v2.board.repository.BoardRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
@@ -10,18 +10,13 @@ import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
 import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
+import com.gamegoo.gamegoo_v2.core.event.SocketJoinEvent;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.common.validator.BlockValidator;
-import com.gamegoo.gamegoo_v2.common.validator.MemberValidator;
-import com.gamegoo.gamegoo_v2.event.SocketJoinEvent;
-import com.gamegoo.gamegoo_v2.exception.ChatException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -253,4 +248,5 @@ public class ChatCommandService {
             eventPublisher.publishEvent(new SocketJoinEvent(member.getId(), memberChatroom.getChatroom().getUuid()));
         }
     }
+
 }

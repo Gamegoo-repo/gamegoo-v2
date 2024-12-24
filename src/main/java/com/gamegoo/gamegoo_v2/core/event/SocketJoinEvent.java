@@ -1,4 +1,4 @@
-package com.gamegoo.gamegoo_v2.event;
+package com.gamegoo.gamegoo_v2.core.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

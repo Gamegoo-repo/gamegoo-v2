@@ -1,7 +1,7 @@
-package com.gamegoo.gamegoo_v2.event.listener;
+package com.gamegoo.gamegoo_v2.core.event.listener;
 
-import com.gamegoo.gamegoo_v2.event.SocketJoinEvent;
-import com.gamegoo.gamegoo_v2.socket.SocketService;
+import com.gamegoo.gamegoo_v2.core.event.SocketJoinEvent;
+import com.gamegoo.gamegoo_v2.external.socket.SocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

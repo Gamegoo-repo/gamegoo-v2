@@ -1,13 +1,12 @@
 package com.gamegoo.gamegoo_v2.chat.controller;
 
-import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
+import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
-import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
