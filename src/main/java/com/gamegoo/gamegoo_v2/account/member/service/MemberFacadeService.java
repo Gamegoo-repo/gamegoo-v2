@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.account.member.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.PositionRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
@@ -60,14 +61,40 @@ public class MemberFacadeService {
                 isBlocked);
     }
 
+    /**
+     * 프로필 이미지 수정
+     *
+     * @param member  회원
+     * @param request 프로필이미지
+     * @return 성공 메세지
+     */
     public String setProfileImage(Member member, ProfileImageRequest request) {
         memberService.setProfileImage(member, request.getProfileImage());
         return "프로필 이미지 수정이 완료됐습니다";
     }
 
+    /**
+     * 마이크 여부 수정
+     *
+     * @param member  회원
+     * @param request 마이크 여부
+     * @return 성공 메세지
+     */
     public String setIsMike(Member member, IsMikeRequest request) {
         memberService.setIsMike(member, request.getIsMike());
         return "마이크 여부 수정이 완료됐습니다";
+    }
+
+    /**
+     * 포지션 수정
+     *
+     * @param member  회원
+     * @param request 주/부/원하는 포지션
+     * @return 성공 메세지
+     */
+    public String setPosition(Member member, PositionRequest request) {
+        memberService.setPosition(member, request.getMainP(), request.getSubP(), request.getWantP());
+        return "포지션 여부 수정이 완료됐습니다";
     }
 
 }
