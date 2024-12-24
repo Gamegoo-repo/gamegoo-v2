@@ -143,4 +143,8 @@ public class Member extends BaseDateTimeEntity {
         this.profileImage = profileImage;
     }
 
+    public void updateMike(boolean mike) {
+        this.mike = mike;
+    }
+
 }

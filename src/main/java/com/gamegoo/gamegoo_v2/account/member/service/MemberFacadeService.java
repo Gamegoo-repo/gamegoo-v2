@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.account.member.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
@@ -62,6 +63,11 @@ public class MemberFacadeService {
     public String setProfileImage(Member member, ProfileImageRequest request) {
         memberService.setProfileImage(member, request.getProfileImage());
         return "프로필 이미지 수정이 완료됐습니다";
+    }
+
+    public String setIsMike(Member member, IsMikeRequest request) {
+        memberService.setIsMike(member, request.getIsMike());
+        return "마이크 여부 수정이 완료됐습니다";
     }
 
 }
