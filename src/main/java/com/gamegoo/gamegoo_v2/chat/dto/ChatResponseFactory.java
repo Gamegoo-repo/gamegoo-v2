@@ -1,13 +1,13 @@
 package com.gamegoo.gamegoo_v2.chat.dto;
 
-import com.gamegoo.gamegoo_v2.block.service.BlockService;
+import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.SystemMessageResponse;
-import com.gamegoo.gamegoo_v2.friend.service.FriendService;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.social.friend.service.FriendService;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;

@@ -1,15 +1,15 @@
 package com.gamegoo.gamegoo_v2.unit.factory;
 
-import com.gamegoo.gamegoo_v2.block.service.BlockService;
+import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.dto.ChatResponseFactory;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
-import com.gamegoo.gamegoo_v2.friend.service.FriendService;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.social.friend.service.FriendService;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.utils.TimestampUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

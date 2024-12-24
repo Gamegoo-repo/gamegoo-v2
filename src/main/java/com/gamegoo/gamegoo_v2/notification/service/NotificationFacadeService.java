@@ -1,6 +1,6 @@
 package com.gamegoo.gamegoo_v2.notification.service;
 
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationCursorListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationPageListResponse;

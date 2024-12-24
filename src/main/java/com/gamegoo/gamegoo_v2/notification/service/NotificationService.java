@@ -1,9 +1,9 @@
 package com.gamegoo.gamegoo_v2.notification.service;
 
-import com.gamegoo.gamegoo_v2.exception.NotificationException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.manner.domain.MannerKeyword;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.core.exception.NotificationException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.social.manner.domain.MannerKeyword;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;

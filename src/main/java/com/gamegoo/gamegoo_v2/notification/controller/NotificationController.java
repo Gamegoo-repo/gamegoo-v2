@@ -1,10 +1,10 @@
 package com.gamegoo.gamegoo_v2.notification.controller;
 
-import com.gamegoo.gamegoo_v2.auth.annotation.AuthMember;
-import com.gamegoo.gamegoo_v2.common.ApiResponse;
-import com.gamegoo.gamegoo_v2.common.annotation.ValidCursor;
-import com.gamegoo.gamegoo_v2.common.annotation.ValidPage;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
+import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
+import com.gamegoo.gamegoo_v2.core.common.annotation.ValidCursor;
+import com.gamegoo.gamegoo_v2.core.common.annotation.ValidPage;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationCursorListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationPageListResponse;
 import com.gamegoo.gamegoo_v2.notification.dto.ReadNotificationResponse;

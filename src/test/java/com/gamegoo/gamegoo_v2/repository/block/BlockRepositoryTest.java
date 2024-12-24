@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2.repository.block;
 
-import com.gamegoo.gamegoo_v2.block.domain.Block;
-import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2.matching.domain;
 
-import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.core.common.BaseDateTimeEntity;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
