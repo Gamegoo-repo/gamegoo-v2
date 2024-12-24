@@ -5,12 +5,12 @@ import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.MemberChampion;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.PositionRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberChampionRepository;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
-import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberFacadeService;
 import com.gamegoo.gamegoo_v2.core.exception.RiotException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
@@ -35,9 +35,6 @@ public class MemberServiceFacadeTest {
 
     @Autowired
     MemberFacadeService memberFacadeService;
-
-    @Autowired
-    MemberChampionService memberChampionService;
 
     @Autowired
     MemberRepository memberRepository;
@@ -112,7 +109,6 @@ public class MemberServiceFacadeTest {
         for (int i = 0; i < championIds.size(); i++) {
             assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
         }
-
     }
 
     @DisplayName("다른 사람 프로필 조회 성공")
@@ -148,7 +144,6 @@ public class MemberServiceFacadeTest {
         for (int i = 0; i < championIds.size(); i++) {
             assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
         }
-
     }
 
     @DisplayName("프로필 이미지 변경 성공")
@@ -158,13 +153,10 @@ public class MemberServiceFacadeTest {
         ProfileImageRequest request = ProfileImageRequest.builder()
                 .profileImage(2)
                 .build();
-
         // when
         memberFacadeService.setProfileImage(member, request);
-
         // then
         assertThat(member.getProfileImage()).isEqualTo(request.getProfileImage());
-
     }
 
     @DisplayName("마이크 유무 변경 성공")
@@ -174,13 +166,27 @@ public class MemberServiceFacadeTest {
         IsMikeRequest request = IsMikeRequest.builder()
                 .isMike(true)
                 .build();
-
         // when
         memberFacadeService.setIsMike(member, request);
-
         // then
         assertThat(member.isMike()).isEqualTo(request.getIsMike());
+    }
 
+    @DisplayName("주/부/원하는 포지션 변경 성공")
+    @Test
+    void setPosition() {
+        // given
+        PositionRequest request = PositionRequest.builder()
+                .mainP(1)
+                .subP(2)
+                .wantP(3)
+                .build();
+        // when
+        memberFacadeService.setPosition(member, request);
+        // then
+        assertThat(member.getMainPosition()).isEqualTo(request.getMainP());
+        assertThat(member.getSubPosition()).isEqualTo(request.getSubP());
+        assertThat(member.getWantPosition()).isEqualTo(request.getWantP());
     }
 
     private Member createMember(String email, String gameName) {

@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.account.member.controller;
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.PositionRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
@@ -46,7 +47,6 @@ public class MemberController {
     @PutMapping("/profileImage")
     public ApiResponse<String> modifyPosition(
             @Valid @RequestBody ProfileImageRequest request, @AuthMember Member member) {
-
         return ApiResponse.ok(memberFacadeService.setProfileImage(member, request));
     }
 
@@ -54,8 +54,14 @@ public class MemberController {
     @PutMapping("/mike")
     public ApiResponse<String> modifyIsMike(
             @Valid @RequestBody IsMikeRequest request, @AuthMember Member member) {
-
         return ApiResponse.ok(memberFacadeService.setIsMike(member, request));
+    }
+
+    @Operation(summary = "주/부/원하는 포지션 수정 API 입니다.", description = "API for Main/Sub/Want Position Modification")
+    @PutMapping("/position")
+    public ApiResponse<String> modifyPosition(
+            @Valid @RequestBody PositionRequest request, @AuthMember Member member) {
+        return ApiResponse.ok(memberFacadeService.setPosition(member, request));
     }
 
 }

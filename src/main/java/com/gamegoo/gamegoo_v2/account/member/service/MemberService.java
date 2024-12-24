@@ -93,4 +93,16 @@ public class MemberService {
         member.updateMike(isMike);
     }
 
+    /**
+     * 포지션 수정
+     *
+     * @param member       회원
+     * @param mainPosition 주 포지션
+     * @param subPosition  부 포지션
+     * @param wantPosition 원하는 포지션
+     */
+    public void setPosition(Member member, int mainPosition, int subPosition, int wantPosition) {
+        member.updatePosition(mainPosition, subPosition, wantPosition);
+    }
+
 }
