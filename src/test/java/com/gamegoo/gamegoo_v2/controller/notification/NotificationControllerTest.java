@@ -1,9 +1,9 @@
 package com.gamegoo.gamegoo_v2.controller.notification;
 
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
-import com.gamegoo.gamegoo_v2.exception.NotificationException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.core.exception.NotificationException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.controller.NotificationController;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.dto.NotificationCursorListResponse;

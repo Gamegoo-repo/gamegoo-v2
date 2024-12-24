@@ -1,11 +1,11 @@
 package com.gamegoo.gamegoo_v2.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gamegoo.gamegoo_v2.auth.annotation.resolver.AuthMemberArgumentResolver;
-import com.gamegoo.gamegoo_v2.auth.jwt.JwtInterceptor;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.auth.annotation.resolver.AuthMemberArgumentResolver;
+import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtInterceptor;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

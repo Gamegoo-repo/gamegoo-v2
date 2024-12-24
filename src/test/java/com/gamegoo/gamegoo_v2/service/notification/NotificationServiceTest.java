@@ -1,11 +1,11 @@
 package com.gamegoo.gamegoo_v2.service.notification;
 
-import com.gamegoo.gamegoo_v2.manner.domain.MannerKeyword;
-import com.gamegoo.gamegoo_v2.manner.repository.MannerKeywordRepository;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
-import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.social.manner.domain.MannerKeyword;
+import com.gamegoo.gamegoo_v2.social.manner.repository.MannerKeywordRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;

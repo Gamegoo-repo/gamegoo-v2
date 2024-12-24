@@ -1,5 +1,9 @@
 package com.gamegoo.gamegoo_v2.integration.chat;
 
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
 import com.gamegoo.gamegoo_v2.block.domain.Block;
 import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.board.domain.Board;
@@ -14,6 +18,16 @@ import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
+import com.gamegoo.gamegoo_v2.core.exception.BoardException;
+import com.gamegoo.gamegoo_v2.core.exception.ChatException;
+import com.gamegoo.gamegoo_v2.core.exception.MemberException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.exception.BoardException;
 import com.gamegoo.gamegoo_v2.exception.ChatException;
 import com.gamegoo.gamegoo_v2.exception.MemberException;

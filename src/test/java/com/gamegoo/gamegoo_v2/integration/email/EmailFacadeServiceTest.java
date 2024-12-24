@@ -1,17 +1,17 @@
 package com.gamegoo.gamegoo_v2.integration.email;
 
-import com.gamegoo.gamegoo_v2.email.domain.EmailVerifyRecord;
-import com.gamegoo.gamegoo_v2.email.dto.EmailRequest;
-import com.gamegoo.gamegoo_v2.email.repository.EmailVerifyRecordRepository;
-import com.gamegoo.gamegoo_v2.email.service.EmailFacadeService;
-import com.gamegoo.gamegoo_v2.email.service.EmailService;
-import com.gamegoo.gamegoo_v2.exception.EmailException;
-import com.gamegoo.gamegoo_v2.exception.MemberException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
-import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.account.email.domain.EmailVerifyRecord;
+import com.gamegoo.gamegoo_v2.account.email.dto.EmailRequest;
+import com.gamegoo.gamegoo_v2.account.email.repository.EmailVerifyRecordRepository;
+import com.gamegoo.gamegoo_v2.account.email.service.EmailFacadeService;
+import com.gamegoo.gamegoo_v2.account.email.service.EmailService;
+import com.gamegoo.gamegoo_v2.core.exception.EmailException;
+import com.gamegoo.gamegoo_v2.core.exception.MemberException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -70,7 +70,7 @@ class EmailFacadeServiceTest {
             doNothing().when(emailService).sendEmail(any(), any(), any(), any());
 
             // When // Then
-            assertDoesNotThrow(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request));
+            assertDoesNotThrow(() -> emailFacadeService.sendEmailVerificationCodeCheckDuplication(request));
 
             // 이메일 인증 레코드 저장 확인
             List<EmailVerifyRecord> recordList = emailVerifyRecordRepository.findAll();
@@ -94,7 +94,7 @@ class EmailFacadeServiceTest {
             emailVerifyRecordRepository.save(EmailVerifyRecord.create(EMAIL, "code3"));
 
             // When // Then
-            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCodeCheckDuplication(request))
                     .isInstanceOf(EmailException.class)
                     .hasMessage(ErrorCode.EMAIL_LIMIT_EXCEEDED.getMessage());
         }
@@ -112,7 +112,7 @@ class EmailFacadeServiceTest {
                     .given(emailService).sendEmail(any(), any(), any(), any());
 
             // When // Then
-            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCodeCheckDuplication(request))
                     .isInstanceOf(EmailException.class)
                     .hasMessage(ErrorCode.EMAIL_SEND_FAIL.getMessage());
         }
@@ -128,7 +128,7 @@ class EmailFacadeServiceTest {
             createMember(EMAIL, GAMENAME);
 
             // when // then
-            assertThatThrownBy(() -> emailFacadeService.sendVerificationCodeWithDuplicationCheck(request))
+            assertThatThrownBy(() -> emailFacadeService.sendEmailVerificationCodeCheckDuplication(request))
                     .isInstanceOf(MemberException.class)
                     .hasMessage(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
         }

@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2.repository.friend;
 
-import com.gamegoo.gamegoo_v2.friend.domain.Friend;
-import com.gamegoo.gamegoo_v2.friend.repository.FriendRepository;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.social.friend.repository.FriendRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

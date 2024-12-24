@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.repository;
 
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

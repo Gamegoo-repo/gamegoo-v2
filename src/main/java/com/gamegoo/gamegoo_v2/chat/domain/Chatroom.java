@@ -1,6 +1,6 @@
 package com.gamegoo.gamegoo_v2.chat.domain;
 
-import com.gamegoo.gamegoo_v2.common.BaseDateTimeEntity;
+import com.gamegoo.gamegoo_v2.core.common.BaseDateTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
