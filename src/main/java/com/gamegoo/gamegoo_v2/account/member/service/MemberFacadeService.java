@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.account.member.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
 import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
@@ -27,7 +28,7 @@ public class MemberFacadeService {
     public MyProfileResponse getMyProfile(Member member) {
 
         // TODO: mannerRank 로직 추가
-        Double mannerRank = 1.0;
+        double mannerRank = 1.0;
 
         return MyProfileResponse.of(member, mannerRank);
     }
@@ -44,8 +45,8 @@ public class MemberFacadeService {
         Member targetMember = memberService.findMember(targetMemberId);
 
         // TODO: mannerRank, mannerRatingCount 로직 추가
-        Double mannerRank = 1.0;
-        Long mannerRatingCount = 1L;
+        double mannerRank = 1.0;
+        long mannerRatingCount = 1L;
 
         // 친구 정보 얻기
         boolean isFriend = friendService.isFriend(member, targetMember);
@@ -56,6 +57,10 @@ public class MemberFacadeService {
 
         return OtherProfileResponse.of(targetMember, mannerRank, mannerRatingCount, isFriend, friendRequestMemberId,
                 isBlocked);
+    }
+
+    public void setProfileImage(Member member, ProfileImageRequest request) {
+        memberService.setProfileImage(member, request.getProfileImage());
     }
 
 }
