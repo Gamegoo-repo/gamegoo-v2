@@ -22,6 +22,7 @@ jobs:
       GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
       RIOT_API: ${{ secrets.RIOT_API }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      SOCKET_SERVER_URL: ${{ secrets.SOCKET_SERVER_URL }}
 
     steps:
       # 1. GitHub Repository 파일 불러오기
@@ -69,6 +70,7 @@ jobs:
             DB_PASSWORD= ${{ secrets.DB_PASSWORD }}
             GMAIL_PWD= ${{ secrets.GMAIL_PWD }}
             RIOT_API= ${{ secrets.RIOT_API }}
+            SOCKET_SERVER_URL= ${{ secrets.SOCKET_SERVER_URL }}
 
       ## CD (Continuous Deployment) 파트
       # 7. EC2에 SSH로 접속하여 Docker 컨테이너 실행
@@ -96,6 +98,7 @@ jobs:
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e GMAIL_PWD=${{ secrets.GMAIL_PWD }} \
             -e RIOT_API=${{ secrets.RIOT_API }} \
+            -e SOCKET_SERVER_URL=${{ secrets.SOCKET_SERVER_URL }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/gamegoov2-api:${{ github.sha }}
 
       # 실패 시 디스코드에 알림 보내기

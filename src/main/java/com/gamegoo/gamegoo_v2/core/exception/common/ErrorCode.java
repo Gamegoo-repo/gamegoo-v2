@@ -111,6 +111,9 @@ public enum ErrorCode {
     CHAT_ADD_FAILED_TARGET_DEACTIVATED(BAD_REQUEST, "CHAT_410", "채팅 상대 회원이 탈퇴했습니다. 메시지 전송이 불가능합니다."),
     CHAT_ADD_FAILED_TARGET_IS_BLOCKED(FORBIDDEN, "CHAT_411", "채팅 상대 회원을 차단한 상태입니다. 메시지 전송이 불가능합니다."),
     CHAT_ADD_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_412", "채팅 상대 회원이 나를 차단했습니다. 메시지 전송이 불가능합니다."),
+    ADD_BOARD_SYSTEM_CHAT_FAILED(BAD_REQUEST, "CHAT_413", "해당 게시글을 찾을 수 없습니다. 게시글 시스템 메시지 등록에 실패했습니다."),
+    SYSTEM_MEMBER_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_414", "시스템 메시지 등록에 실패했습니다. 관리자에게 문의 바랍니다."),
+    SYSTEM_MESSAGE_TYPE_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_415", "시스템 메시지 타입 조회에 실패했습니다. 관리자에게 문의 바랍니다."),
 
     /**
      * 게시판 관련 에러
@@ -123,7 +126,12 @@ public enum ErrorCode {
     BOARD_GAME_MODE_BAD_REQUEST(BAD_REQUEST, "BOARD_406", "게임모드 값은 1~4만 가능합니다."),
     BOARD_MAIN_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_407", "주포지션 값은 0~5만 가능합니다."),
     BOARD_SUB_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_408", "부포지션 값은 0~5만 가능합니다."),
-    BOARD_WANT_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_409", "상대포지션 값은 0~5만 가능합니다.");
+    BOARD_WANT_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_409", "상대포지션 값은 0~5만 가능합니다."),
+
+    /**
+     * socket 서버 관련 에러
+     */
+    SOCKET_API_RESPONSE_ERROR(INTERNAL_SERVER_ERROR, "SOCKET501", "socket서버 api 요청에 실패했습니다.");;
 
 
     private final HttpStatus status;

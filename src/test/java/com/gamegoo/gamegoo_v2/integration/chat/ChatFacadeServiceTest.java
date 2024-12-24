@@ -1,41 +1,51 @@
 package com.gamegoo.gamegoo_v2.integration.chat;
 
-import com.gamegoo.gamegoo_v2.social.block.domain.Block;
-import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
-import com.gamegoo.gamegoo_v2.content.board.domain.Board;
-import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
-import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
-import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
-import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
-import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
-import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
-import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
-import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
-import com.gamegoo.gamegoo_v2.core.exception.BoardException;
-import com.gamegoo.gamegoo_v2.core.exception.ChatException;
-import com.gamegoo.gamegoo_v2.core.exception.MemberException;
-import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
 import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
+import com.gamegoo.gamegoo_v2.chat.domain.Chat;
+import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
+import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
+import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
+import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
+import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
+import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
+import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
+import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
+import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
+import com.gamegoo.gamegoo_v2.core.exception.BoardException;
+import com.gamegoo.gamegoo_v2.core.exception.ChatException;
+import com.gamegoo.gamegoo_v2.core.exception.MemberException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
+import com.gamegoo.gamegoo_v2.external.socket.SocketService;
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 
 @ActiveProfiles("test")
@@ -60,11 +70,14 @@ class ChatFacadeServiceTest {
     @Autowired
     private BoardRepository boardRepository;
 
-    @Autowired
+    @MockitoSpyBean
     private MemberRepository memberRepository;
 
     @MockitoSpyBean
     private MemberService memberService;
+
+    @MockitoBean
+    private SocketService socketService;
 
     private Member member;
     private Member targetMember;
@@ -423,6 +436,196 @@ class ChatFacadeServiceTest {
             assertThat(response.getSystem()).isNull();
         }
 
+    }
+
+    @Nested
+    @DisplayName("새로운 채팅 등록")
+    class CreateChatTest {
+
+        private Member systemMember;
+
+        @BeforeEach
+        void setUp() {
+            systemMember = createMember("systemMember@gmail.com", "systemMember");
+            given(memberRepository.findById(0L)).willReturn(Optional.of(systemMember));
+        }
+
+        @DisplayName("실패: 해당 채팅방을 찾을 수 없는 경우 예외가 발생한다.")
+        @Test
+        void createChat_shouldThrownWhenChatroomNotFound() {
+            // given
+            ChatCreateRequest request = ChatCreateRequest.builder()
+                    .message("message")
+                    .system(null)
+                    .build();
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, "no-uuid"))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
+        }
+
+        @DisplayName("실패: 해당 채팅방이 회원의 것이 아닌 경우 예외가 발생한다.")
+        @Test
+        void createChat_shouldThrownWhenMemberChatroomNotExists() {
+            // given
+            ChatCreateRequest request = ChatCreateRequest.builder()
+                    .message("message")
+                    .system(null)
+                    .build();
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, createChatroom().getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
+        }
+
+        @DisplayName("실패: 상대가 탈퇴한 경우 예외가 발생한다.")
+        @Test
+        void createChat_shouldThrownWhenTargetIsBlind() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            ChatCreateRequest request = ChatCreateRequest.builder()
+                    .message("message")
+                    .system(null)
+                    .build();
+
+            blindMember(targetMember);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_ADD_FAILED_TARGET_DEACTIVATED.getMessage());
+        }
+
+        @DisplayName("실패: 내가 상대를 차단한 경우 예외가 발생한다.")
+        @Test
+        void createChat_shouldThrownWhenTargetIsBlocked() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            ChatCreateRequest request = ChatCreateRequest.builder()
+                    .message("message")
+                    .system(null)
+                    .build();
+
+            blockMember(member, targetMember);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_ADD_FAILED_TARGET_IS_BLOCKED.getMessage());
+        }
+
+        @DisplayName("실패: 상대가 나를 차단한 경우 예외가 발생한다.")
+        @Test
+        void createChat_shouldThrownWhenBlockedByTarget() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            ChatCreateRequest request = ChatCreateRequest.builder()
+                    .message("message")
+                    .system(null)
+                    .build();
+
+            // when
+            blockMember(targetMember, member);
+
+            // then
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET.getMessage());
+        }
+
+        @DisplayName("성공")
+        @ParameterizedTest(name = "시스템 메시지: {0}, member 입장: {1}, targetMember 입장: {2}")
+        @CsvSource({
+                "true, true, true",  // 시스템 메시지 있음, member 입장 O, targetMember 입장 O
+                "true, true, false", // 시스템 메시지 있음, member 입장 O, targetMember 입장 X
+                "true, false, true", // 시스템 메시지 있음, member 입장 X, targetMember 입장 O
+                "true, false, false",// 시스템 메시지 있음, member 입장 X, targetMember 입장 X
+                "false, true, true", // 시스템 메시지 없음, member 입장 O, targetMember 입장 O
+                "false, true, false",// 시스템 메시지 없음, member 입장 O, targetMember 입장 X
+                "false, false, true",// 시스템 메시지 없음, member 입장 X, targetMember 입장 O
+                "false, false, false"// 시스템 메시지 없음, member 입장 X, targetMember 입장 X
+        })
+        void createChatSucceeds(boolean systemMessage, boolean memberEntered, boolean targetEntered) {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Chatroom chatroom = createChatroom();
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, null);
+            MemberChatroom targetMemberChatroom = createMemberChatroom(targetMember, chatroom, null);
+
+            ChatCreateRequest request;
+
+            // 조건에 따른 상태 설정
+            if (systemMessage) {
+                Board board = createBoard(targetMember);
+                SystemFlagRequest systemFlagRequest = SystemFlagRequest.builder()
+                        .boardId(board.getId())
+                        .flag(1)
+                        .build();
+
+                request = ChatCreateRequest.builder()
+                        .message("message")
+                        .system(systemFlagRequest)
+                        .build();
+            } else {
+                request = ChatCreateRequest.builder()
+                        .message("message")
+                        .system(null)
+                        .build();
+            }
+
+            if (memberEntered) {
+                memberChatroom.updateLastJoinDate(now);
+            }
+
+            if (targetEntered) {
+                targetMemberChatroom.updateLastJoinDate(now);
+            }
+
+            // when
+            chatFacadeService.createChat(request, member, chatroom.getUuid());
+
+            // then
+            // member의 lastViewDate 업데이트 검증
+            memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastViewDate()).isAfter(now);
+
+            // 회원 메시지 저장 되었는지 검증
+            List<Chat> chats = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(), member.getId());
+            assertThat(chats).hasSize(1);
+
+            // 시스템 메시지 저장 되었는지 검증
+            if (systemMessage) {
+                List<Chat> systemChats = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(),
+                        systemMember.getId());
+                assertThat(systemChats).hasSize(2);
+            }
+
+            // member의 lastJoinDate 업데이트 되었는지 검증
+            if (!memberEntered) {
+                memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                        chatroom.getId()).orElseThrow();
+                assertThat(memberChatroom.getLastJoinDate()).isAfter(now);
+            }
+
+            // targetMember의 lastJoinDate 업데이트 되었는지 검증
+            if (!targetEntered) {
+                targetMemberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(targetMember.getId(),
+                        chatroom.getId()).orElseThrow();
+                assertThat(targetMemberChatroom.getLastJoinDate()).isAfter(now);
+            }
+        }
     }
 
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {

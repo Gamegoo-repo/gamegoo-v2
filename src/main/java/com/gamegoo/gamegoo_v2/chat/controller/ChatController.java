@@ -1,16 +1,21 @@
 package com.gamegoo.gamegoo_v2.chat.controller;
 
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +34,8 @@ public class ChatController {
     @Parameter(name = "memberId", description = "채팅방을 시작할 대상 회원의 id 입니다.")
     @GetMapping("/chat/start/member/{memberId}")
     public ApiResponse<EnterChatroomResponse> startChatroomByMemberId(
-            @PathVariable(name = "memberId") Long targetMemberId, @AuthMember Member member) {
+            @PathVariable(name = "memberId") Long targetMemberId,
+            @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.startChatroomByMemberId(member, targetMemberId));
     }
 
@@ -51,6 +57,14 @@ public class ChatController {
     public ApiResponse<EnterChatroomResponse> enterChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
                                                             @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.enterChatroomByUuid(member, chatroomUuid));
+    }
+
+    @Operation(summary = "채팅 메시지 등록 API", description = "새로운 채팅 메시지를 등록하는 API 입니다.")
+    @PostMapping("/chat/{chatroomUuid}")
+    public ApiResponse<ChatCreateResponse> addChat(@PathVariable(name = "chatroomUuid") String chatroomUuid,
+                                                   @RequestBody @Valid ChatCreateRequest request,
+                                                   @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.createChat(request, member, chatroomUuid));
     }
 
 }

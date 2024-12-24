@@ -1,28 +1,33 @@
 package com.gamegoo.gamegoo_v2.chat.service;
 
-import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
-import com.gamegoo.gamegoo_v2.content.board.domain.Board;
-import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.SystemMessageType;
 import com.gamegoo.gamegoo_v2.chat.dto.ChatResponseFactory;
+import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
 import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET;
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_DEACTIVATED;
+import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_TARGET_IS_BLOCKED;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_BLOCKED_BY_TARGET;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_DEACTIVATED;
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_FAILED_TARGET_IS_BLOCKED;
@@ -34,7 +39,6 @@ public class ChatFacadeService {
 
     private final MemberService memberService;
     private final BoardService boardService;
-    private final BlockService blockService;
     private final ChatCommandService chatCommandService;
     private final ChatQueryService chatQueryService;
 
@@ -165,6 +169,59 @@ public class ChatFacadeService {
 
         return chatResponseFactory.toEnterChatroomResponse(member, targetMember, chatroom.getUuid(),
                 chatMessageListResponse);
+    }
+
+    /**
+     * uuid에 해당하는 채팅방에 새로운 채팅 등록 Facade 메소드
+     *
+     * @param request
+     * @param member
+     * @param uuid
+     * @return
+     */
+    @Transactional
+    public ChatCreateResponse createChat(ChatCreateRequest request, Member member, String uuid) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
+
+        // 해당 채팅방이 회원의 것이 맞는지 검증
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+
+        // 상대가 탈퇴하지 않았는지 검증
+        Member targetMember = chatQueryService.getChatroomTargetMember(member, chatroom);
+        memberValidator.throwIfBlind(targetMember, ChatException.class, CHAT_ADD_FAILED_TARGET_DEACTIVATED);
+
+        // 서로를 차단하지 않았는지 검증
+        blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_ADD_FAILED_TARGET_IS_BLOCKED);
+        blockValidator.throwIfBlocked(targetMember, member, ChatException.class, CHAT_ADD_FAILED_BLOCKED_BY_TARGET);
+
+        Chat chat;
+        // 등록해야 할 시스템 메시지가 있는 경우
+        if (request.getSystem() != null) {
+            // 시스템 메시지 생성
+            List<Chat> chats = chatCommandService.createSystemChat(request.getSystem(), member, targetMember,
+                    chatroom);
+
+            // member와 targetMember의 lastJoinDate 업데이트
+            Chat systemChatToMember = chats.get(0);
+            Chat systemChatToTargetMember = chats.get(1);
+            chatCommandService.updateLastJoinDates(member, targetMember, systemChatToMember.getCreatedAt(),
+                    systemChatToTargetMember.getCreatedAt(), chatroom);
+
+            // 채팅 생성 및 저장
+            chat = chatCommandService.createMemberChat(member, chatroom, request.getMessage());
+
+            // member의 lastViewDate 업데이트
+            chatCommandService.updateLastViewDate(member, chatroom, chat.getCreatedAt());
+        } else {
+            // 채팅 생성 및 저장
+            chat = chatCommandService.createMemberChat(member, chatroom, request.getMessage());
+
+            // member와 targetMember의 lastViewDate 및 lastJoinDate 업데이트
+            chatCommandService.updateMemberChatroomDatesByAddChat(member, targetMember, chat);
+        }
+
+        return ChatCreateResponse.of(chat);
     }
 
     private int getSystemFlag(MemberChatroom memberChatroom) {
