@@ -46,7 +46,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -227,12 +226,12 @@ class ChatCommandServiceTest {
     }
 
     @Nested
-    @DisplayName("시스템 메시지 등록 처리")
-    class ProcessSystemMessagesTest {
+    @DisplayName("시스템 메시지 생성")
+    class CreateSystemChatTest {
 
         @DisplayName("실패: 해당 게시글을 찾을 수 없는 경우 예외가 발생한다.")
         @Test
-        void processSystemMessages_shouldThrownWhenBoardNotFound() {
+        void createSystemChat_shouldThrownWhenBoardNotFound() {
             // given
             Chatroom chatroom = createChatroom();
             createMemberChatroom(member, chatroom, null);
@@ -244,14 +243,14 @@ class ChatCommandServiceTest {
                     .build();
 
             // when // then
-            assertThatThrownBy(() -> chatCommandService.processSystemMessages(request, member, targetMember, chatroom))
+            assertThatThrownBy(() -> chatCommandService.createSystemChat(request, member, targetMember, chatroom))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.ADD_BOARD_SYSTEM_CHAT_FAILED.getMessage());
         }
 
         @DisplayName("실패: system member를 찾을 수 없는 경우 예외가 발생한다.")
         @Test
-        void processSystemMessages_shouldThrownWhenSystemMemberIsNotFound() {
+        void createSystemChat_shouldThrownWhenSystemMemberIsNotFound() {
             // given
             Chatroom chatroom = createChatroom();
             createMemberChatroom(member, chatroom, null);
@@ -265,14 +264,14 @@ class ChatCommandServiceTest {
                     .build();
 
             // when // then
-            assertThatThrownBy(() -> chatCommandService.processSystemMessages(request, member, targetMember, chatroom))
+            assertThatThrownBy(() -> chatCommandService.createSystemChat(request, member, targetMember, chatroom))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.SYSTEM_MEMBER_NOT_FOUND.getMessage());
         }
 
-        @DisplayName("성공: 기존 lastJoinDate가 null인 경우 시스템 메시지 저장, lastJoinDate 업데이트 및 socket 이벤트가 발생해야 한다.")
+        @DisplayName("성공: 새로운 시스템 메시지가 생성 및 저장되어야 한다.")
         @Test
-        void processSystemMessagesSucceedsWhenLastJoinDateIsNull() {
+        void createSystemChatSucceeds() {
             // given
             Member systemMember = createMember("sytemMember@gmail.com", "systemMember");
             given(memberRepository.findById(0L)).willReturn(Optional.of(systemMember));
@@ -288,93 +287,189 @@ class ChatCommandServiceTest {
                     .flag(1)
                     .build();
 
-            doNothing().when(socketService).joinSocketToChatroom(any(Long.class), any(String.class));
-
             // when
-            chatCommandService.processSystemMessages(request, member, targetMember, chatroom);
+            List<Chat> chats = chatCommandService.createSystemChat(request, member, targetMember, chatroom);
 
             // then
-            // 시스템 메시지 생성 되었는지 검증
+            // 시스템 메시지가 저장 되었는지 검증
             List<Chat> systemMessages = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(),
                     systemMember.getId());
             assertThat(systemMessages).hasSize(2);
 
-            Chat memberSystemMessage = systemMessages.stream()
-                    .filter(chat -> chat.getToMember().getId().equals(member.getId()))
-                    .findFirst()
-                    .orElseThrow();
-            Chat targetSystemMessage = systemMessages.stream()
-                    .filter(chat -> chat.getToMember().getId().equals(targetMember.getId()))
-                    .findFirst()
-                    .orElseThrow();
+            Chat memberSystemMessage = chats.get(0);
+            Chat targetSystemMessage = chats.get(1);
             assertThat(memberSystemMessage.getContents()).isEqualTo(SystemMessageType.of(1).getMessage());
             assertThat(targetSystemMessage.getContents()).isEqualTo(SystemMessageType.of(3).getMessage());
-
-            // lastJoinDate 업데이트 되었는지 검증
-            MemberChatroom memberChatroom = memberChatroomRepository
-                    .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
-                    .orElseThrow();
-            MemberChatroom targetMemberChatroom = memberChatroomRepository
-                    .findByMemberIdAndChatroomId(targetMember.getId(), chatroom.getId())
-                    .orElseThrow();
-
-            assertThat(memberChatroom.getLastJoinDate()).isNotNull();
-            assertThat(targetMemberChatroom.getLastJoinDate()).isNotNull();
-
-            // event로 인해 socketService 메소드가 호출되었는지 검증
-            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(socketService, times(2)).joinSocketToChatroom(any(Long.class), any(String.class));
-            });
         }
 
-        @DisplayName("성공: lastJoinDate가 null이 아닌 경우 시스템 메시지만 저장되어야 한다.")
-        @Test
-        void processSystemMessagesSucceedsWhenLastJoinDateIsNotNull() {
-            // given
-            Member systemMember = createMember("sytemMember@gmail.com", "systemMember");
-            given(memberRepository.findById(0L)).willReturn(Optional.of(systemMember));
+    }
 
+    @Nested
+    @DisplayName("lastViewDate 업데이트")
+    class UpdateLastViewDateTest {
+
+        @DisplayName("성공: lastViewDate가 변경되어야 한다.")
+        @Test
+        void updateLastViewDateSucceeds() {
+            // given
             Chatroom chatroom = createChatroom();
             LocalDateTime lastJoinDate = LocalDateTime.now().minusMinutes(10);
             createMemberChatroom(member, chatroom, lastJoinDate);
             createMemberChatroom(targetMember, chatroom, lastJoinDate);
 
-            Board board = createBoard(targetMember);
-
-            SystemFlagRequest request = SystemFlagRequest.builder()
-                    .boardId(board.getId())
-                    .flag(2)
-                    .build();
+            Chat chat = createChat(member, "message", chatroom);
 
             // when
-            chatCommandService.processSystemMessages(request, member, targetMember, chatroom);
+            MemberChatroom memberChatroom = chatCommandService.updateLastViewDate(member, chatroom,
+                    chat.getCreatedAt());
 
             // then
-            List<Chat> systemMessages = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(),
-                    systemMember.getId());
-            assertThat(systemMessages).hasSize(2);
-
-            Chat memberSystemMessage = systemMessages.stream()
-                    .filter(chat -> chat.getToMember().getId().equals(member.getId()))
-                    .findFirst()
-                    .orElseThrow();
-            Chat targetSystemMessage = systemMessages.stream()
-                    .filter(chat -> chat.getToMember().getId().equals(targetMember.getId()))
-                    .findFirst()
-                    .orElseThrow();
-            assertThat(memberSystemMessage.getContents()).isEqualTo(SystemMessageType.of(2).getMessage());
-            assertThat(targetSystemMessage.getContents()).isEqualTo(SystemMessageType.of(3).getMessage());
-
-            // lastJoinDate 검증
-            MemberChatroom memberChatroom = memberChatroomRepository
-                    .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
-                    .orElseThrow();
-            MemberChatroom targetMemberChatroom = memberChatroomRepository
-                    .findByMemberIdAndChatroomId(targetMember.getId(), chatroom.getId())
-                    .orElseThrow();
-
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isCloseTo(chat.getCreatedAt(), within(1, ChronoUnit.SECONDS));
             assertThat(memberChatroom.getLastJoinDate()).isCloseTo(lastJoinDate, within(1, ChronoUnit.SECONDS));
-            assertThat(targetMemberChatroom.getLastJoinDate()).isCloseTo(lastJoinDate, within(1, ChronoUnit.SECONDS));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("두 회원의 lastJoinDate 업데이트")
+    class UpdateLastJoinDatesTest {
+
+        @DisplayName("성공: member와 targetMember의 기존 lastJoinDate가 null인 경우, 두 lastJoinDate 모두 업데이트 되어야 한다.")
+        @Test
+        void updateLastJoinDatesSucceedsWhenLastJoinDatesAreNull() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            LocalDateTime updateDate = LocalDateTime.now().plusMinutes(10);
+
+            // when
+            chatCommandService.updateLastJoinDates(member, targetMember, updateDate, updateDate, chatroom);
+
+            // then
+            // lastJoinDate 업데이트 검증
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            MemberChatroom targetMemberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    targetMember.getId(), chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(updateDate, within(1, ChronoUnit.SECONDS));
+            assertThat(targetMemberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(targetMemberChatroom.getLastJoinDate()).isCloseTo(updateDate, within(1, ChronoUnit.SECONDS));
+
+            // event 발생 여부 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(socketService, times(2)).joinSocketToChatroom(any(Long.class), any(String.class));
+            });
+        }
+
+        @DisplayName("성공: member의 lastJoinDate만 null인 경우, member의 lastJoinDate만 업데이트 되어야 한다.")
+        @Test
+        void updateLastJoinDatesSucceedsWhenMemberLastJoinDateIsNull() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, now);
+
+            LocalDateTime updateDate = now.plusMinutes(10);
+
+            // when
+            chatCommandService.updateLastJoinDates(member, targetMember, updateDate, updateDate, chatroom);
+
+            // then
+            // lastJoinDate 업데이트 검증
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            MemberChatroom targetMemberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    targetMember.getId(), chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(updateDate, within(1, ChronoUnit.SECONDS));
+            assertThat(targetMemberChatroom.getLastJoinDate()).isCloseTo(now, within(1, ChronoUnit.SECONDS));
+
+            // event 발생 여부 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(socketService, times(1)).joinSocketToChatroom(any(Long.class), any(String.class));
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("새로운 채팅 등록 시 lastJoinDate, lastViewDate 업데이트")
+    class UpdateMemberChatroomDatesByAddChatTest {
+
+        @DisplayName("성공: 두 회원의 lastJoinDate가 null인 경우 member의 lastViewDate가 업데이트 되어야 하고, 두 회원의 lastJoinDate가 업데이트 되어야 한다.")
+        @Test
+        void updateMemberChatroomDatesByAddChatSucceedsWhenLastJoinDatesAreNull() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+            Chat chat = createChat(member, "message", chatroom);
+
+            // when
+            chatCommandService.updateMemberChatroomDatesByAddChat(member, targetMember, chat);
+
+            // then
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            MemberChatroom targetMemberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    targetMember.getId(), chatroom.getId()).orElseThrow();
+
+            LocalDateTime createdAt = chat.getCreatedAt();
+
+            // lastViewDate 업데이트 검증
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isCloseTo(createdAt, within(1, ChronoUnit.SECONDS));
+
+            // lastJoinDate 업데이트 검증
+            assertThat(memberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(createdAt, within(1, ChronoUnit.SECONDS));
+            assertThat(targetMemberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(targetMemberChatroom.getLastJoinDate()).isCloseTo(createdAt, within(1, ChronoUnit.SECONDS));
+
+            // event 발생 여부 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(socketService, times(2)).joinSocketToChatroom(any(Long.class), any(String.class));
+            });
+        }
+
+        @DisplayName("성공: targetMember의 lastJoinDate만 null인 경우, member의 lastViewDate와 targetMember의 lastJoinDate만 업데이트 되어야 한다.")
+        @Test
+        void updateMemberChatroomDatesByAddChatSucceedsWhenTargetMemberLastJoinDateIsNull() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, now);
+            createMemberChatroom(targetMember, chatroom, null);
+            Chat chat = createChat(member, "message", chatroom);
+
+            // when
+            chatCommandService.updateMemberChatroomDatesByAddChat(member, targetMember, chat);
+
+            // then
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            MemberChatroom targetMemberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    targetMember.getId(), chatroom.getId()).orElseThrow();
+
+            // lastViewDate 업데이트 검증
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isCloseTo(chat.getCreatedAt(), within(1, ChronoUnit.SECONDS));
+
+            // lastJoinDate 업데이트 검증
+            assertThat(targetMemberChatroom.getLastJoinDate()).isNotNull();
+            assertThat(targetMemberChatroom.getLastJoinDate()).isCloseTo(chat.getCreatedAt(),
+                    within(1, ChronoUnit.SECONDS));
+            assertThat(memberChatroom.getLastJoinDate()).isCloseTo(now, within(1, ChronoUnit.SECONDS));
+
+            // event 발생 여부 검증
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+                verify(socketService, times(1)).joinSocketToChatroom(any(Long.class), any(String.class));
+            });
         }
 
     }
@@ -420,6 +515,14 @@ class ChatCommandServiceTest {
                 .mike(true)
                 .content("content")
                 .boardProfileImage(1)
+                .build());
+    }
+
+    private Chat createChat(Member fromMember, String contents, Chatroom chatroom) {
+        return chatRepository.save(Chat.builder()
+                .fromMember(fromMember)
+                .contents(contents)
+                .chatroom(chatroom)
                 .build());
     }
 
