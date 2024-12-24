@@ -1,11 +1,9 @@
 package com.gamegoo.gamegoo_v2.service.chat;
 
-import com.gamegoo.gamegoo_v2.social.block.domain.Block;
-import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
-import com.gamegoo.gamegoo_v2.block.domain.Block;
-import com.gamegoo.gamegoo_v2.block.repository.BlockRepository;
-import com.gamegoo.gamegoo_v2.board.domain.Board;
-import com.gamegoo.gamegoo_v2.board.repository.BoardRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
@@ -15,20 +13,14 @@ import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.service.ChatCommandService;
+import com.gamegoo.gamegoo_v2.content.board.domain.Board;
+import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
+import com.gamegoo.gamegoo_v2.core.config.AsyncConfig;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
-import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
-import com.gamegoo.gamegoo_v2.config.AsyncConfig;
-import com.gamegoo.gamegoo_v2.exception.ChatException;
-import com.gamegoo.gamegoo_v2.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.member.domain.LoginType;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Tier;
-import com.gamegoo.gamegoo_v2.member.repository.MemberRepository;
-import com.gamegoo.gamegoo_v2.socket.SocketService;
+import com.gamegoo.gamegoo_v2.external.socket.SocketService;
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -409,7 +401,8 @@ class ChatCommandServiceTest {
     @DisplayName("새로운 채팅 등록 시 lastJoinDate, lastViewDate 업데이트")
     class UpdateMemberChatroomDatesByAddChatTest {
 
-        @DisplayName("성공: 두 회원의 lastJoinDate가 null인 경우 member의 lastViewDate가 업데이트 되어야 하고, 두 회원의 lastJoinDate가 업데이트 되어야 한다.")
+        @DisplayName("성공: 두 회원의 lastJoinDate가 null인 경우 member의 lastViewDate가 업데이트 되어야 하고, 두 회원의 lastJoinDate가 업데이트 " +
+                "되어야 한다.")
         @Test
         void updateMemberChatroomDatesByAddChatSucceedsWhenLastJoinDatesAreNull() {
             // given
@@ -445,7 +438,8 @@ class ChatCommandServiceTest {
             });
         }
 
-        @DisplayName("성공: targetMember의 lastJoinDate만 null인 경우, member의 lastViewDate와 targetMember의 lastJoinDate만 업데이트 되어야 한다.")
+        @DisplayName("성공: targetMember의 lastJoinDate만 null인 경우, member의 lastViewDate와 targetMember의 lastJoinDate만 " +
+                "업데이트 되어야 한다.")
         @Test
         void updateMemberChatroomDatesByAddChatSucceedsWhenTargetMemberLastJoinDateIsNull() {
             // given

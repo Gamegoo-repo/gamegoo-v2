@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.controller.chat;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.controller.ChatController;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
@@ -9,8 +10,6 @@ import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse.SystemFlagResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.member.domain.Member;
 import com.gamegoo.gamegoo_v2.utils.DateTimeUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
