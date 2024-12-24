@@ -7,4 +7,6 @@ public interface ChatRepositoryCustom {
 
     Slice<Chat> findRecentChats(Long chatroomId, Long memberChatroomId, Long memberId, int pageSize);
 
+    Slice<Chat> findChatsByCursor(Long cursor, Long chatroomId, Long memberChatroomId, Long memberId, int pageSize);
+
 }

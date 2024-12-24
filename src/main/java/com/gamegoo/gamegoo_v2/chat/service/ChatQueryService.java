@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.chat.service;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
@@ -8,7 +9,6 @@ import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -43,10 +43,12 @@ public class ChatQueryService {
      *
      * @param member
      * @param chatroom
-     * @param memberChatroom
      * @return
      */
-    public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom, MemberChatroom memberChatroom) {
+    public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom) {
+        MemberChatroom memberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
         return chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
@@ -70,6 +72,22 @@ public class ChatQueryService {
     public Member getChatroomTargetMember(Member member, Chatroom chatroom) {
         return memberChatroomRepository.findTargetMemberByChatroomIdAndMemberId(chatroom.getId(), member.getId())
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_NOT_FOUND));
+    }
+
+    /**
+     * 해당 chatroom의 메시지 내역 slice 객체를 반환하는 메소드
+     *
+     * @param member
+     * @param chatroom
+     * @param cursor
+     * @return
+     */
+    public Slice<Chat> getChatSliceByCursor(Member member, Chatroom chatroom, Long cursor) {
+        MemberChatroom memberChatroom = memberChatroomRepository
+                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
+                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+        return chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(), member.getId(),
+                PAGE_SIZE);
     }
 
 }

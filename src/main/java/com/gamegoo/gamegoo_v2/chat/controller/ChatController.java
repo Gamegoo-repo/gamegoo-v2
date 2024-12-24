@@ -4,25 +4,30 @@ import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
+import com.gamegoo.gamegoo_v2.core.common.annotation.ValidCursor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Chat", description = "Chat 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
+@Validated
 public class ChatController {
 
     private final ChatFacadeService chatFacadeService;
@@ -65,6 +70,19 @@ public class ChatController {
                                                    @RequestBody @Valid ChatCreateRequest request,
                                                    @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.createChat(request, member, chatroomUuid));
+    }
+
+    @Operation(summary = "채팅 내역 조회 API",
+            description = "특정 채팅방의 메시지 내역을 조회하는 API 입니다.\n\n" +
+                    "cursor 파라미터를 보내면, 해당 timestamp 이전에 전송된 메시지 최대 20개를 조회합니다.\n\n" +
+                    "cursor 파라미터를 보내지 않으면, 해당 채팅방의 가장 최근 메시지 내역을 조회합니다.")
+    @GetMapping("/chat/{chatroomUuid}/messages")
+    @Parameter(name = "cursor", description = "페이징을 위한 커서, 13자리 timestamp integer를 보내주세요. (UTC 기준)")
+    public ApiResponse<ChatMessageListResponse> getChatMessages(
+            @PathVariable(name = "chatroomUuid") String chatroomUuid,
+            @ValidCursor @RequestParam(name = "cursor", required = false) Long cursor,
+            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.getChatMessagesByCursor(member, chatroomUuid, cursor));
     }
 
 }
