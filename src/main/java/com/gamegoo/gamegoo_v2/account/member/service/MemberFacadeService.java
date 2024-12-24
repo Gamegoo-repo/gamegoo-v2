@@ -59,8 +59,9 @@ public class MemberFacadeService {
                 isBlocked);
     }
 
-    public void setProfileImage(Member member, ProfileImageRequest request) {
+    public String setProfileImage(Member member, ProfileImageRequest request) {
         memberService.setProfileImage(member, request.getProfileImage());
+        return "프로필 이미지 수정이 완료됐습니다";
     }
 
 }

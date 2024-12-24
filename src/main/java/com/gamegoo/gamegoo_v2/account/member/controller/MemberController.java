@@ -45,8 +45,8 @@ public class MemberController {
     @PutMapping("/profileImage")
     public ApiResponse<String> modifyPosition(
             @Valid @RequestBody ProfileImageRequest request, @AuthMember Member member) {
-        memberFacadeService.setProfileImage(member, request);
-        return ApiResponse.ok("프로필 이미지 수정이 완료되었습니다.");
+
+        return ApiResponse.ok(memberFacadeService.setProfileImage(member, request));
     }
 
 }
