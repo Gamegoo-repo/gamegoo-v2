@@ -4,12 +4,15 @@ import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.MemberChampion;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberChampionRepository;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberFacadeService;
+import com.gamegoo.gamegoo_v2.core.exception.RiotException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.game.domain.Champion;
 import com.gamegoo.gamegoo_v2.game.repository.ChampionRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -64,8 +67,8 @@ public class MemberServiceFacadeTest {
         galio = initChampion(3L, "Galio");
 
         List<Long> championIds = Arrays.asList(annie.getId(), olaf.getId(), galio.getId());
-        memberChampionService.saveMemberChampions(member, championIds);
-        memberChampionService.saveMemberChampions(targetMember, championIds);
+        initMemberChampion(member, championIds);
+        initMemberChampion(targetMember, championIds);
     }
 
     @AfterEach
@@ -100,9 +103,11 @@ public class MemberServiceFacadeTest {
         assertThat(response.getLoginType()).isEqualTo(member.getLoginType().name());
         assertThat(response.getMannerLevel()).isEqualTo(member.getMannerLevel());
         assertThat(response.getChampionResponseList()).isNotNull();
-        List<Long> championIds =
-                member.getMemberChampionList().stream().map(MemberChampion::getId).toList();
 
+        List<Champion> championList =
+                targetMember.getMemberChampionList().stream().map(MemberChampion::getChampion).toList();
+        List<Long> championIds = championList.stream().map(Champion::getId).toList();
+        
         for (int i = 0; i < championIds.size(); i++) {
             assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
         }
@@ -144,7 +149,23 @@ public class MemberServiceFacadeTest {
         }
 
     }
-    
+
+    @DisplayName("프로필 이미지 변경 성공")
+    @Test
+    void setProfileImage() {
+        // given
+        ProfileImageRequest request = ProfileImageRequest.builder()
+                .profileImage(2)
+                .build();
+
+        // when
+        memberFacadeService.setProfileImage(member, request);
+
+        // then
+        assertThat(member.getProfileImage()).isEqualTo(request.getProfileImage());
+
+    }
+
     private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()
                 .email(email)
@@ -165,6 +186,16 @@ public class MemberServiceFacadeTest {
         Champion champion = Champion.create(id, name);
         championRepository.save(champion);
         return champion;
+    }
+
+    private void initMemberChampion(Member member, List<Long> top3ChampionIds) {
+        top3ChampionIds.forEach(championId -> {
+            Champion champion = championRepository.findById(championId)
+                    .orElseThrow(() -> new RiotException(ErrorCode.CHAMPION_NOT_FOUND));
+            MemberChampion memberChampion = MemberChampion.create(champion, member);
+            memberChampionRepository.save(memberChampion);
+        });
+
     }
 
 }

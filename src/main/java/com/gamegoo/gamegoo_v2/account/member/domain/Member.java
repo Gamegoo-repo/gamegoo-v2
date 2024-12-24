@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2.account.member.domain;
 
 import com.gamegoo.gamegoo_v2.core.common.BaseDateTimeEntity;
-import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
+import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -137,6 +137,10 @@ public class Member extends BaseDateTimeEntity {
 
     public void updateBlind(boolean blind) {
         this.blind = blind;
+    }
+
+    public void updateProfileImage(int profileImage) {
+        this.profileImage = profileImage;
     }
 
 }
