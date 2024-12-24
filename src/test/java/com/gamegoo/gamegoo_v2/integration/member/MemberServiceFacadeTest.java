@@ -4,6 +4,7 @@ import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.MemberChampion;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
@@ -107,7 +108,7 @@ public class MemberServiceFacadeTest {
         List<Champion> championList =
                 targetMember.getMemberChampionList().stream().map(MemberChampion::getChampion).toList();
         List<Long> championIds = championList.stream().map(Champion::getId).toList();
-        
+
         for (int i = 0; i < championIds.size(); i++) {
             assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
         }
@@ -163,6 +164,22 @@ public class MemberServiceFacadeTest {
 
         // then
         assertThat(member.getProfileImage()).isEqualTo(request.getProfileImage());
+
+    }
+
+    @DisplayName("마이크 유무 변경 성공")
+    @Test
+    void setMike() {
+        // given
+        IsMikeRequest request = IsMikeRequest.builder()
+                .isMike(true)
+                .build();
+
+        // when
+        memberFacadeService.setIsMike(member, request);
+
+        // then
+        assertThat(member.isMike()).isEqualTo(request.getIsMike());
 
     }
 

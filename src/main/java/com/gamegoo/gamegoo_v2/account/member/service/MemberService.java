@@ -73,8 +73,24 @@ public class MemberService {
         }
     }
 
+    /**
+     * 프로필 이미지 수정
+     *
+     * @param member       회원
+     * @param profileImage 프로필이미지
+     */
     public void setProfileImage(Member member, int profileImage) {
         member.updateProfileImage(profileImage);
+    }
+
+    /**
+     * 마이크 여부 수정
+     *
+     * @param member 회원
+     * @param isMike 마이크 여부
+     */
+    public void setIsMike(Member member, boolean isMike) {
+        member.updateMike(isMike);
     }
 
 }
