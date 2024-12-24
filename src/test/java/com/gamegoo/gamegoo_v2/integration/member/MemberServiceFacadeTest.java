@@ -15,7 +15,6 @@ import com.gamegoo.gamegoo_v2.game.repository.ChampionRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,6 +68,83 @@ public class MemberServiceFacadeTest {
         memberChampionService.saveMemberChampions(targetMember, championIds);
     }
 
+    @AfterEach
+    void tearDown() {
+        memberChampionRepository.deleteAllInBatch();
+        championRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+    }
+
+    @DisplayName("내 프로필 조회 성공")
+    @Test
+    void getProfile() {
+        // when
+        MyProfileResponse response = memberFacadeService.getMyProfile(member);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(member.getId());
+        assertThat(response.getProfileImg()).isEqualTo(member.getProfileImage());
+        assertThat(response.getMike()).isEqualTo(member.isMike());
+        assertThat(response.getEmail()).isEqualTo(member.getEmail());
+        assertThat(response.getGameName()).isEqualTo(member.getGameName());
+        assertThat(response.getTag()).isEqualTo(member.getTag());
+        assertThat(response.getTier()).isEqualTo(member.getTier());
+        assertThat(response.getGameRank()).isEqualTo(member.getGameRank());
+        assertThat(response.getWinrate()).isEqualTo(member.getWinRate());
+        assertThat(response.getMainP()).isEqualTo(member.getMainPosition());
+        assertThat(response.getSubP()).isEqualTo(member.getSubPosition());
+        assertThat(response.getWantP()).isEqualTo(member.getWantPosition());
+        assertThat(response.getIsAgree()).isEqualTo(member.isAgree());
+        assertThat(response.getIsBlind()).isEqualTo(member.isBlind());
+        assertThat(response.getLoginType()).isEqualTo(member.getLoginType().name());
+        assertThat(response.getMannerLevel()).isEqualTo(member.getMannerLevel());
+        assertThat(response.getChampionResponseList()).isNotNull();
+        List<Long> championIds =
+                member.getMemberChampionList().stream().map(MemberChampion::getId).toList();
+
+        for (int i = 0; i < championIds.size(); i++) {
+            assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
+        }
+
+    }
+
+    @DisplayName("다른 사람 프로필 조회 성공")
+    @Test
+    void getOtherProfile() {
+        // when
+        OtherProfileResponse response = memberFacadeService.getOtherProfile(member, targetMember.getId());
+
+        // then
+        // TODO: GameStyle 로직 추가 후 수정 필요
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(targetMember.getId());
+        assertThat(response.getProfileImg()).isEqualTo(targetMember.getProfileImage());
+        assertThat(response.getMike()).isEqualTo(targetMember.isMike());
+        assertThat(response.getGameName()).isEqualTo(targetMember.getGameName());
+        assertThat(response.getTag()).isEqualTo(targetMember.getTag());
+        assertThat(response.getTier()).isEqualTo(targetMember.getTier());
+        assertThat(response.getRank()).isEqualTo(targetMember.getGameRank());
+        assertThat(response.getMannerLevel()).isEqualTo(targetMember.getMannerLevel());
+        assertThat(response.getMainP()).isEqualTo(targetMember.getMainPosition());
+        assertThat(response.getSubP()).isEqualTo(targetMember.getSubPosition());
+        assertThat(response.getWantP()).isEqualTo(targetMember.getWantPosition());
+        assertThat(response.getIsAgree()).isEqualTo(targetMember.isAgree());
+        assertThat(response.getIsBlind()).isEqualTo(targetMember.isBlind());
+        assertThat(response.getLoginType()).isEqualTo(String.valueOf(targetMember.getLoginType()));
+        assertThat(response.getWinrate()).isEqualTo(targetMember.getWinRate());
+        assertThat(response.getChampionResponseList()).isNotNull();
+
+        List<Champion> championList =
+                targetMember.getMemberChampionList().stream().map(MemberChampion::getChampion).toList();
+        List<Long> championIds = championList.stream().map(Champion::getId).toList();
+
+        for (int i = 0; i < championIds.size(); i++) {
+            assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
+        }
+
+    }
+    
     private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()
                 .email(email)
@@ -89,92 +165,6 @@ public class MemberServiceFacadeTest {
         Champion champion = Champion.create(id, name);
         championRepository.save(champion);
         return champion;
-    }
-
-    @AfterEach
-    void tearDown() {
-        memberChampionRepository.deleteAllInBatch();
-        championRepository.deleteAllInBatch();
-        memberRepository.deleteAllInBatch();
-    }
-
-    @Nested
-    @DisplayName("프로필 조회")
-    class GetProfileTest {
-
-        @DisplayName("내 프로필 조회 성공")
-        @Test
-        void getProfile() {
-            // when
-            MyProfileResponse response = memberFacadeService.getMyProfile(member);
-
-            // then
-            assertThat(response).isNotNull();
-            assertThat(response.getId()).isEqualTo(member.getId());
-            assertThat(response.getProfileImg()).isEqualTo(member.getProfileImage());
-            assertThat(response.getMike()).isEqualTo(member.isMike());
-            assertThat(response.getEmail()).isEqualTo(member.getEmail());
-            assertThat(response.getGameName()).isEqualTo(member.getGameName());
-            assertThat(response.getTag()).isEqualTo(member.getTag());
-            assertThat(response.getTier()).isEqualTo(member.getTier());
-            assertThat(response.getGameRank()).isEqualTo(member.getGameRank());
-            assertThat(response.getWinrate()).isEqualTo(member.getWinRate());
-            assertThat(response.getMainP()).isEqualTo(member.getMainPosition());
-            assertThat(response.getSubP()).isEqualTo(member.getSubPosition());
-            assertThat(response.getWantP()).isEqualTo(member.getWantPosition());
-            assertThat(response.getIsAgree()).isEqualTo(member.isAgree());
-            assertThat(response.getIsBlind()).isEqualTo(member.isBlind());
-            assertThat(response.getLoginType()).isEqualTo(member.getLoginType().name());
-            assertThat(response.getMannerLevel()).isEqualTo(member.getMannerLevel());
-            assertThat(response.getChampionResponseList()).isNotNull();
-            List<Long> championIds =
-                    member.getMemberChampionList().stream().map(MemberChampion::getId).toList();
-
-            for (int i = 0; i < championIds.size(); i++) {
-                assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
-            }
-
-        }
-
-        @DisplayName("다른 사람 프로필 조회 성공")
-        @Test
-        void getOtherProfile() {
-            // when
-            OtherProfileResponse response = memberFacadeService.getOtherProfile(member, targetMember.getId());
-
-            // then
-            // TODO: 차단 확인 테스트 추가
-            // TODO: 친구 확인 테스트 추가
-            // TODO: GameStyle 로직 추가 후 수정 필요
-            // TODO: Manner 관련 로직 추가
-            assertThat(response).isNotNull();
-            assertThat(response.getId()).isEqualTo(targetMember.getId());
-            assertThat(response.getProfileImg()).isEqualTo(targetMember.getProfileImage());
-            assertThat(response.getMike()).isEqualTo(targetMember.isMike());
-            assertThat(response.getGameName()).isEqualTo(targetMember.getGameName());
-            assertThat(response.getTag()).isEqualTo(targetMember.getTag());
-            assertThat(response.getTier()).isEqualTo(targetMember.getTier());
-            assertThat(response.getRank()).isEqualTo(targetMember.getGameRank());
-            assertThat(response.getMannerLevel()).isEqualTo(targetMember.getMannerLevel());
-            assertThat(response.getMainP()).isEqualTo(targetMember.getMainPosition());
-            assertThat(response.getSubP()).isEqualTo(targetMember.getSubPosition());
-            assertThat(response.getWantP()).isEqualTo(targetMember.getWantPosition());
-            assertThat(response.getIsAgree()).isEqualTo(targetMember.isAgree());
-            assertThat(response.getIsBlind()).isEqualTo(targetMember.isBlind());
-            assertThat(response.getLoginType()).isEqualTo(String.valueOf(targetMember.getLoginType()));
-            assertThat(response.getWinrate()).isEqualTo(targetMember.getWinRate());
-            assertThat(response.getChampionResponseList()).isNotNull();
-
-            List<Champion> championList =
-                    targetMember.getMemberChampionList().stream().map(MemberChampion::getChampion).toList();
-            List<Long> championIds = championList.stream().map(Champion::getId).toList();
-
-            for (int i = 0; i < championIds.size(); i++) {
-                assertThat(response.getChampionResponseList().get(i).getChampionId()).isEqualTo(championIds.get(i));
-            }
-
-        }
-
     }
 
 }
