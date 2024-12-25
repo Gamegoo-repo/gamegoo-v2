@@ -283,6 +283,7 @@ public class ChatFacadeService {
      * @param timestamp
      * @return
      */
+    @Transactional
     public String readChatMessage(Member member, String chatroomUuid, Long timestamp) {
         // chatroom 엔티티 조회
         Chatroom chatroom = chatQueryService.getChatroomByUuid(chatroomUuid);

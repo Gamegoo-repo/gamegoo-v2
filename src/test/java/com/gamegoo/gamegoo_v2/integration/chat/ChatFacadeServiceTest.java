@@ -27,6 +27,7 @@ import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
 import com.gamegoo.gamegoo_v2.external.socket.SocketService;
 import com.gamegoo.gamegoo_v2.social.block.domain.Block;
 import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.utils.TimestampUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,12 +43,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -749,6 +752,106 @@ class ChatFacadeServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("채팅방 읽음 처리")
+    class ReadChatMessageTest {
+
+        @DisplayName("실패: uuid에 해당하는 채팅방이 없는 경우 예외가 발생한다.")
+        @Test
+        void readChatMessage_shouldThrownWhenChatroomNotFound() {
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.readChatMessage(member, "no-uuid", null))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
+
+        }
+
+        @DisplayName("실패: 해당 채팅방이 본인의 채팅방이 아닌 경우 예외가 발생한다.")
+        @Test
+        void readChatMessage_shouldThrownWhenMemberChatroomNotExists() {
+            // given
+            Member otherMember = createMember("other@gmail.com", "otherMember");
+
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(otherMember, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.readChatMessage(member, chatroom.getUuid(), null))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
+        }
+
+        @DisplayName("실패: 해당 채팅방에 입장한 상태가 아닌 경우 예외가 발생한다.")
+        @Test
+        void readChatMessage_shouldThrownWhenExitedChatroom() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.readChatMessage(member, chatroom.getUuid(), null))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_READ_FAILED_NOT_ENTERED_CHATROOM.getMessage());
+        }
+
+        @DisplayName("실패: timestamp에 해당하는 채팅 메시지가 없는 경우 예외가 발생한다.")
+        @Test
+        void readChatMessage_shouldThrownWhenMessageNotFound() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, LocalDateTime.now().minusSeconds(1));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // thena
+            assertThatThrownBy(() -> chatFacadeService.readChatMessage(member, chatroom.getUuid(), 1L))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHAT_MESSAGE_NOT_FOUND.getMessage());
+        }
+
+        @DisplayName("성공: timestamp가 null인 경우 현재 시각으로 lastViewDate를 업데이트 한다.")
+        @Test
+        void readChatMessageSucceedsWhenTimestampIsNull() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, LocalDateTime.now().minusDays(1));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            String result = chatFacadeService.readChatMessage(member, chatroom.getUuid(), null);
+
+            // then
+            assertThat(result).isEqualTo("채팅 메시지 읽음 처리 성공");
+
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    member.getId(), chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+        }
+
+        @DisplayName("성공: timestamp를 정상 입력한 경우 해당 채팅의 createdAt으로 lastViewDate를 업데이트 한다.")
+        @Test
+        void readChatMessageSucceeds() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, LocalDateTime.now().minusDays(1));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            Chat chat = createChat(member, "message 1", chatroom);
+
+            // when
+            String result = chatFacadeService.readChatMessage(member, chatroom.getUuid(), chat.getTimestamp());
+
+            // then
+            assertThat(result).isEqualTo("채팅 메시지 읽음 처리 성공");
+
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(
+                    member.getId(), chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastViewDate()).isNotNull();
+            assertThat(memberChatroom.getLastViewDate()).isCloseTo(chat.getCreatedAt(), within(1, ChronoUnit.MILLIS));
+        }
+    }
+
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {
         assertThat(response.getUuid()).isEqualTo(chatroom.getUuid());
         assertThat(response.getMemberId()).isEqualTo(targetMember.getId());
@@ -802,6 +905,18 @@ class ChatFacadeServiceTest {
                 .mike(true)
                 .content("content")
                 .boardProfileImage(1)
+                .build());
+    }
+
+    private Chat createChat(Member member, String content, Chatroom chatroom) {
+        return chatRepository.save(Chat.builder()
+                .contents(content)
+                .systemType(null)
+                .chatroom(chatroom)
+                .fromMember(member)
+                .toMember(null)
+                .sourceBoard(null)
+                .timestamp(TimestampUtil.getNowUtcTimeStamp())
                 .build());
     }
 
