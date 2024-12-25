@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -417,5 +418,45 @@ class ChatControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").isArray());
     }
+
+    @Nested
+    @DisplayName("채팅방 읽음 처리")
+    class ReadChatMessageTest {
+
+        @DisplayName("성공: timestamp가 없는 경우")
+        @Test
+        void readChatMessageSucceedsWhenTimestampIsNull() throws Exception {
+            // given
+            String response = "채팅방 읽음 처리 성공";
+
+            given(chatFacadeService.readChatMessage(any(Member.class), any(String.class), any()))
+                    .willReturn(response);
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/chat/{chatroomUuid}/read", TARGET_CHATROOM_UUID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").value("채팅방 읽음 처리 성공"));
+        }
+
+        @DisplayName("성공: timestamp가 있는 경우")
+        @Test
+        void readChatMessageSucceeds() throws Exception {
+            // given
+            String response = "채팅방 읽음 처리 성공";
+
+            given(chatFacadeService.readChatMessage(any(Member.class), any(String.class), any()))
+                    .willReturn(response);
+
+            // when // then
+            mockMvc.perform(patch(API_URL_PREFIX + "/chat/{chatroomUuid}/read", TARGET_CHATROOM_UUID)
+                            .param("timestamp", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data").value("채팅방 읽음 처리 성공"));
+        }
+
+    }
+
 
 }
