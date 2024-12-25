@@ -1,8 +1,8 @@
 package com.gamegoo.gamegoo_v2.chat.domain;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.content.board.domain.Board;
 import com.gamegoo.gamegoo_v2.core.common.BaseDateTimeEntity;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.utils.TimestampUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,7 +54,7 @@ public class Chat extends BaseDateTimeEntity {
     private Board sourceBoard;
 
     public static Chat create(String contents, Integer systemType, Chatroom chatroom, Member fromMember,
-            Member toMember, Board sourceBoard) {
+                              Member toMember, Board sourceBoard) {
         return Chat.builder()
                 .contents(contents)
                 .systemType(systemType)
@@ -63,12 +62,13 @@ public class Chat extends BaseDateTimeEntity {
                 .fromMember(fromMember)
                 .toMember(toMember)
                 .sourceBoard(sourceBoard)
+                .timestamp(TimestampUtil.getNowUtcTimeStamp())
                 .build();
     }
 
     @Builder
     private Chat(String contents, long timestamp, Integer systemType, Chatroom chatroom, Member fromMember,
-            Member toMember, Board sourceBoard) {
+                 Member toMember, Board sourceBoard) {
         this.contents = contents;
         this.timestamp = timestamp;
         this.systemType = systemType;
@@ -76,12 +76,6 @@ public class Chat extends BaseDateTimeEntity {
         this.fromMember = fromMember;
         this.toMember = toMember;
         this.sourceBoard = sourceBoard;
-    }
-
-    // repository에 저장되기 전에 해당 timestamp를 자동으로 설정
-    @PrePersist
-    public void prePersist() {
-        this.timestamp = TimestampUtil.getNowUtcTimeStamp();
     }
 
     /**

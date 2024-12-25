@@ -6,6 +6,7 @@ import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse.SystemFlagResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
@@ -20,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -350,6 +352,71 @@ class ChatControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.data.message").value("message"))
                     .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.timestamp").value(123456789012L));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("채팅 내역 조회")
+    class GetChatMessagesTest {
+
+        @DisplayName("성공: cursor가 없는 경우")
+        @Test
+        void getChatMessagesSucceedsWhenNoCursor() throws Exception {
+            // given
+            List<ChatMessageResponse> chatMessageResponseList = new ArrayList<>();
+            ChatMessageListResponse response = ChatMessageListResponse.builder()
+                    .chatMessageList(chatMessageResponseList)
+                    .listSize(0)
+                    .nextCursor(null)
+                    .hasNext(false)
+                    .build();
+
+            given(chatFacadeService.getChatMessagesByCursor(any(Member.class), any(String.class), any()))
+                    .willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/messages", TARGET_CHATROOM_UUID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.chatMessageList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("성공: cursor가 있는 경우")
+        @Test
+        void getChatMessagesSucceedsWithCursor() throws Exception {
+            // given
+            List<ChatMessageResponse> chatMessageResponseList = new ArrayList<>();
+            ChatMessageListResponse response = ChatMessageListResponse.builder()
+                    .chatMessageList(chatMessageResponseList)
+                    .listSize(0)
+                    .nextCursor(null)
+                    .hasNext(false)
+                    .build();
+
+            given(chatFacadeService.getChatMessagesByCursor(any(Member.class), any(String.class), any()))
+                    .willReturn(response);
+
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/messages", TARGET_CHATROOM_UUID)
+                            .param("cursor", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("OK"))
+                    .andExpect(jsonPath("$.data.chatMessageList").isArray())
+                    .andExpect(jsonPath("$.data.listSize").isNumber())
+                    .andExpect(jsonPath("$.data.hasNext").isBoolean());
+        }
+
+        @DisplayName("실패: cursor가 음수인 경우")
+        @Test
+        void getChatMessagesFailedWhenCursorIsNegative() throws Exception {
+            // when // then
+            mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/messages", TARGET_CHATROOM_UUID)
+                            .param("cursor", "-1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
         }
 
     }

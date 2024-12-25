@@ -1,13 +1,13 @@
 package com.gamegoo.gamegoo_v2.repository.chat;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
 import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,7 +91,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             assertThat(chats.get(29).getContents()).isEqualTo("message 30");
         }
 
-        @DisplayName("읽지 않은 메시지가 pageSize 보다 적은 경우, 최근 메시지가 pageSize 정렬되어 반환한다.")
+        @DisplayName("읽지 않은 메시지가 pageSize 보다 적은 경우, 최근 메시지가 pageSize 만큼 정렬되어 반환한다.")
         @Test
         void findRecentChats() {
             // given
@@ -162,7 +164,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             assertThat(chats.get(2).getContents()).isEqualTo("new message 3");
         }
 
-        @DisplayName("lastJoinDate 이후에 생성된 메시지만 반환된다.")
+        @DisplayName("lastJoinDate 이후에 생성된 메시지만 정렬되어 반환된다.")
         @Test
         void findRecentChatsAfterLastJoinDate() {
             // given
@@ -198,7 +200,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             assertThat(chats.get(2).getContents()).isEqualTo("new message 3");
         }
 
-        @DisplayName("회원 메시지 또는 나에게 보낸 시스템 메시지만 반환된다.")
+        @DisplayName("회원 메시지 또는 나에게 보낸 시스템 메시지만 정렬되어 반환된다.")
         @Test
         void findRecentChatsWithSystemAndUserMessages() {
             // given
@@ -246,6 +248,88 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("cursor 기반 채팅 메시지 조회")
+    class FindChatsByCursor {
+
+        @DisplayName("cursor가 null인 경우, 가장 최근 메시지를 pageSize 만큼 정렬되어 반환된다.")
+        @Test
+        void findChatsByCursorWhenCursorIsNull() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastViewDate = now.minusMinutes(5);
+            LocalDateTime lastJoinDate = now.minusMinutes(10);
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, lastViewDate, lastJoinDate);
+            createMemberChatroom(targetMember, chatroom);
+
+            for (int i = 1; i <= 30; i++) {
+                createChat(member, "message " + i, chatroom);
+            }
+
+            // when
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
+                    member.getId(), PAGE_SIZE);
+
+            // then
+            List<Chat> chats = chatSlice.getContent();
+            assertThat(chats).hasSize(20);
+            assertThat(chatSlice.hasNext()).isTrue();
+            assertThat(chats.get(0).getContents()).isEqualTo("message 11");
+            assertThat(chats.get(19).getContents()).isEqualTo("message 30");
+        }
+
+        @DisplayName("cursor를 정상 입력한 경우 cursor보다 이전에 생성된 메시지를 pageSize 만큼 조회 및 정렬되어 반환된다.")
+        @Test
+        void findChatsByCursorWithCursor() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastViewDate = now.minusMinutes(5);
+            LocalDateTime lastJoinDate = now.minusMinutes(10);
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, lastViewDate, lastJoinDate);
+            createMemberChatroom(targetMember, chatroom);
+
+            long baseTimestamp = Instant.now().toEpochMilli();
+            List<Chat> chatList = new ArrayList<>();
+
+            for (int i = 1; i <= 30; i++) {
+                chatList.add(createChatWithTimestamp(member, "message " + i, chatroom, baseTimestamp + i * 1000));
+            }
+
+            Long cursor = chatList.get(20).getTimestamp();
+
+            // when
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(),
+                    member.getId(), PAGE_SIZE);
+
+            // then
+            List<Chat> chats = chatSlice.getContent();
+            assertThat(chats).hasSize(20);
+            assertThat(chatSlice.hasNext()).isFalse();
+            assertThat(chats.get(0).getContents()).isEqualTo("message 1");
+            assertThat(chats.get(19).getContents()).isEqualTo("message 20");
+        }
+
+        @DisplayName("메시지가 없는 경우 빈 slice가 반환된다.")
+        @Test
+        void findChatsWhenNoMessages() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastViewDate = now.minusMinutes(5);
+            LocalDateTime lastJoinDate = now.minusMinutes(10);
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, lastViewDate, lastJoinDate);
+            createMemberChatroom(targetMember, chatroom);
+
+            // when
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
+                    member.getId(), PAGE_SIZE);
+
+            // then
+            assertThat(chatSlice).isEmpty();
+            assertThat(chatSlice.hasNext()).isFalse();
+        }
+
+    }
+
     private Chatroom createChatroom() {
         return em.persist(Chatroom.builder()
                 .uuid(UUID.randomUUID().toString())
@@ -257,7 +341,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
     }
 
     private MemberChatroom createMemberChatroom(Member member, Chatroom chatroom, LocalDateTime lastViewDate,
-            LocalDateTime lastJoinDate) {
+                                                LocalDateTime lastJoinDate) {
         return em.persist(MemberChatroom.builder()
                 .chatroom(chatroom)
                 .member(member)
@@ -274,6 +358,19 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
                 .fromMember(fromMember)
                 .toMember(null)
                 .sourceBoard(null)
+                .timestamp(Instant.now().toEpochMilli())
+                .build());
+    }
+
+    private Chat createChatWithTimestamp(Member fromMember, String contents, Chatroom chatroom, Long timestamp) {
+        return em.persist(Chat.builder()
+                .contents(contents)
+                .systemType(null)
+                .chatroom(chatroom)
+                .fromMember(fromMember)
+                .toMember(null)
+                .sourceBoard(null)
+                .timestamp(timestamp)
                 .build());
     }
 

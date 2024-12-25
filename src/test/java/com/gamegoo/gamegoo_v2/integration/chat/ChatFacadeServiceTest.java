@@ -10,11 +10,13 @@ import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
+import com.gamegoo.gamegoo_v2.chat.service.ChatQueryService;
 import com.gamegoo.gamegoo_v2.content.board.domain.Board;
 import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
 import com.gamegoo.gamegoo_v2.core.exception.BoardException;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -45,8 +48,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -75,6 +80,9 @@ class ChatFacadeServiceTest {
 
     @MockitoSpyBean
     private MemberService memberService;
+
+    @MockitoSpyBean
+    private ChatQueryService chatQueryService;
 
     @MockitoBean
     private SocketService socketService;
@@ -626,6 +634,81 @@ class ChatFacadeServiceTest {
                 assertThat(targetMemberChatroom.getLastJoinDate()).isAfter(now);
             }
         }
+    }
+
+    @Nested
+    @DisplayName("채팅방 대회 내역 조회")
+    class GetChatMessagesByCursorTest {
+
+        @DisplayName("실패: uuid에 해당하는 채팅방이 없는 경우 예외가 발생한다.")
+        @Test
+        void getChatMessagesByCursor_shouldThrownWhenChatroomNotFound() {
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.getChatMessagesByCursor(member, "no-uuid", null))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
+        }
+
+        @DisplayName("실패: 해당 채팅방이 본인의 채팅방이 아닌 경우 예외가 발생한다.")
+        @Test
+        void getChatMessagesByCursor_shouldThrownWhenMemberChatroomNotExists() {
+            // given
+            Member otherMember = createMember("other@gmail.com", "otherMember");
+
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(otherMember, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.getChatMessagesByCursor(member, chatroom.getUuid(), null))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
+        }
+
+        @DisplayName("성공: cursor가 null인 경우")
+        @Test
+        void getChatMessagesByCursorSucceedsWhenCursorIsNull() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            ChatMessageListResponse response = chatFacadeService.getChatMessagesByCursor(member, chatroom.getUuid(),
+                    null);
+
+            // then
+            verify(chatQueryService, Mockito.times(1))
+                    .getRecentChatSlice(any(Member.class), any(Chatroom.class));
+
+            assertThat(response.getChatMessageList()).isEmpty();
+            assertThat(response.getListSize()).isEqualTo(0);
+            assertThat(response.getNextCursor()).isNull();
+            assertThat(response.getHasNext()).isFalse();
+        }
+
+        @DisplayName("성공: cursor가 null이 아닌 경우")
+        @Test
+        void getChatMessagesByCursorSucceedsWhenCursorIsNotNull() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            ChatMessageListResponse response = chatFacadeService.getChatMessagesByCursor(member, chatroom.getUuid(),
+                    1L);
+
+            // then
+            verify(chatQueryService, Mockito.times(1))
+                    .getChatSliceByCursor(any(Member.class), any(Chatroom.class), any(Long.class));
+
+            assertThat(response.getChatMessageList()).isEmpty();
+            assertThat(response.getListSize()).isEqualTo(0);
+            assertThat(response.getNextCursor()).isNull();
+            assertThat(response.getHasNext()).isFalse();
+        }
+
     }
 
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {

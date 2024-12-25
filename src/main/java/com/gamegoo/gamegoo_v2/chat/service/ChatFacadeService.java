@@ -88,7 +88,7 @@ public class ChatFacadeService {
         MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
 
         // 최근 메시지 내역 조회
-        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom);
 
         // 응답 dto 생성
         ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
@@ -130,7 +130,7 @@ public class ChatFacadeService {
         MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
 
         // 최근 메시지 내역 조회
-        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom);
 
         // 응답 dto 생성
         ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
@@ -162,7 +162,7 @@ public class ChatFacadeService {
         MemberChatroom memberChatroom = chatCommandService.enterExistingChatroom(member, targetMember, chatroom);
 
         // 최근 메시지 내역 조회
-        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom, memberChatroom);
+        Slice<Chat> chatSlice = chatQueryService.getRecentChatSlice(member, chatroom);
 
         // 응답 dto 생성
         ChatMessageListResponse chatMessageListResponse = chatResponseFactory.toChatMessageListResponse(chatSlice);
@@ -222,6 +222,33 @@ public class ChatFacadeService {
         }
 
         return ChatCreateResponse.of(chat);
+    }
+
+    /**
+     * 해당 채팅방의 대화 내역을 cursor 기반 페이징 조회
+     *
+     * @param member
+     * @param chatroomUuid
+     * @param cursor
+     * @return
+     */
+    public ChatMessageListResponse getChatMessagesByCursor(Member member, String chatroomUuid, Long cursor) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(chatroomUuid);
+
+        // 해당 채팅방이 회원의 것이 맞는지 검증
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+
+        Slice<Chat> chatSlice;
+        if (cursor == null) { // cursor가 null인 경우
+            // 최근 대화 내역 조회
+            chatSlice = chatQueryService.getRecentChatSlice(member, chatroom);
+        } else {
+            // 커서 기반 대화 내역 조회
+            chatSlice = chatQueryService.getChatSliceByCursor(member, chatroom, cursor);
+        }
+
+        return chatResponseFactory.toChatMessageListResponse(chatSlice);
     }
 
     private int getSystemFlag(MemberChatroom memberChatroom) {
