@@ -711,6 +711,44 @@ class ChatFacadeServiceTest {
 
     }
 
+    @Nested
+    @DisplayName("안읽은 채팅방 uuid 조회")
+    class GetUnreadChatroomUuidsTest {
+
+        @DisplayName("성공: 입장 상태인 채팅방이 없는 경우 빈 list를 반환한다.")
+        @Test
+        void getUnreadChatroomUuidsSucceedsWithEmptyList() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            List<String> result = chatFacadeService.getUnreadChatroomUuids(member);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @DisplayName("성공: 입장 상태인 채팅방이 있는 경우 해당 채팅방의 안읽은 메시지 조회 메소드를 호출해야 한다.")
+        @Test
+        void getUnreadChatroomUuidsSucceeds() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, LocalDateTime.now());
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            List<String> result = chatFacadeService.getUnreadChatroomUuids(member);
+
+            // then
+            verify(chatQueryService, Mockito.times(1))
+                    .countUnreadChats(any(Member.class), any(Chatroom.class));
+
+            assertThat(result).isEmpty();
+        }
+    }
+
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {
         assertThat(response.getUuid()).isEqualTo(chatroom.getUuid());
         assertThat(response.getMemberId()).isEqualTo(targetMember.getId());
