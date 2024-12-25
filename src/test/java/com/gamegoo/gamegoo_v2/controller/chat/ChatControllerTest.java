@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -416,6 +417,21 @@ class ChatControllerTest extends ControllerTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @DisplayName("채팅방 나가기 성공")
+    @Test
+    void ExitChatroomSucceeds() throws Exception {
+        // given
+        String response = "채팅방 나가기 성공";
+
+        given(chatFacadeService.exitChatroom(any(Member.class), any(String.class))).willReturn(response);
+
+        // when // then
+        mockMvc.perform(patch(API_URL_PREFIX + "/chat/{chatroomUuid}/exit", TARGET_CHATROOM_UUID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data").value("채팅방 나가기 성공"));
     }
 
 }
