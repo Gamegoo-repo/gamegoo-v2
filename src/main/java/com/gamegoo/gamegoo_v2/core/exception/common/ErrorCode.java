@@ -107,13 +107,12 @@ public enum ErrorCode {
     CHAT_START_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_406", "채팅 상대 회원이 나를 차단했습니다. 채팅 시작이 불가능합니다."),
     CHAT_START_FAILED_TARGET_DEACTIVATED(NOT_FOUND, "CHAT_407", "채팅 상대 회원이 탈퇴했습니다. 채팅 시작이 불가능합니다."),
     CHAT_READ_FAILED_NOT_ENTERED_CHATROOM(FORBIDDEN, "CHAT_408", "해당 채팅방에 입장 상태가 아닙니다. 채팅방 입장 후 메시지 읽음 처리하세요."),
-    CHAT_READ_FAILED_CHAT_MESSAGE_NOT_FOUND(NOT_FOUND, "CHAT_409", "채팅 메시지 읽음 처리에 실패했습니다. 해당 메시지를 찾을 수 없습니다."),
-    CHAT_ADD_FAILED_TARGET_DEACTIVATED(BAD_REQUEST, "CHAT_410", "채팅 상대 회원이 탈퇴했습니다. 메시지 전송이 불가능합니다."),
-    CHAT_ADD_FAILED_TARGET_IS_BLOCKED(FORBIDDEN, "CHAT_411", "채팅 상대 회원을 차단한 상태입니다. 메시지 전송이 불가능합니다."),
-    CHAT_ADD_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_412", "채팅 상대 회원이 나를 차단했습니다. 메시지 전송이 불가능합니다."),
-    ADD_BOARD_SYSTEM_CHAT_FAILED(BAD_REQUEST, "CHAT_413", "해당 게시글을 찾을 수 없습니다. 게시글 시스템 메시지 등록에 실패했습니다."),
-    SYSTEM_MEMBER_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_414", "시스템 메시지 등록에 실패했습니다. 관리자에게 문의 바랍니다."),
-    SYSTEM_MESSAGE_TYPE_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_415", "시스템 메시지 타입 조회에 실패했습니다. 관리자에게 문의 바랍니다."),
+    CHAT_ADD_FAILED_TARGET_DEACTIVATED(BAD_REQUEST, "CHAT_409", "채팅 상대 회원이 탈퇴했습니다. 메시지 전송이 불가능합니다."),
+    CHAT_ADD_FAILED_TARGET_IS_BLOCKED(FORBIDDEN, "CHAT_410", "채팅 상대 회원을 차단한 상태입니다. 메시지 전송이 불가능합니다."),
+    CHAT_ADD_FAILED_BLOCKED_BY_TARGET(FORBIDDEN, "CHAT_411", "채팅 상대 회원이 나를 차단했습니다. 메시지 전송이 불가능합니다."),
+    ADD_BOARD_SYSTEM_CHAT_FAILED(BAD_REQUEST, "CHAT_412", "해당 게시글을 찾을 수 없습니다. 게시글 시스템 메시지 등록에 실패했습니다."),
+    SYSTEM_MEMBER_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_413", "시스템 메시지 등록에 실패했습니다. 관리자에게 문의 바랍니다."),
+    SYSTEM_MESSAGE_TYPE_NOT_FOUND(INTERNAL_SERVER_ERROR, "CHAT_414", "시스템 메시지 타입 조회에 실패했습니다. 관리자에게 문의 바랍니다."),
 
     /**
      * 게시판 관련 에러

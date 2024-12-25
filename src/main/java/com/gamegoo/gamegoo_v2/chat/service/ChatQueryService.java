@@ -112,4 +112,16 @@ public class ChatQueryService {
         return chatRepository.countUnreadChats(member.getId(), memberChatroom.getId(), chatroom.getId());
     }
 
+    /**
+     * 해당 채팅방에 해당 timestamp를 갖는 chat 엔티티 조회 메소드
+     *
+     * @param chatroom
+     * @param timestamp
+     * @return
+     */
+    public Chat getChatByChatroomAndTimestamp(Chatroom chatroom, Long timestamp) {
+        return chatRepository.findByChatroomAndTimestamp(chatroom, timestamp).orElseThrow(
+                () -> new ChatException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+    }
+
 }
