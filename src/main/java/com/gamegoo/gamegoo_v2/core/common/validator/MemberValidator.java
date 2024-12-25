@@ -1,13 +1,13 @@
 package com.gamegoo.gamegoo_v2.core.common.validator;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.exception.MemberException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.core.exception.common.GlobalException;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MemberValidator {
+public class MemberValidator extends BaseValidator {
 
     /**
      * 대상 회원이 탈퇴하지 않았는지 검증
@@ -46,12 +46,5 @@ public class MemberValidator {
         }
     }
 
-    private <T extends GlobalException> T createException(Class<T> exceptionClass, ErrorCode errorCode) {
-        try {
-            return exceptionClass.getConstructor(ErrorCode.class).newInstance(errorCode);
-        } catch (Exception e) {
-            throw new RuntimeException("Exception instantiation failed", e);
-        }
-    }
 
 }
