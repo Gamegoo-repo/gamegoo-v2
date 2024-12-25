@@ -44,158 +44,140 @@ class ChatControllerTest extends ControllerTestSupport {
     private static final String TARGET_CHATROOM_UUID = "test-uuid";
     private static final String TARGET_GAMENAME = "targetMember";
 
-    @Nested
-    @DisplayName("특정 회원과 채팅방 시작")
-    class StartChatroomByMemberIdTest {
+    @DisplayName("특정 회원과 채팅방 시작 성공: 채팅방 및 상대 회원 정보, 대화 내역이 반환된다.")
+    @Test
+    void startChatroomByMemberIdSucceeds() throws Exception {
+        // given
+        ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
+                .chatMessageList(new ArrayList<>())
+                .listSize(0)
+                .hasNext(false)
+                .nextCursor(null)
+                .build();
 
-        @DisplayName("성공: 채팅방 및 상대 회원 정보, 대화 내역이 반환된다.")
-        @Test
-        void startChatroomByMemberIdSucceeds() throws Exception {
-            // given
-            ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
-                    .chatMessageList(new ArrayList<>())
-                    .listSize(0)
-                    .hasNext(false)
-                    .nextCursor(null)
-                    .build();
+        EnterChatroomResponse response = EnterChatroomResponse.builder()
+                .memberId(TARGET_MEMBER_ID)
+                .gameName(TARGET_GAMENAME)
+                .memberProfileImg(1)
+                .blind(false)
+                .blocked(false)
+                .friend(false)
+                .friendRequestMemberId(null)
+                .uuid(TARGET_CHATROOM_UUID)
+                .system(null)
+                .chatMessageListResponse(chatMessageListResponse)
+                .build();
 
-            EnterChatroomResponse response = EnterChatroomResponse.builder()
-                    .memberId(TARGET_MEMBER_ID)
-                    .gameName(TARGET_GAMENAME)
-                    .memberProfileImg(1)
-                    .blind(false)
-                    .blocked(false)
-                    .friend(false)
-                    .friendRequestMemberId(null)
-                    .uuid(TARGET_CHATROOM_UUID)
-                    .system(null)
-                    .chatMessageListResponse(chatMessageListResponse)
-                    .build();
+        given(chatFacadeService.startChatroomByMemberId(any(Member.class), eq(TARGET_MEMBER_ID)))
+                .willReturn(response);
 
-            given(chatFacadeService.startChatroomByMemberId(any(Member.class), eq(TARGET_MEMBER_ID)))
-                    .willReturn(response);
-
-            // when // then
-            mockMvc.perform(get(API_URL_PREFIX + "/chat/start/member/{memberId}", TARGET_MEMBER_ID))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
-                    .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
-                    .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
-                    .andExpect(jsonPath("$.data.memberProfileImg").value(1))
-                    .andExpect(jsonPath("$.data.blind").value(false))
-                    .andExpect(jsonPath("$.data.blocked").value(false))
-                    .andExpect(jsonPath("$.data.friend").value(false))
-                    .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
-                    .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
-                    .andExpect(jsonPath("$.data.system").isEmpty());
-        }
-
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/chat/start/member/{memberId}", TARGET_MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
+                .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
+                .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
+                .andExpect(jsonPath("$.data.memberProfileImg").value(1))
+                .andExpect(jsonPath("$.data.blind").value(false))
+                .andExpect(jsonPath("$.data.blocked").value(false))
+                .andExpect(jsonPath("$.data.friend").value(false))
+                .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
+                .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
+                .andExpect(jsonPath("$.data.system").isEmpty());
     }
 
-    @Nested
-    @DisplayName("특정 글을 통한 채팅방 시작")
-    class StartChatroomByBoardIdTest {
+    @DisplayName("특정 글을 통한 채팅방 시작 성공: 채팅방 및 상대 회원 정보, 시스템 메시지 정보, 대화 내역이 반환된다.")
+    @Test
+    void startChatroomByBoardIdSucceeds() throws Exception {
+        // given
+        ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
+                .chatMessageList(new ArrayList<>())
+                .listSize(0)
+                .hasNext(false)
+                .nextCursor(null)
+                .build();
 
-        @DisplayName("성공: 채팅방 및 상대 회원 정보, 시스템 메시지 정보, 대화 내역이 반환된다.")
-        @Test
-        void startChatroomByBoardIdSucceeds() throws Exception {
-            // given
-            ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
-                    .chatMessageList(new ArrayList<>())
-                    .listSize(0)
-                    .hasNext(false)
-                    .nextCursor(null)
-                    .build();
+        SystemFlagResponse systemFlagResponse = SystemFlagResponse.builder()
+                .flag(1)
+                .boardId(TARGET_BOARD_ID)
+                .build();
 
-            SystemFlagResponse systemFlagResponse = SystemFlagResponse.builder()
-                    .flag(1)
-                    .boardId(TARGET_BOARD_ID)
-                    .build();
+        EnterChatroomResponse response = EnterChatroomResponse.builder()
+                .memberId(TARGET_MEMBER_ID)
+                .gameName(TARGET_GAMENAME)
+                .memberProfileImg(1)
+                .blind(false)
+                .blocked(false)
+                .friend(false)
+                .friendRequestMemberId(null)
+                .uuid(TARGET_CHATROOM_UUID)
+                .system(systemFlagResponse)
+                .chatMessageListResponse(chatMessageListResponse)
+                .build();
 
-            EnterChatroomResponse response = EnterChatroomResponse.builder()
-                    .memberId(TARGET_MEMBER_ID)
-                    .gameName(TARGET_GAMENAME)
-                    .memberProfileImg(1)
-                    .blind(false)
-                    .blocked(false)
-                    .friend(false)
-                    .friendRequestMemberId(null)
-                    .uuid(TARGET_CHATROOM_UUID)
-                    .system(systemFlagResponse)
-                    .chatMessageListResponse(chatMessageListResponse)
-                    .build();
+        given(chatFacadeService.startChatroomByBoardId(any(Member.class), eq(TARGET_BOARD_ID)))
+                .willReturn(response);
 
-            given(chatFacadeService.startChatroomByBoardId(any(Member.class), eq(TARGET_BOARD_ID)))
-                    .willReturn(response);
-
-            // when // then
-            mockMvc.perform(get(API_URL_PREFIX + "/chat/start/board/{boardId}", TARGET_BOARD_ID))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
-                    .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
-                    .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
-                    .andExpect(jsonPath("$.data.memberProfileImg").value(1))
-                    .andExpect(jsonPath("$.data.blind").value(false))
-                    .andExpect(jsonPath("$.data.blocked").value(false))
-                    .andExpect(jsonPath("$.data.friend").value(false))
-                    .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
-                    .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
-                    .andExpect(jsonPath("$.data.system").isNotEmpty())
-                    .andExpect(jsonPath("$.data.system.flag").value(1))
-                    .andExpect(jsonPath("$.data.system.boardId").value(TARGET_BOARD_ID));
-        }
-
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/chat/start/board/{boardId}", TARGET_BOARD_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
+                .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
+                .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
+                .andExpect(jsonPath("$.data.memberProfileImg").value(1))
+                .andExpect(jsonPath("$.data.blind").value(false))
+                .andExpect(jsonPath("$.data.blocked").value(false))
+                .andExpect(jsonPath("$.data.friend").value(false))
+                .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
+                .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
+                .andExpect(jsonPath("$.data.system").isNotEmpty())
+                .andExpect(jsonPath("$.data.system.flag").value(1))
+                .andExpect(jsonPath("$.data.system.boardId").value(TARGET_BOARD_ID));
     }
 
-    @Nested
-    @DisplayName("특정 채팅방 입장")
-    class EnterChatroomTest {
+    @DisplayName("특정 채팅방 입장 성공: 채팅방 및 상대 회원 정보, 대화 내역이 반환된다.")
+    @Test
+    void enterChatroomSucceeds() throws Exception {
+        // given
+        ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
+                .chatMessageList(new ArrayList<>())
+                .listSize(0)
+                .hasNext(false)
+                .nextCursor(null)
+                .build();
 
-        @DisplayName("성공: 채팅방 및 상대 회원 정보, 대화 내역이 반환된다.")
-        @Test
-        void enterChatroomSucceeds() throws Exception {
-            // given
-            ChatMessageListResponse chatMessageListResponse = ChatMessageListResponse.builder()
-                    .chatMessageList(new ArrayList<>())
-                    .listSize(0)
-                    .hasNext(false)
-                    .nextCursor(null)
-                    .build();
+        EnterChatroomResponse response = EnterChatroomResponse.builder()
+                .memberId(TARGET_MEMBER_ID)
+                .gameName(TARGET_GAMENAME)
+                .memberProfileImg(1)
+                .blind(false)
+                .blocked(false)
+                .friend(false)
+                .friendRequestMemberId(null)
+                .uuid(TARGET_CHATROOM_UUID)
+                .system(null)
+                .chatMessageListResponse(chatMessageListResponse)
+                .build();
 
-            EnterChatroomResponse response = EnterChatroomResponse.builder()
-                    .memberId(TARGET_MEMBER_ID)
-                    .gameName(TARGET_GAMENAME)
-                    .memberProfileImg(1)
-                    .blind(false)
-                    .blocked(false)
-                    .friend(false)
-                    .friendRequestMemberId(null)
-                    .uuid(TARGET_CHATROOM_UUID)
-                    .system(null)
-                    .chatMessageListResponse(chatMessageListResponse)
-                    .build();
+        given(chatFacadeService.enterChatroomByUuid(any(Member.class), eq(TARGET_CHATROOM_UUID)))
+                .willReturn(response);
 
-            given(chatFacadeService.enterChatroomByUuid(any(Member.class), eq(TARGET_CHATROOM_UUID)))
-                    .willReturn(response);
-
-            // when // then
-            mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/enter", TARGET_CHATROOM_UUID))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("OK"))
-                    .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
-                    .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
-                    .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
-                    .andExpect(jsonPath("$.data.memberProfileImg").value(1))
-                    .andExpect(jsonPath("$.data.blind").value(false))
-                    .andExpect(jsonPath("$.data.blocked").value(false))
-                    .andExpect(jsonPath("$.data.friend").value(false))
-                    .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
-                    .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
-                    .andExpect(jsonPath("$.data.system").isEmpty());
-
-        }
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/chat/{chatroomUuid}/enter", TARGET_CHATROOM_UUID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data.chatMessageListResponse").isNotEmpty())
+                .andExpect(jsonPath("$.data.memberId").value(TARGET_MEMBER_ID))
+                .andExpect(jsonPath("$.data.gameName").value(TARGET_GAMENAME))
+                .andExpect(jsonPath("$.data.memberProfileImg").value(1))
+                .andExpect(jsonPath("$.data.blind").value(false))
+                .andExpect(jsonPath("$.data.blocked").value(false))
+                .andExpect(jsonPath("$.data.friend").value(false))
+                .andExpect(jsonPath("$.data.friendRequestMemberId").isEmpty())
+                .andExpect(jsonPath("$.data.uuid").value(TARGET_CHATROOM_UUID))
+                .andExpect(jsonPath("$.data.system").isEmpty());
 
     }
 
@@ -419,6 +401,21 @@ class ChatControllerTest extends ControllerTestSupport {
                     .andExpect(jsonPath("$.message").value("커서는 1 이상의 값이어야 합니다."));
         }
 
+    }
+
+    @DisplayName("안읽은 채팅방 uuid 조회 성공")
+    @Test
+    void GetUnreadChatroomUuidSucceeds() throws Exception {
+        // given
+        List<String> response = List.of();
+
+        given(chatFacadeService.getUnreadChatroomUuids(any(Member.class))).willReturn(response);
+
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/chat/unread"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data").isArray());
     }
 
 }

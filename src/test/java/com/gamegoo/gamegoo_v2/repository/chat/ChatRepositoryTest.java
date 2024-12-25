@@ -104,8 +104,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
 
             // 읽은 메시지 20개 생성
             for (int i = 1; i <= 20; i++) {
-                Chat chat = createChat(member, "message " + i, chatroom);
-                setChatCreatedAt(chat, now.plusMinutes(5).plusSeconds(i));
+                createChatWithCreatedAt(member, "message " + i, chatroom, now.plusMinutes(5).plusSeconds(i));
             }
 
             // 채팅 메시지 읽음 처리
@@ -141,16 +140,12 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // 20분 전 메시지 생성
-            Chat oldChat = createChat(member, "old message", chatroom);
-            setChatCreatedAt(oldChat, now.minusMinutes(20));
+            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20));
 
             // 5분 전 메시지 생성
-            Chat newChat1 = createChat(member, "new message 1", chatroom);
-            setChatCreatedAt(newChat1, now.minusMinutes(5));
-            Chat newChat2 = createChat(member, "new message 2", chatroom);
-            setChatCreatedAt(newChat2, now.minusMinutes(5).plusSeconds(1));
-            Chat newChat3 = createChat(member, "new message 3", chatroom);
-            setChatCreatedAt(newChat3, now.minusMinutes(5).plusSeconds(2));
+            createChatWithCreatedAt(member, "new message 1", chatroom, now.minusMinutes(5));
+            createChatWithCreatedAt(member, "new message 2", chatroom, now.minusMinutes(5).plusSeconds(1));
+            createChatWithCreatedAt(member, "new message 3", chatroom, now.minusMinutes(5).plusSeconds(2));
 
             // when
             Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
@@ -175,18 +170,13 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // lastJoinDate 이전에 생성된 메시지
-            Chat oldChat1 = createChat(member, "old message 1", chatroom);
-            setChatCreatedAt(oldChat1, lastJoinDate.minusMinutes(2));
-            Chat oldChat2 = createChat(member, "old message 2", chatroom);
-            setChatCreatedAt(oldChat2, lastJoinDate.minusMinutes(1));
+            createChatWithCreatedAt(member, "old message 1", chatroom, lastJoinDate.minusMinutes(2));
+            createChatWithCreatedAt(member, "new message 2", chatroom, lastJoinDate.minusMinutes(1));
 
             // lastJoinDate 이후에 생성된 메시지
-            Chat newChat1 = createChat(member, "new message 1", chatroom);
-            setChatCreatedAt(newChat1, lastJoinDate.plusMinutes(1));
-            Chat newChat2 = createChat(member, "new message 2", chatroom);
-            setChatCreatedAt(newChat2, lastJoinDate.plusMinutes(1).plusSeconds(1));
-            Chat newChat3 = createChat(member, "new message 3", chatroom);
-            setChatCreatedAt(newChat3, lastJoinDate.plusMinutes(1).plusSeconds(2));
+            createChatWithCreatedAt(member, "new message 1", chatroom, lastJoinDate.plusMinutes(1));
+            createChatWithCreatedAt(member, "new message 2", chatroom, lastJoinDate.plusMinutes(2));
+            createChatWithCreatedAt(member, "new message 3", chatroom, lastJoinDate.plusMinutes(3));
 
             // when
             Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
@@ -252,7 +242,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
     @DisplayName("cursor 기반 채팅 메시지 조회")
     class FindChatsByCursor {
 
-        @DisplayName("cursor가 null인 경우, 가장 최근 메시지를 pageSize 만큼 정렬되어 반환된다.")
+        @DisplayName("cursor가 null인 경우, 가장 최근 메시지를 pageSize 만큼 조회 및 정렬되어 반환된다.")
         @Test
         void findChatsByCursorWhenCursorIsNull() {
             // given
@@ -330,6 +320,54 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
 
     }
 
+    @Nested
+    @DisplayName("안읽은 메시지 개수 조회")
+    class CountUnreadChatsTest {
+
+        @DisplayName("안읽은 메시지가 없는 경우 0을 반환한다.")
+        @Test
+        void countUnreadChatsSucceedsWhenNoUnreadChat() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastJoinDate = now.minusDays(1);
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, now, lastJoinDate);
+            createMemberChatroom(targetMember, chatroom);
+
+            // 읽은 메시지 생성
+            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20));
+            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20).plusSeconds(1));
+            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20).plusSeconds(2));
+
+            // when
+            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+
+            // then
+            assertThat(result).isEqualTo(0);
+        }
+
+        @DisplayName("안읽은 메시지가 있는 경우 개수를 반환한다.")
+        @Test
+        void countUnreadChatsSucceeds() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastJoinDate = now.minusDays(1);
+            MemberChatroom memberChatroom = createMemberChatroom(member, chatroom, now, lastJoinDate);
+            createMemberChatroom(targetMember, chatroom);
+
+            // 안읽은 메시지 생성
+            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20));
+            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20).plusSeconds(1));
+            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20).plusSeconds(2));
+
+            // when
+            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+
+            // then
+            assertThat(result).isEqualTo(3);
+        }
+
+    }
+
     private Chatroom createChatroom() {
         return em.persist(Chatroom.builder()
                 .uuid(UUID.randomUUID().toString())
@@ -372,6 +410,13 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
                 .sourceBoard(null)
                 .timestamp(timestamp)
                 .build());
+    }
+
+    private Chat createChatWithCreatedAt(Member fromMember, String contents, Chatroom chatroom,
+                                         LocalDateTime createdAt) {
+        Chat chat = createChat(fromMember, contents, chatroom);
+        setChatCreatedAt(chat, createdAt);
+        return chat;
     }
 
     private Chat createSystemChat(Member toMember, Chatroom chatroom, Integer systemType) {

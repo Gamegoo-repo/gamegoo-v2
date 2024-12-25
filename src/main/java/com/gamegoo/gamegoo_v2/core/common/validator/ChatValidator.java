@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.core.common.validator;
 
+import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
@@ -18,8 +19,8 @@ public class ChatValidator {
      * @param memberId
      * @param ChatroomId
      */
-    public void validateMemberChatroom(Long memberId, Long ChatroomId) {
-        memberChatroomRepository.findByMemberIdAndChatroomId(memberId, ChatroomId)
+    public MemberChatroom validateMemberChatroom(Long memberId, Long ChatroomId) {
+        return memberChatroomRepository.findByMemberIdAndChatroomId(memberId, ChatroomId)
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
     }
 
