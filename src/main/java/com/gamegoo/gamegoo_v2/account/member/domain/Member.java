@@ -153,4 +153,8 @@ public class Member extends BaseDateTimeEntity {
         this.wantPosition = wantPosition;
     }
 
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
 }

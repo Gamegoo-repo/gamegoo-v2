@@ -47,8 +47,18 @@ public class MemberService {
      * @param memberId 사용자 ID
      * @return Member
      */
-    public Member findMember(Long memberId) {
+    public Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    /**
+     * Email로 회원 정보 조회
+     *
+     * @param email 사용자 ID
+     * @return Member
+     */
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**

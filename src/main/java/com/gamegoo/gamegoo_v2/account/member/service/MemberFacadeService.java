@@ -44,7 +44,7 @@ public class MemberFacadeService {
     public OtherProfileResponse getOtherProfile(Member member, Long targetMemberId) {
 
         // memberId로 targetMember 얻기
-        Member targetMember = memberService.findMember(targetMemberId);
+        Member targetMember = memberService.findMemberById(targetMemberId);
 
         // TODO: mannerRank, mannerRatingCount 로직 추가
         double mannerRank = 1.0;

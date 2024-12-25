@@ -226,7 +226,7 @@ class ChatFacadeServiceTest {
             Board board = createBoard(targetMember);
 
             willThrow(new MemberException(ErrorCode.MEMBER_NOT_FOUND))
-                    .given(memberService).findMember(targetMember.getId());
+                    .given(memberService).findMemberById(targetMember.getId());
 
             // when // then
             assertThatThrownBy(() -> chatFacadeService.startChatroomByBoardId(member, board.getId()))
@@ -626,6 +626,7 @@ class ChatFacadeServiceTest {
                 assertThat(targetMemberChatroom.getLastJoinDate()).isAfter(now);
             }
         }
+
     }
 
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {

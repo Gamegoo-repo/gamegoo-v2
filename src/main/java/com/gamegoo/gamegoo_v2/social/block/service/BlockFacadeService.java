@@ -1,11 +1,11 @@
 package com.gamegoo.gamegoo_v2.social.block.service;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import com.gamegoo.gamegoo_v2.social.block.domain.Block;
 import com.gamegoo.gamegoo_v2.social.block.dto.BlockListResponse;
 import com.gamegoo.gamegoo_v2.social.block.dto.BlockResponse;
 import com.gamegoo.gamegoo_v2.social.friend.service.FriendService;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
-import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class BlockFacadeService {
      */
     @Transactional
     public BlockResponse blockMember(Member member, Long targetMemberId) {
-        Member targetMember = memberService.findMember(targetMemberId);
+        Member targetMember = memberService.findMemberById(targetMemberId);
 
         // 회원 차단 처리
         Block block = blockService.blockMember(member, targetMember);
@@ -65,7 +65,7 @@ public class BlockFacadeService {
      */
     @Transactional
     public BlockResponse unBlockMember(Member member, Long targetMemberId) {
-        Member targetMember = memberService.findMember(targetMemberId);
+        Member targetMember = memberService.findMemberById(targetMemberId);
         Block block = blockService.unBlockMember(member, targetMember);
 
         return BlockResponse.of(block.getBlockedMember().getId(), "회원 차단 해제 성공");
@@ -79,7 +79,7 @@ public class BlockFacadeService {
      */
     @Transactional
     public BlockResponse deleteBlock(Member member, Long targetMemberId) {
-        Member targetMember = memberService.findMember(targetMemberId);
+        Member targetMember = memberService.findMemberById(targetMemberId);
         Block block = blockService.deleteBlock(member, targetMember);
 
         return BlockResponse.of(block.getBlockedMember().getId(), "차단 목록에서 삭제 성공");
