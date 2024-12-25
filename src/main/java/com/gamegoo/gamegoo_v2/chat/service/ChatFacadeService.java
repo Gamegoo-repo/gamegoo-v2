@@ -273,6 +273,27 @@ public class ChatFacadeService {
                 .toList();
     }
 
+    /**
+     * 해당 채팅방을 퇴장 처리 Facade 메소드
+     *
+     * @param member
+     * @param uuid
+     * @return
+     */
+    @Transactional
+    public String exitChatroom(Member member, String uuid) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
+
+        // 해당 채팅방이 회원의 것이 맞는지 검증
+        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+
+        // lastJoinDate를 null로 업데이트
+        chatCommandService.updateLastJoinDate(member, memberChatroom, null);
+
+        return "채팅방 나가기 성공";
+    }
+
     private int getSystemFlag(MemberChatroom memberChatroom) {
         if (memberChatroom.exited()) {
             return SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode();

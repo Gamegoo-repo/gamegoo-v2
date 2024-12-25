@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,6 +92,13 @@ public class ChatController {
     @GetMapping("/chat/unread")
     public ApiResponse<List<String>> getUnreadChatroomUuid(@AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.getUnreadChatroomUuids(member));
+    }
+
+    @Operation(summary = "채팅방 나가기 API", description = "채팅방 나가기 API 입니다.")
+    @PatchMapping("/chat/{chatroomUuid}/exit")
+    public ApiResponse<Object> exitChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
+                                            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.exitChatroom(member, chatroomUuid));
     }
 
 }
