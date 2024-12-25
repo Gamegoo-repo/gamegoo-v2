@@ -749,6 +749,56 @@ class ChatFacadeServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("채팅방 나가기")
+    class ExitChatroomTest {
+
+        @DisplayName("실패: uuid에 해당하는 채팅방이 없는 경우 예외가 발생한다. ")
+        @Test
+        void exitChatroom_shouldThrownWhenChatroomNotFound() {
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.exitChatroom(member, "no-uuid"))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
+        }
+
+        @DisplayName("실패: 해당 채팅방이 본인의 채팅방이 아닌 경우 예외가 발생한다.")
+        @Test
+        void exitChatroom_shouldThrownWhenMemberChatroomNotExists() {
+            // given
+            Member otherMember = createMember("other@gmail.com", "otherMember");
+
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(otherMember, chatroom, null);
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when // then
+            assertThatThrownBy(() -> chatFacadeService.exitChatroom(member, chatroom.getUuid()))
+                    .isInstanceOf(ChatException.class)
+                    .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
+
+        }
+
+        @DisplayName("성공: lastJoinDate가 null로 업데이트 되어야 한다.")
+        @Test
+        void exitChatroomSucceeds() {
+            // given
+            Chatroom chatroom = createChatroom();
+            createMemberChatroom(member, chatroom, LocalDateTime.now().minusDays(1));
+            createMemberChatroom(targetMember, chatroom, null);
+
+            // when
+            String result = chatFacadeService.exitChatroom(member, chatroom.getUuid());
+
+            // then
+            assertThat(result).isEqualTo("채팅방 나가기 성공");
+
+            MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
+                    chatroom.getId()).orElseThrow();
+            assertThat(memberChatroom.getLastJoinDate()).isNull();
+        }
+    }
+
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {
         assertThat(response.getUuid()).isEqualTo(chatroom.getUuid());
         assertThat(response.getMemberId()).isEqualTo(targetMember.getId());
