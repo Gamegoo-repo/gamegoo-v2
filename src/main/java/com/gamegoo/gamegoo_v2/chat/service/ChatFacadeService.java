@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET;
@@ -225,7 +226,7 @@ public class ChatFacadeService {
     }
 
     /**
-     * 해당 채팅방의 대화 내역을 cursor 기반 페이징 조회
+     * 해당 채팅방의 대화 내역을 cursor 기반 페이징 조회 Facade 메소드
      *
      * @param member
      * @param chatroomUuid
@@ -249,6 +250,27 @@ public class ChatFacadeService {
         }
 
         return chatResponseFactory.toChatMessageListResponse(chatSlice);
+    }
+
+    /**
+     * 해당 회원의 안읽은 메시지가 존재하는 채팅방 uuid 목록 조회 Facade 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<String> getUnreadChatroomUuids(Member member) {
+        // 입장 상태인 모든 chatroom 조회
+        List<Chatroom> activeChatrooms = chatQueryService.getActiveChatrooms(member);
+
+        // 각 채팅방에 대해 안읽은 메시지 개수 조회
+        return activeChatrooms.stream()
+                .map(chatroom -> {
+                    int unreadChats = chatQueryService.countUnreadChats(member, chatroom);
+
+                    return unreadChats > 0 ? chatroom.getUuid() : null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private int getSystemFlag(MemberChatroom memberChatroom) {

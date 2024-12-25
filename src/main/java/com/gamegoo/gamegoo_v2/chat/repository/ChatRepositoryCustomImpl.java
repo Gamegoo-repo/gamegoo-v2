@@ -90,6 +90,26 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
         return new SliceImpl<>(chats, Pageable.unpaged(), hasNext);
     }
 
+    @Override
+    public int countUnreadChats(Long chatroomId, Long memberChatroomId, Long memberId) {
+        Long result = queryFactory.select(chat.count())
+                .from(chat)
+                .join(memberChatroom).on(
+                        memberChatroom.chatroom.id.eq(chatroomId),
+                        memberChatroom.member.id.eq(memberId)
+                )
+                .where(
+                        chat.chatroom.id.eq(chatroomId),
+                        memberChatroom.member.id.eq(memberId),
+                        createdAtGreaterThanLastViewDateSubQuery(memberChatroomId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        isMemberMessageOrMySystemMessage(memberId)
+                )
+                .fetchOne();
+
+        return result != null ? result.intValue() : 0;
+    }
+
     /**
      * cursorChat 보다 예전 메시지가 있는지 여부를 반환
      *
@@ -136,8 +156,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
      * @param memberChatroomId
      * @return
      */
-    private BooleanExpression createdAtGreaterOrEqualThanLastJoinDateSubQuery(
-            Long memberChatroomId) {
+    private BooleanExpression createdAtGreaterOrEqualThanLastJoinDateSubQuery(Long memberChatroomId) {
         return chat.createdAt.goe(
                 JPAExpressions.select(memberChatroom.lastJoinDate)
                         .from(memberChatroom)

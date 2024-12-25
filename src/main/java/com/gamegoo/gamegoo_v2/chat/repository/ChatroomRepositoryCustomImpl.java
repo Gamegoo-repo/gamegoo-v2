@@ -4,6 +4,7 @@ import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.gamegoo.gamegoo_v2.chat.domain.QChatroom.chatroom;
@@ -33,6 +34,19 @@ public class ChatroomRepositoryCustomImpl implements ChatroomRepositoryCustom {
                 .fetchFirst();
 
         return Optional.ofNullable(chatroomEntity);
+    }
+
+    @Override
+    public List<Chatroom> findActiveChatrooms(Long memberId) {
+        return queryFactory
+                .select(chatroom)
+                .from(memberChatroom)
+                .join(memberChatroom.chatroom, chatroom)
+                .where(
+                        memberChatroom.member.id.eq(memberId),
+                        memberChatroom.lastJoinDate.isNotNull()
+                )
+                .fetch();
     }
 
 }

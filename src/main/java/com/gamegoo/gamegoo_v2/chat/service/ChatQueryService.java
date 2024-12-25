@@ -7,6 +7,7 @@ import com.gamegoo.gamegoo_v2.chat.domain.MemberChatroom;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.ChatroomRepository;
 import com.gamegoo.gamegoo_v2.chat.repository.MemberChatroomRepository;
+import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,9 +25,11 @@ public class ChatQueryService {
 
     private final ChatroomRepository chatroomRepository;
     private final ChatRepository chatRepository;
+    private final MemberChatroomRepository memberChatroomRepository;
+    private final ChatValidator chatValidator;
 
     private static final int PAGE_SIZE = 20;
-    private final MemberChatroomRepository memberChatroomRepository;
+
 
     /**
      * 두 회원 사이에 존재하는 chatroom을 반환하는 메소드
@@ -46,9 +50,7 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom) {
-        MemberChatroom memberChatroom = memberChatroomRepository
-                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
-                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
         return chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
@@ -83,11 +85,31 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getChatSliceByCursor(Member member, Chatroom chatroom, Long cursor) {
-        MemberChatroom memberChatroom = memberChatroomRepository
-                .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
-                .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
+        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
         return chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(), member.getId(),
                 PAGE_SIZE);
+    }
+
+    /**
+     * 회원이 입장한 상태인 모든 chatroom list 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<Chatroom> getActiveChatrooms(Member member) {
+        return chatroomRepository.findActiveChatrooms(member.getId());
+    }
+
+    /**
+     * 해당 채팅방의 안읽은 메시지 개수를 반환하는 메소드
+     *
+     * @param member
+     * @param chatroom
+     * @return
+     */
+    public int countUnreadChats(Member member, Chatroom chatroom) {
+        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.countUnreadChats(member.getId(), memberChatroom.getId(), chatroom.getId());
     }
 
 }
