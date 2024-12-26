@@ -5,6 +5,7 @@ import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
 import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
