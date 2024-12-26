@@ -17,11 +17,13 @@ import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -271,6 +273,38 @@ public class ChatFacadeService {
                 })
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    /**
+     * 해당 채팅방 메시지 읽음 처리 Facade 메소드
+     *
+     * @param member
+     * @param chatroomUuid
+     * @param timestamp
+     * @return
+     */
+    @Transactional
+    public String readChatMessage(Member member, String chatroomUuid, Long timestamp) {
+        // chatroom 엔티티 조회
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(chatroomUuid);
+
+        // 해당 채팅방이 회원의 것이 맞는지 검증
+        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+
+        // 채팅방에 입장한 상태가 맞는지 검증
+        chatValidator.throwIfExited(memberChatroom, ChatException.class,
+                ErrorCode.CHAT_READ_FAILED_NOT_ENTERED_CHATROOM);
+
+        if (timestamp == null) {
+            // timestamp가 없는 경우 현재 시각으로 lastViewDate 업데이트
+            chatCommandService.updateLastViewDate(member, chatroom, LocalDateTime.now());
+        } else {
+            // timestamp가 있는 경우 해당 채팅의 createdAt으로 lastViewDate 업데이트
+            Chat chat = chatQueryService.getChatByChatroomAndTimestamp(chatroom, timestamp);
+            chatCommandService.updateLastViewDate(member, chatroom, chat.getCreatedAt());
+        }
+
+        return ("채팅 메시지 읽음 처리 성공");
     }
 
     /**

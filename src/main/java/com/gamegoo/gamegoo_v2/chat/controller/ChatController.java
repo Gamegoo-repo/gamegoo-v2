@@ -94,6 +94,16 @@ public class ChatController {
         return ApiResponse.ok(chatFacadeService.getUnreadChatroomUuids(member));
     }
 
+    @Operation(summary = "채팅 메시지 읽음 처리 API", description = "특정 채팅방의 메시지를 읽음 처리하는 API 입니다.")
+    @PatchMapping("/chat/{chatroomUuid}/read")
+    @Parameter(name = "timestamp", description = "특정 메시지를 읽음 처리하는 경우, 그 메시지의 timestamp를 함께 보내주세요.")
+    public ApiResponse<String> readChatMessage(
+            @PathVariable(name = "chatroomUuid") String chatroomUuid,
+            @RequestParam(name = "timestamp", required = false) Long timestamp,
+            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.readChatMessage(member, chatroomUuid, timestamp));
+    }
+
     @Operation(summary = "채팅방 나가기 API", description = "채팅방 나가기 API 입니다.")
     @PatchMapping("/chat/{chatroomUuid}/exit")
     public ApiResponse<Object> exitChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
