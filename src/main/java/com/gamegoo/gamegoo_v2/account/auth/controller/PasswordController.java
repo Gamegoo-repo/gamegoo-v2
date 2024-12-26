@@ -19,7 +19,7 @@ public class PasswordController {
     private final PasswordFacadeService passwordFacadeService;
 
     @PostMapping("/reset")
-    @Operation(summary = "비밀번호 재설정 API 입니다.", description = "API for reseting password")
+    @Operation(summary = "비밀번호 재설정 API 입니다. JWT X", description = "API for reseting password JWT X")
     public ApiResponse<String> resetPassword(@Valid @RequestBody PasswordRequest request) {
         return ApiResponse.ok(passwordFacadeService.changePassword(request));
     }
