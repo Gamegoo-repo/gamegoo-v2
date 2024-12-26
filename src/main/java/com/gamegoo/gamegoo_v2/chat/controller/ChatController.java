@@ -104,4 +104,11 @@ public class ChatController {
         return ApiResponse.ok(chatFacadeService.readChatMessage(member, chatroomUuid, timestamp));
     }
 
+    @Operation(summary = "채팅방 나가기 API", description = "채팅방 나가기 API 입니다.")
+    @PatchMapping("/chat/{chatroomUuid}/exit")
+    public ApiResponse<Object> exitChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
+                                            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.exitChatroom(member, chatroomUuid));
+    }
+
 }

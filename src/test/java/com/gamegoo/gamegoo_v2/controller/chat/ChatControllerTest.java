@@ -459,4 +459,19 @@ class ChatControllerTest extends ControllerTestSupport {
     }
 
 
+    @DisplayName("채팅방 나가기 성공")
+    @Test
+    void ExitChatroomSucceeds() throws Exception {
+        // given
+        String response = "채팅방 나가기 성공";
+
+        given(chatFacadeService.exitChatroom(any(Member.class), any(String.class))).willReturn(response);
+
+        // when // then
+        mockMvc.perform(patch(API_URL_PREFIX + "/chat/{chatroomUuid}/exit", TARGET_CHATROOM_UUID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data").value("채팅방 나가기 성공"));
+    }
+
 }

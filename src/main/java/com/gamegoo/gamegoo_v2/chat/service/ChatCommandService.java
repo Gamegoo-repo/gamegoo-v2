@@ -223,18 +223,23 @@ public class ChatCommandService {
     }
 
     /**
-     * 기존 lastJoinDate가 null인 경우 업데이트 및 socket join 이벤트 발생
+     * lastJoinDate 업데이트 메소드
+     * 기존 lastJoinDate가 null인 경우 socket join 이벤트 발생
      *
      * @param member
      * @param memberChatroom
      * @param date
      */
-    private void updateLastJoinDate(Member member, MemberChatroom memberChatroom, LocalDateTime date) {
-        if (memberChatroom.getLastJoinDate() == null) {
+    public void updateLastJoinDate(Member member, MemberChatroom memberChatroom, LocalDateTime date) {
+        if (memberChatroom.getLastJoinDate() == null && date != null) {
             memberChatroom.updateLastJoinDate(date);
 
             // socket join API 요청
             eventPublisher.publishEvent(new SocketJoinEvent(member.getId(), memberChatroom.getChatroom().getUuid()));
+        }
+
+        if (memberChatroom.getLastJoinDate() != null && date == null) {
+            memberChatroom.updateLastJoinDate(date);
         }
     }
 
