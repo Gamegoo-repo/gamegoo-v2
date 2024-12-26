@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,6 +92,16 @@ public class ChatController {
     @GetMapping("/chat/unread")
     public ApiResponse<List<String>> getUnreadChatroomUuid(@AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.getUnreadChatroomUuids(member));
+    }
+
+    @Operation(summary = "채팅 메시지 읽음 처리 API", description = "특정 채팅방의 메시지를 읽음 처리하는 API 입니다.")
+    @PatchMapping("/chat/{chatroomUuid}/read")
+    @Parameter(name = "timestamp", description = "특정 메시지를 읽음 처리하는 경우, 그 메시지의 timestamp를 함께 보내주세요.")
+    public ApiResponse<String> readChatMessage(
+            @PathVariable(name = "chatroomUuid") String chatroomUuid,
+            @RequestParam(name = "timestamp", required = false) Long timestamp,
+            @AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.readChatMessage(member, chatroomUuid, timestamp));
     }
 
 }
