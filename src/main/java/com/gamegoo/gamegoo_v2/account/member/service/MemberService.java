@@ -89,6 +89,7 @@ public class MemberService {
      * @param member       회원
      * @param profileImage 프로필이미지
      */
+    @Transactional
     public void setProfileImage(Member member, int profileImage) {
         member.updateProfileImage(profileImage);
     }
@@ -99,6 +100,7 @@ public class MemberService {
      * @param member 회원
      * @param isMike 마이크 여부
      */
+    @Transactional
     public void setIsMike(Member member, boolean isMike) {
         member.updateMike(isMike);
     }
@@ -111,6 +113,7 @@ public class MemberService {
      * @param subPosition  부 포지션
      * @param wantPosition 원하는 포지션
      */
+    @Transactional
     public void setPosition(Member member, int mainPosition, int subPosition, int wantPosition) {
         member.updatePosition(mainPosition, subPosition, wantPosition);
     }

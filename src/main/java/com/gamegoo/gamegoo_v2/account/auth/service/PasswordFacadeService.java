@@ -17,6 +17,7 @@ public class PasswordFacadeService {
     private final EmailService emailService;
     private final MemberService memberService;
 
+    @Transactional
     public String changePassword(PasswordRequest request) {
         // 이메일, 코드 검증
         emailService.verifyEmailCode(request.getEmail(), request.getVerifyCode());
@@ -24,7 +25,8 @@ public class PasswordFacadeService {
 
         // 새로운 비밀번호 설정
         passwordService.changePassword(member, request.getNewPassword());
-
+        System.out.println("New password: " + request.getNewPassword());
+        System.out.println("New password: " + member.getPassword());
         return "비밀번호 변경이 완료되었습니다.";
     }
 
