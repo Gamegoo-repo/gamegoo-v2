@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -74,8 +74,9 @@ public class PasswordFacadeServiceTest {
         Member updatedMember = memberRepository.findByEmail(EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Member not found"));
 
-        assertTrue(PasswordUtil.matchesPassword(request.getNewPassword(), updatedMember.getPassword()),
-                "비밀번호가 올바르게 변경되어야 합니다.");
+        assertThat(PasswordUtil.matchesPassword(request.getNewPassword(), updatedMember.getPassword()))
+                .as("비밀번호가 올바르게 변경되어야 합니다.")
+                .isTrue();
     }
 
     @DisplayName("jwt 토큰 있을 때 비밀번호 변경 성공")
@@ -90,8 +91,9 @@ public class PasswordFacadeServiceTest {
         passwordFacadeService.changePassword(member, request);
 
         // then
-        assertTrue(PasswordUtil.matchesPassword(request.getNewPassword(), member.getPassword()),
-                "비밀번호가 올바르게 변경되어야 합니다.");
+        assertThat(PasswordUtil.matchesPassword(request.getNewPassword(), member.getPassword()))
+                .as("비밀번호가 올바르게 변경되어야 합니다.")
+                .isTrue();
     }
 
     private Member createMember(String email, String gameName, String password) {

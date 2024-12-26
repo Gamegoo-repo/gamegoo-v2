@@ -12,7 +12,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +23,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
 @Getter
-@Table(name = "Member")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateTimeEntity {
 
