@@ -47,8 +47,18 @@ public class MemberService {
      * @param memberId 사용자 ID
      * @return Member
      */
-    public Member findMember(Long memberId) {
+    public Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    /**
+     * Email로 회원 정보 조회
+     *
+     * @param email 사용자 ID
+     * @return Member
+     */
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**
@@ -79,6 +89,7 @@ public class MemberService {
      * @param member       회원
      * @param profileImage 프로필이미지
      */
+    @Transactional
     public void setProfileImage(Member member, int profileImage) {
         member.updateProfileImage(profileImage);
     }
@@ -89,6 +100,7 @@ public class MemberService {
      * @param member 회원
      * @param isMike 마이크 여부
      */
+    @Transactional
     public void setIsMike(Member member, boolean isMike) {
         member.updateMike(isMike);
     }
@@ -101,6 +113,7 @@ public class MemberService {
      * @param subPosition  부 포지션
      * @param wantPosition 원하는 포지션
      */
+    @Transactional
     public void setPosition(Member member, int mainPosition, int subPosition, int wantPosition) {
         member.updatePosition(mainPosition, subPosition, wantPosition);
     }

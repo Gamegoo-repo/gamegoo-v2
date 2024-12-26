@@ -31,8 +31,8 @@ public class FriendRequestEventListener {
     @EventListener
     public void handleSendFriendRequestEvent(SendFriendRequestEvent event) {
         try {
-            Member member = memberService.findMember(event.getMemberId());
-            Member sourceMember = memberService.findMember(event.getSourceMemberId());
+            Member member = memberService.findMemberById(event.getMemberId());
+            Member sourceMember = memberService.findMemberById(event.getSourceMemberId());
 
             // member가 sourceMember에게 친구 요청 전송했음 알림 생성
             notificationService.createSendFriendRequestNotification(member, sourceMember);
@@ -54,8 +54,8 @@ public class FriendRequestEventListener {
     @EventListener
     public void handleAcceptFriendRequestEvent(AcceptFriendRequestEvent event) {
         try {
-            Member member = memberService.findMember(event.getMemberId());
-            Member targetMember = memberService.findMember(event.getTargetMemberId());
+            Member member = memberService.findMemberById(event.getMemberId());
+            Member targetMember = memberService.findMemberById(event.getTargetMemberId());
 
             // targetMember에게 member가 친구 요청 수락했음 알림 생성
             notificationService.createAcceptFriendRequestNotification(targetMember, member);
@@ -74,8 +74,8 @@ public class FriendRequestEventListener {
     @EventListener
     public void handleRejectFriendRequestEvent(RejectFriendRequestEvent event) {
         try {
-            Member member = memberService.findMember(event.getMemberId());
-            Member targetMember = memberService.findMember(event.getTargetMemberId());
+            Member member = memberService.findMemberById(event.getMemberId());
+            Member targetMember = memberService.findMemberById(event.getTargetMemberId());
 
             // targetMember에게 member가 친구 요청 거절했음 알림 생성
             notificationService.createRejectFriendRequestNotification(targetMember, member);
