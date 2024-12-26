@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class PasswordRequest {
+public class PasswordResetWithVerifyRequest {
 
     @Email(message = "Email 형식이 올바르지 않습니다.")
     @NotBlank(message = "Email은 비워둘 수 없습니다.")
