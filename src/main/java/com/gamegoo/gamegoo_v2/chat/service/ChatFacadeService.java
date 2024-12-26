@@ -62,7 +62,7 @@ public class ChatFacadeService {
     @Transactional
     public EnterChatroomResponse startChatroomByMemberId(Member member, Long targetMemberId) {
         // 대상 회원 검증
-        Member targetMember = memberService.findMember(targetMemberId);
+        Member targetMember = memberService.findMemberById(targetMemberId);
         memberValidator.validateDifferentMembers(member, targetMember);
 
         // 내가 상대 회원을 차단하지 않았는지 검증
@@ -114,7 +114,7 @@ public class ChatFacadeService {
         Board board = boardService.findBoard(boardId);
 
         // 대상 회원 검증 및 조회
-        Member targetMember = memberService.findMember(board.getMember().getId());
+        Member targetMember = memberService.findMemberById(board.getMember().getId());
         memberValidator.validateDifferentMembers(member, targetMember);
 
         // 상대가 탈퇴하지 않았는지 검증
