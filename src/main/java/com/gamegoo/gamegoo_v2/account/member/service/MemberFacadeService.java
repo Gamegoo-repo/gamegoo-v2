@@ -68,6 +68,7 @@ public class MemberFacadeService {
      * @param request 프로필이미지
      * @return 성공 메세지
      */
+    @Transactional
     public String setProfileImage(Member member, ProfileImageRequest request) {
         memberService.setProfileImage(member, request.getProfileImage());
         return "프로필 이미지 수정이 완료됐습니다";
@@ -80,6 +81,7 @@ public class MemberFacadeService {
      * @param request 마이크 여부
      * @return 성공 메세지
      */
+    @Transactional
     public String setIsMike(Member member, IsMikeRequest request) {
         memberService.setIsMike(member, request.getIsMike());
         return "마이크 여부 수정이 완료됐습니다";
@@ -92,6 +94,7 @@ public class MemberFacadeService {
      * @param request 주/부/원하는 포지션
      * @return 성공 메세지
      */
+    @Transactional
     public String setPosition(Member member, PositionRequest request) {
         memberService.setPosition(member, request.getMainP(), request.getSubP(), request.getWantP());
         return "포지션 여부 수정이 완료됐습니다";
