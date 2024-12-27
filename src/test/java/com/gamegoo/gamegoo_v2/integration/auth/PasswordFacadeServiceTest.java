@@ -1,7 +1,7 @@
 package com.gamegoo.gamegoo_v2.integration.auth;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetWithVerifyRequest;
 import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.account.email.domain.EmailVerifyRecord;
 import com.gamegoo.gamegoo_v2.account.email.repository.EmailVerifyRecordRepository;
@@ -34,7 +34,6 @@ public class PasswordFacadeServiceTest {
     EmailVerifyRecordRepository emailVerifyRecordRepository;
 
     private Member member;
-    private EmailVerifyRecord emailVerifyRecord;
 
     private static final String EMAIL = "test@gmail.com";
     private static final String PASSWORD = "testpassword";
@@ -48,7 +47,7 @@ public class PasswordFacadeServiceTest {
         member = createMember(EMAIL, GAMENAME, PasswordUtil.encodePassword(PASSWORD));
 
         // EmailVerifyRecord 생성
-        emailVerifyRecord = createEmailVerifyRecord(EMAIL, VERIFY_CODE);
+        createEmailVerifyRecord(EMAIL, VERIFY_CODE);
     }
 
     @AfterEach

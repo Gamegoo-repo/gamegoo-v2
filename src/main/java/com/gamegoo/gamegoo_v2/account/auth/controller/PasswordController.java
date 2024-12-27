@@ -1,8 +1,10 @@
 package com.gamegoo.gamegoo_v2.account.auth.controller;
 
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordCheckRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.PasswordCheckResponse;
 import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
@@ -33,5 +35,12 @@ public class PasswordController {
     public ApiResponse<String> resetPasswordWithJWT(@AuthMember Member member, @Valid @RequestBody PasswordResetRequest request) {
         return ApiResponse.ok(passwordFacadeService.changePassword(member, request));
     }
+
+    @PostMapping("/check")
+    @Operation(summary = "비밀번호 확인 API 입니다.", description = "API for checking password")
+    public ApiResponse<PasswordCheckResponse> checkPassword(@AuthMember Member member, @Valid @RequestBody PasswordCheckRequest request) {
+        return ApiResponse.ok(passwordFacadeService.checkPassword(member, request));
+    }
+
 
 }

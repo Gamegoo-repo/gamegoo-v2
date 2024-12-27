@@ -1,6 +1,6 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
