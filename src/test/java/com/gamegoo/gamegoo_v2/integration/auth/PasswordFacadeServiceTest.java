@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.integration.auth;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
 import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.account.email.domain.EmailVerifyRecord;
 import com.gamegoo.gamegoo_v2.account.email.repository.EmailVerifyRecordRepository;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -53,27 +54,46 @@ public class PasswordFacadeServiceTest {
     @AfterEach
     void tearDown() {
         memberRepository.deleteAllInBatch();
+        emailVerifyRecordRepository.deleteAllInBatch();
     }
 
-    @DisplayName("jwt 토큰 없이 비밀번호 변경 성공")
+    @DisplayName("jwt 토큰 없을때 비밀번호 변경 성공")
     @Test
     void resetPassword() {
         // given
-        PasswordRequest request = PasswordRequest.builder()
+        PasswordResetWithVerifyRequest request = PasswordResetWithVerifyRequest.builder()
                 .email(EMAIL)
                 .verifyCode(VERIFY_CODE)
                 .newPassword(NEW_PASSWORD)
                 .build();
 
         // when
-        passwordFacadeService.changePassword(request);
+        passwordFacadeService.changePasswordWithVerify(request);
 
         // then
         Member updatedMember = memberRepository.findByEmail(EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Member not found"));
 
-        assertTrue(PasswordUtil.matchesPassword(request.getNewPassword(), updatedMember.getPassword()),
-                "비밀번호가 올바르게 변경되어야 합니다.");
+        assertThat(PasswordUtil.matchesPassword(request.getNewPassword(), updatedMember.getPassword()))
+                .as("비밀번호가 올바르게 변경되어야 합니다.")
+                .isTrue();
+    }
+
+    @DisplayName("jwt 토큰 있을 때 비밀번호 변경 성공")
+    @Test
+    void resetPasswordJWT() {
+        // given
+        PasswordResetRequest request = PasswordResetRequest.builder()
+                .newPassword(NEW_PASSWORD)
+                .build();
+
+        // when
+        passwordFacadeService.changePassword(member, request);
+
+        // then
+        assertThat(PasswordUtil.matchesPassword(request.getNewPassword(), member.getPassword()))
+                .as("비밀번호가 올바르게 변경되어야 합니다.")
+                .isTrue();
     }
 
     private Member createMember(String email, String gameName, String password) {
