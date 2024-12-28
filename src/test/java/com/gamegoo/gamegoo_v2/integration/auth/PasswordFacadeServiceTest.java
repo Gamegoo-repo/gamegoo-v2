@@ -1,7 +1,8 @@
 package com.gamegoo.gamegoo_v2.integration.auth;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordCheckRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetWithVerifyRequest;
 import com.gamegoo.gamegoo_v2.account.auth.service.PasswordFacadeService;
 import com.gamegoo.gamegoo_v2.account.email.domain.EmailVerifyRecord;
 import com.gamegoo.gamegoo_v2.account.email.repository.EmailVerifyRecordRepository;
@@ -34,7 +35,6 @@ public class PasswordFacadeServiceTest {
     EmailVerifyRecordRepository emailVerifyRecordRepository;
 
     private Member member;
-    private EmailVerifyRecord emailVerifyRecord;
 
     private static final String EMAIL = "test@gmail.com";
     private static final String PASSWORD = "testpassword";
@@ -48,7 +48,7 @@ public class PasswordFacadeServiceTest {
         member = createMember(EMAIL, GAMENAME, PasswordUtil.encodePassword(PASSWORD));
 
         // EmailVerifyRecord 생성
-        emailVerifyRecord = createEmailVerifyRecord(EMAIL, VERIFY_CODE);
+        createEmailVerifyRecord(EMAIL, VERIFY_CODE);
     }
 
     @AfterEach
@@ -96,6 +96,40 @@ public class PasswordFacadeServiceTest {
                 .isTrue();
     }
 
+    @DisplayName("비밀번호 확인 테스트 : 일치할 경우")
+    @Test
+    void checkPasswordMatch() {
+        // given
+        PasswordCheckRequest request = PasswordCheckRequest.builder()
+                .password(PASSWORD)
+                .build();
+
+        // when
+        passwordFacadeService.checkPassword(member, request);
+
+        // then
+        assertThat(PasswordUtil.matchesPassword(request.getPassword(), member.getPassword()))
+                .as("비밀번호가 일치해야합니다.")
+                .isTrue();
+    }
+
+    @DisplayName("비밀번호 확인 테스트 : 불일치할 경우")
+    @Test
+    void checkPasswordUnMatch() {
+        // given
+        PasswordCheckRequest request = PasswordCheckRequest.builder()
+                .password(NEW_PASSWORD)
+                .build();
+
+        // when
+        passwordFacadeService.checkPassword(member, request);
+
+        // then
+        assertThat(PasswordUtil.matchesPassword(request.getPassword(), member.getPassword()))
+                .as("비밀번호가 불일치해야합니다.")
+                .isFalse();
+    }
+
     private Member createMember(String email, String gameName, String password) {
         return memberRepository.save(Member.builder()
                 .email(email)
@@ -112,8 +146,8 @@ public class PasswordFacadeServiceTest {
                 .build());
     }
 
-    private EmailVerifyRecord createEmailVerifyRecord(String email, String verifyCode) {
-        return emailVerifyRecordRepository.save(EmailVerifyRecord.builder()
+    private void createEmailVerifyRecord(String email, String verifyCode) {
+        emailVerifyRecordRepository.save(EmailVerifyRecord.builder()
                 .email(email)
                 .code(verifyCode)
                 .build());
