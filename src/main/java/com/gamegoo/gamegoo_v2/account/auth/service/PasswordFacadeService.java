@@ -1,7 +1,9 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetRequest;
-import com.gamegoo.gamegoo_v2.account.auth.dto.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordCheckRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.PasswordResetWithVerifyRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.PasswordCheckResponse;
 import com.gamegoo.gamegoo_v2.account.email.service.EmailService;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
@@ -34,6 +36,10 @@ public class PasswordFacadeService {
         // 새로운 비밀번호 설정
         passwordService.changePassword(member, request.getNewPassword());
         return "비밀번호 변경이 완료되었습니다.";
+    }
+
+    public PasswordCheckResponse checkPassword(Member member, PasswordCheckRequest request) {
+        return PasswordCheckResponse.of(passwordService.checkPassword(member, request.getPassword()));
     }
 
 }

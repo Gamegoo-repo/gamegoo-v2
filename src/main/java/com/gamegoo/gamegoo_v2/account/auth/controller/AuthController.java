@@ -1,6 +1,6 @@
 package com.gamegoo.gamegoo_v2.account.auth.controller;
 
-import com.gamegoo.gamegoo_v2.account.auth.dto.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
