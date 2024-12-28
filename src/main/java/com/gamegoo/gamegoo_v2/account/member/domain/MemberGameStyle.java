@@ -55,4 +55,12 @@ public class MemberGameStyle extends BaseDateTimeEntity {
         member.getMemberGameStyleList().add(this);
     }
 
+    // 양방향 관계 제거 메서드
+    public void removeMember(Member member) {
+        if (this.member != null && this.member.equals(member)) {
+            this.member.getMemberGameStyleList().remove(this);
+            this.member = null;
+        }
+    }
+
 }

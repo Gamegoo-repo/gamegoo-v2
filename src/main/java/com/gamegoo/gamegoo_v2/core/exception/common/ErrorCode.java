@@ -50,6 +50,7 @@ public enum ErrorCode {
     EMAIL_RECORD_NOT_FOUND(NOT_FOUND, "EMAIL_404", "해당 이메일을 가진 기록이 없습니다."),
     INVALID_VERIFICATION_CODE(BAD_REQUEST, "EMAIL_405", "인증 코드가 틀렸습니다"),
     EMAIL_VERIFICATION_TIME_EXCEED(BAD_REQUEST, "EMAIL_406", "인증 코드 검증 시간을 초과했습니다."),
+    GAMESTYLE_NOT_FOUND(HttpStatus.NOT_FOUND, "GAMESTYLE401", "해당 게임 스타일을 찾을 수 없습니다."),
 
     /**
      * Riot 관련 에러
@@ -130,7 +131,7 @@ public enum ErrorCode {
     /**
      * socket 서버 관련 에러
      */
-    SOCKET_API_RESPONSE_ERROR(INTERNAL_SERVER_ERROR, "SOCKET501", "socket서버 api 요청에 실패했습니다.");;
+    SOCKET_API_RESPONSE_ERROR(INTERNAL_SERVER_ERROR, "SOCKET501", "socket서버 api 요청에 실패했습니다.");
 
 
     private final HttpStatus status;

@@ -2,14 +2,22 @@ package com.gamegoo.gamegoo_v2.account.member.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.MemberGameStyle;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.GameStyleRequest;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberGameStyleRepository;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.core.exception.MemberException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.game.domain.GameStyle;
+import com.gamegoo.gamegoo_v2.game.repository.GameStyleRepository;
 import com.gamegoo.gamegoo_v2.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final GameStyleRepository gameStyleRepository;
+    private final MemberGameStyleRepository memberGameStyleRepository;
 
     /**
      * Member 생성 메소드
@@ -116,6 +126,59 @@ public class MemberService {
     @Transactional
     public void setPosition(Member member, int mainPosition, int subPosition, int wantPosition) {
         member.updatePosition(mainPosition, subPosition, wantPosition);
+    }
+
+    /**
+     * request id로 GameStyle Entity 조회
+     *
+     * @return request의 GamestyleList
+     */
+    public List<GameStyle> findRequestGameStyle(GameStyleRequest request) {
+        return request.getGameStyleIdList().stream()
+                .map(id -> gameStyleRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.GAMESTYLE_NOT_FOUND)))
+                .toList();
+    }
+
+    /**
+     * 현재 DB의 MemberGameStyle List 조회
+     *
+     * @return MemberGameStyleList
+     */
+    public List<MemberGameStyle> findCurrentMemberGameStyleList(Member member) {
+        return new ArrayList<>(member.getMemberGameStyleList());
+    }
+
+    /**
+     * 불필요한 GameStyle 제거
+     *
+     * @param member                  회원
+     * @param requestedGameStyles     새로운 GameStyle
+     * @param currentMemberGameStyles 현재 Gamestyle
+     */
+    @Transactional
+    public void removeUnnecessaryGameStyles(Member member, List<GameStyle> requestedGameStyles,
+                                            List<MemberGameStyle> currentMemberGameStyles) {
+        currentMemberGameStyles.stream()
+                .filter(mgs -> !requestedGameStyles.contains(mgs.getGameStyle()))
+                .forEach(mgs -> {
+                    mgs.removeMember(member); // Remove bidirectional relationship
+                    memberGameStyleRepository.delete(mgs);
+                });
+    }
+
+    @Transactional
+    public void addNewGameStyles(Member member, List<GameStyle> requestedGameStyles,
+                                 List<MemberGameStyle> currentMemberGameStyles) {
+        List<GameStyle> currentGameStyles = currentMemberGameStyles.stream()
+                .map(MemberGameStyle::getGameStyle)
+                .toList();
+
+        requestedGameStyles.stream()
+                .filter(gs -> !currentGameStyles.contains(gs))
+                .forEach(gs -> {
+                    MemberGameStyle newMemberGameStyle = MemberGameStyle.create(gs, member);
+                    memberGameStyleRepository.save(newMemberGameStyle);
+                });
     }
 
 }

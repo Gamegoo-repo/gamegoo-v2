@@ -2,6 +2,7 @@ package com.gamegoo.gamegoo_v2.account.member.controller;
 
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.GameStyleRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.PositionRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
@@ -62,6 +63,13 @@ public class MemberController {
     public ApiResponse<String> modifyPosition(
             @Valid @RequestBody PositionRequest request, @AuthMember Member member) {
         return ApiResponse.ok(memberFacadeService.setPosition(member, request));
+    }
+
+    @Operation(summary = "gamestyle 추가 및 수정 API 입니다.", description = "API for Gamestyle addition and modification ")
+    @PutMapping("/gamestyle")
+    public ApiResponse<String> addGameStyle(@Valid @RequestBody GameStyleRequest request,
+                                            @AuthMember Member member) {
+        return ApiResponse.ok(memberFacadeService.setGameStyle(member, request));
     }
 
 }
