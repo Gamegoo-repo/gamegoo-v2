@@ -4,21 +4,26 @@ import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.MemberChampion;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
+import com.gamegoo.gamegoo_v2.account.member.dto.request.GameStyleRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.IsMikeRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.PositionRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.request.ProfileImageRequest;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.MyProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.dto.response.OtherProfileResponse;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberChampionRepository;
+import com.gamegoo.gamegoo_v2.account.member.repository.MemberGameStyleRepository;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberFacadeService;
 import com.gamegoo.gamegoo_v2.core.exception.RiotException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.game.domain.Champion;
+import com.gamegoo.gamegoo_v2.game.domain.GameStyle;
 import com.gamegoo.gamegoo_v2.game.repository.ChampionRepository;
+import com.gamegoo.gamegoo_v2.game.repository.GameStyleRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +50,12 @@ public class MemberServiceFacadeTest {
 
     @Autowired
     MemberChampionRepository memberChampionRepository;
+
+    @Autowired
+    GameStyleRepository gameStyleRepository;
+
+    @Autowired
+    MemberGameStyleRepository memberGameStyleRepository;
 
     private static Member member;
     private static Member targetMember;
@@ -67,12 +79,18 @@ public class MemberServiceFacadeTest {
         List<Long> championIds = Arrays.asList(annie.getId(), olaf.getId(), galio.getId());
         initMemberChampion(member, championIds);
         initMemberChampion(targetMember, championIds);
+
+        // 게임 스타일 저장
+        for (long i = 1; i <= 16; i++) {
+            gameStyleRepository.save(GameStyle.create("StyleName" + i));
+        }
     }
 
     @AfterEach
     void tearDown() {
         memberChampionRepository.deleteAllInBatch();
         championRepository.deleteAllInBatch();
+        memberGameStyleRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
 
@@ -188,6 +206,84 @@ public class MemberServiceFacadeTest {
         assertThat(member.getSubPosition()).isEqualTo(request.getSubP());
         assertThat(member.getWantPosition()).isEqualTo(request.getWantP());
     }
+
+    @Nested
+    @DisplayName("게임스타일 수정 테스트")
+    class GameStyleUpdateTest {
+
+        @DisplayName("게임 스타일 수정 성공: 게임스타일 개수가 3개일 경우")
+        @Test
+        void updateGameStyleWith3Ids() {
+            // given
+            List<Long> randomGameStyleIds = generateRandomGameStyleIds(3);
+            GameStyleRequest request = GameStyleRequest.builder()
+                    .gameStyleIdList(randomGameStyleIds)
+                    .build();
+
+            // when
+            String response = memberFacadeService.setGameStyle(member, request);
+
+            // then
+            assertThat(response).isEqualTo("게임 스타일 수정이 완료되었습니다");
+            assertGameStylesMatch(randomGameStyleIds);
+        }
+
+        @DisplayName("게임 스타일 수정 성공: 게임스타일 개수가 2개일 경우")
+        @Test
+        void updateGameStyleWith2Ids() {
+            // given
+            List<Long> randomGameStyleIds = generateRandomGameStyleIds(2);
+            GameStyleRequest request = GameStyleRequest.builder()
+                    .gameStyleIdList(randomGameStyleIds)
+                    .build();
+
+            // when
+            String response = memberFacadeService.setGameStyle(member, request);
+
+            // then
+            assertThat(response).isEqualTo("게임 스타일 수정이 완료되었습니다");
+            assertGameStylesMatch(randomGameStyleIds);
+        }
+
+        @DisplayName("게임 스타일 수정 성공: 게임스타일 개수가 1개일 경우")
+        @Test
+        void updateGameStyleWith1Id() {
+            // given
+            List<Long> randomGameStyleIds = generateRandomGameStyleIds(1);
+            GameStyleRequest request = GameStyleRequest.builder()
+                    .gameStyleIdList(randomGameStyleIds)
+                    .build();
+
+            // when
+            String response = memberFacadeService.setGameStyle(member, request);
+
+            // then
+            assertThat(response).isEqualTo("게임 스타일 수정이 완료되었습니다");
+            assertGameStylesMatch(randomGameStyleIds);
+        }
+
+        private void assertGameStylesMatch(List<Long> expectedGameStyleIds) {
+            List<Long> actualGameStyleIds = member.getMemberGameStyleList().stream()
+                    .map(memberGameStyle -> memberGameStyle.getGameStyle().getId())
+                    .toList();
+
+            assertThat(actualGameStyleIds)
+                    .containsExactlyInAnyOrderElementsOf(expectedGameStyleIds)
+                    .withFailMessage("Expected game style IDs: %s but found: %s", expectedGameStyleIds,
+                            actualGameStyleIds);
+        }
+
+        private List<Long> generateRandomGameStyleIds(int count) {
+            return ThreadLocalRandom.current()
+                    .longs(1, 17) // Generate random numbers between 1 and 16 (inclusive)
+                    .distinct()
+                    .limit(count)
+                    .boxed()
+                    .toList();
+        }
+
+    }
+
 
     private Member createMember(String email, String gameName) {
         return memberRepository.save(Member.builder()
