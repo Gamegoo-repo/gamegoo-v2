@@ -1,6 +1,9 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
+import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberService;
@@ -24,6 +27,8 @@ public class AuthFacadeService {
     private final RiotRecordService riotRecordService;
     private final RiotInfoService riotInfoService;
     private final MemberChampionService memberChampionService;
+    private final AuthService authService;
+    private final JwtProvider jwtProvider;
 
     /**
      * 회원가입
@@ -55,6 +60,20 @@ public class AuthFacadeService {
 
         // 6. [Member] Member Champion DB에서 매핑하기
         memberChampionService.saveMemberChampions(member, preferChampionfromMatch);
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        // email 검증
+        Member member = memberService.findMemberByEmail(request.getEmail());
+
+        // password 검증
+        authService.verifyPassword(member, request.getPassword());
+
+        // 해당 사용자의 정보를 가진 jwt 토큰 발급
+        String accessToken = jwtProvider.createAccessToken(member.getId());
+        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+
+        return LoginResponse.of(member, accessToken, refreshToken);
     }
 
 }
