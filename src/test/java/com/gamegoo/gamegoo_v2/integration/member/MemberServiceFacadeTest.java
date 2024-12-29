@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -262,16 +263,42 @@ public class MemberServiceFacadeTest {
             assertGameStylesMatch(randomGameStyleIds);
         }
 
+        @DisplayName("게임 스타일 수정 성공: 게임스타일 개수가 0개일 경우")
+        @Test
+        void updateGameStyleWith0Id() {
+            // given
+            GameStyleRequest request = GameStyleRequest.builder()
+                    .gameStyleIdList(Collections.emptyList())
+                    .build();
+
+            // when
+            String response = memberFacadeService.setGameStyle(member, request);
+
+            // then
+            assertThat(response).isEqualTo("게임 스타일 수정이 완료되었습니다");
+            assertGameStylesMatch(Collections.emptyList());
+        }
+
         private void assertGameStylesMatch(List<Long> expectedGameStyleIds) {
+            // 현재 MemberGameStyle 리스트 추출
             List<Long> actualGameStyleIds = member.getMemberGameStyleList().stream()
                     .map(memberGameStyle -> memberGameStyle.getGameStyle().getId())
                     .toList();
 
-            assertThat(actualGameStyleIds)
-                    .containsExactlyInAnyOrderElementsOf(expectedGameStyleIds)
-                    .withFailMessage("Expected game style IDs: %s but found: %s", expectedGameStyleIds,
-                            actualGameStyleIds);
+            // expectedGameStyleIds가 비어 있을 경우 MemberGameStyle도 비어 있는지 검증
+            if (expectedGameStyleIds.isEmpty()) {
+                assertThat(actualGameStyleIds)
+                        .describedAs("Expected no game styles, but found: %s", actualGameStyleIds)
+                        .isEmpty();
+            } else {
+                // 일반적인 검증 로직
+                assertThat(actualGameStyleIds)
+                        .containsExactlyInAnyOrderElementsOf(expectedGameStyleIds)
+                        .withFailMessage("Expected game style IDs: %s but found: %s", expectedGameStyleIds,
+                                actualGameStyleIds);
+            }
         }
+
 
         private List<Long> generateRandomGameStyleIds(int count) {
             return ThreadLocalRandom.current()
