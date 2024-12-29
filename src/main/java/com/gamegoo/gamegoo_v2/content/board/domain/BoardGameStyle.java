@@ -11,8 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -28,20 +30,22 @@ public class BoardGameStyle extends BaseDateTimeEntity {
     @JoinColumn(name = "gamestyle_id", nullable = false)
     private GameStyle gameStyle;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    // 정적 팩토리 메서드
-    public static BoardGameStyle create(GameStyle gameStyle, Board board) {
-        BoardGameStyle boardGameStyle = new BoardGameStyle();
-        boardGameStyle.gameStyle = gameStyle;
-        boardGameStyle.setBoard(board);
-        return boardGameStyle;
+    @Builder
+    private BoardGameStyle(GameStyle gameStyle, Board board) {
+        this.gameStyle = gameStyle;
+        this.board = board;
     }
 
-    public void setBoard(Board board) {
-        this.board = board;
+    public static BoardGameStyle create(GameStyle gameStyle, Board board) {
+        return BoardGameStyle.builder()
+                .gameStyle(gameStyle)
+                .board(board)
+                .build();
     }
 
 }

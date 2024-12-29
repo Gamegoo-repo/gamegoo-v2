@@ -95,5 +95,4 @@ public class Board extends BaseDateTimeEntity {
         boardGameStyle.setBoard(this);
     }
 
-
 }

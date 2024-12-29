@@ -123,10 +123,6 @@ public enum ErrorCode {
     DELETE_BOARD_ACCESS_DENIED(UNAUTHORIZED, "BOARD_404", "게시글 삭제 권한이 없습니다."),
     BOARD_GAME_STYLE_BAD_REQUEST(BAD_REQUEST, "BOARD_405", "게임 스타일 최대 개수를 초과했습니다."),
     BOARD_GAME_MODE_BAD_REQUEST(BAD_REQUEST, "BOARD_406", "게임모드 값은 1~4만 가능합니다."),
-    BOARD_MAIN_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_407", "주포지션 값은 0~5만 가능합니다."),
-    BOARD_SUB_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_408", "부포지션 값은 0~5만 가능합니다."),
-    BOARD_WANT_POSITION_BAD_REQUEST(BAD_REQUEST, "BOARD_409", "상대포지션 값은 0~5만 가능합니다."),
-    BOARD_MAIN_SUB_POSITION_DUPLICATE(BAD_REQUEST, "BOARD_410", "주포지션과 부포지션은 중복될 수 없습니다."),
 
 
     /**
