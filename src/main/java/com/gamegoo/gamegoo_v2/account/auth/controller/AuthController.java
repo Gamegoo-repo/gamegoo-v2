@@ -40,7 +40,6 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인 API입니다.")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        authFacadeService.login(request);
         return ApiResponse.ok(authFacadeService.login(request));
     }
 
