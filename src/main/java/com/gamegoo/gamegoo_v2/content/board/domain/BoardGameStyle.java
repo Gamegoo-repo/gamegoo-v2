@@ -32,4 +32,16 @@ public class BoardGameStyle extends BaseDateTimeEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
+    // 정적 팩토리 메서드
+    public static BoardGameStyle create(GameStyle gameStyle, Board board) {
+        BoardGameStyle boardGameStyle = new BoardGameStyle();
+        boardGameStyle.gameStyle = gameStyle;
+        boardGameStyle.setBoard(board);
+        return boardGameStyle;
+    }
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
 }
