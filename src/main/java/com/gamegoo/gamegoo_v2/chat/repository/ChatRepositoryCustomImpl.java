@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.chat.repository;
 
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -11,7 +12,9 @@ import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.gamegoo.gamegoo_v2.chat.domain.QChat.chat;
 import static com.gamegoo.gamegoo_v2.chat.domain.QMemberChatroom.memberChatroom;
@@ -107,6 +110,40 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
                 .fetchOne();
 
         return result != null ? result.intValue() : 0;
+    }
+
+    @Override
+    public Map<Long, Integer> countUnreadChatsBatch(List<Long> chatroomIds, Long memberId) {
+        List<Tuple> results = queryFactory
+                .select(chat.chatroom.id, chat.count())
+                .from(chat)
+                .join(memberChatroom).on(
+                        memberChatroom.chatroom.id.in(chatroomIds),
+                        memberChatroom.member.id.eq(memberId)
+                )
+                .where(
+                        chat.chatroom.id.in(chatroomIds),
+                        memberChatroom.member.id.eq(memberId),
+                        createdAtGreaterThanLastViewDateSubQuery(memberId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
+                        isMemberMessageOrMySystemMessage(memberId)
+                )
+                .groupBy(chat.chatroom.id)
+                .fetch();
+
+        Map<Long, Integer> unreadMap = new HashMap<>();
+        for (Tuple tuple : results) {
+            Long roomId = tuple.get(chat.chatroom.id);
+            Long countVal = tuple.get(chat.count());
+
+            unreadMap.put(roomId, countVal != null ? countVal.intValue() : 0);
+        }
+
+        for (Long roomId : chatroomIds) {
+            unreadMap.putIfAbsent(roomId, 0);
+        }
+
+        return unreadMap;
     }
 
     /**
