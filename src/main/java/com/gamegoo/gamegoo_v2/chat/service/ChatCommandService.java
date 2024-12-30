@@ -243,4 +243,15 @@ public class ChatCommandService {
         }
     }
 
+    /**
+     * chatroom 엔티티의 lastChatId와 lastChatAt 업데이트 메소드
+     *
+     * @param chat
+     * @param chatroom
+     */
+    public void updateLastChat(Chat chat, Chatroom chatroom) {
+        chatroom.updateLastChatId(chat.getId());
+        chatroom.updateLastChatAt(chat.getCreatedAt());
+    }
+
 }

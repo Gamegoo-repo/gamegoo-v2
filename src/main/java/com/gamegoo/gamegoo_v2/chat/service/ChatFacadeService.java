@@ -224,6 +224,8 @@ public class ChatFacadeService {
             chatCommandService.updateMemberChatroomDatesByAddChat(member, targetMember, chat);
         }
 
+        chatCommandService.updateLastChat(chat, chatroom);
+
         return ChatCreateResponse.of(chat);
     }
 
