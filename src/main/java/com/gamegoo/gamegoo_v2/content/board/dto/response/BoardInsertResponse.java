@@ -11,18 +11,18 @@ import java.util.List;
 @Builder
 public class BoardInsertResponse {
 
-    private Long boardId;
-    private Long memberId;
+    private long boardId;
+    private long memberId;
     private Integer profileImage;
     private String gameName;
     private String tag;
     private String tier;
-    private Integer rank;
-    private Integer gameMode;
-    private Integer mainPosition;
-    private Integer subPosition;
-    private Integer wantPosition;
-    private Boolean mike;
+    private int rank;
+    private int gameMode;
+    private int mainPosition;
+    private int subPosition;
+    private int wantPosition;
+    private boolean mike;
     private List<Long> gameStyles;
     private String contents;
 

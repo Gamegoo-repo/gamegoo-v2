@@ -42,7 +42,7 @@ public class BoardGameStyleService {
      */
     private GameStyle findGameStyle(Long gameStyleId) {
         return gameStyleRepository.findById(gameStyleId)
-                .orElseThrow(() -> new BoardException(ErrorCode.BOARD_GAME_STYLE_BAD_REQUEST));
+                .orElseThrow(() -> new BoardException(ErrorCode.BOARD_GAME_STYLE_NOT_FOUND));
     }
 
 }

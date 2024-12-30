@@ -32,7 +32,7 @@ public class BoardService {
                 request.getMainPosition(),
                 request.getSubPosition(),
                 request.getWantPosition(),
-                request.isMike(),
+                request.getMike(),
                 request.getContents(),
                 boardProfileImage
         );

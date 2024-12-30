@@ -14,7 +14,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -30,7 +29,6 @@ public class BoardGameStyle extends BaseDateTimeEntity {
     @JoinColumn(name = "gamestyle_id", nullable = false)
     private GameStyle gameStyle;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
@@ -46,6 +44,14 @@ public class BoardGameStyle extends BaseDateTimeEntity {
                 .gameStyle(gameStyle)
                 .board(board)
                 .build();
+    }
+
+    public void setBoard(Board board) {
+        if (this.board != null) {
+            this.board.getBoardGameStyles().remove(this);
+        }
+        this.board = board;
+        board.getBoardGameStyles().add(this);
     }
 
 }

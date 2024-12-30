@@ -32,8 +32,7 @@ public class BoardController {
     public ApiResponse<BoardInsertResponse> boardInsert(
             @AuthMember Member member,
             @Valid @RequestBody BoardInsertRequest request) {
-        BoardInsertResponse responseDTO = boardFacadeService.createBoard(request, member);
-        return ApiResponse.ok(responseDTO);
+        return ApiResponse.ok(boardFacadeService.createBoard(request, member));
     }
 
 }
