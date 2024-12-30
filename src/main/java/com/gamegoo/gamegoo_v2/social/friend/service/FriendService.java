@@ -20,7 +20,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -277,6 +279,17 @@ public class FriendService {
     }
 
     /**
+     * 모든 상대 회원에 대해 서로 친구인지 여부를 반환하는 메소드
+     *
+     * @param member
+     * @param targetMemberIds
+     * @return
+     */
+    public Map<Long, Boolean> isFriendBatch(Member member, List<Long> targetMemberIds) {
+        return friendRepository.isFriendBatch(member.getId(), targetMemberIds);
+    }
+
+    /**
      * 두 회원 사이 친구 요청이 존재하는 경우 친구 요청을 보낸 회원의 id를 반환하는 메소드
      *
      * @param member
@@ -285,12 +298,42 @@ public class FriendService {
      */
     public Long getFriendRequestMemberId(Member member, Member targetMember) {
         return friendRequestRepository
-                .findByFromMemberAndToMemberAndStatus(member, targetMember, FriendRequestStatus.PENDING)
-                .map(friendRequests -> member.getId())
-                .or(() -> friendRequestRepository
-                        .findByFromMemberAndToMemberAndStatus(targetMember, member, FriendRequestStatus.PENDING)
-                        .map(friendRequests -> targetMember.getId()))
-                .orElse(null); // 친구 요청이 없는 경우 null을 리턴
+                .findBetweenTargetMemberAndStatus(member, targetMember, FriendRequestStatus.PENDING)
+                .map(friendRequest -> friendRequest.getFromMember().getId())
+                .orElse(null);
+    }
+
+    /**
+     * 모든 targetMember에 대해 두 회원 사이 친구 요청 보낸 회원의 id 반환하는 메소드
+     *
+     * @param member
+     * @param targetMemberIds
+     * @return
+     */
+    public Map<Long, Long> getFriendRequestMemberIdBatch(Member member, List<Long> targetMemberIds) {
+        List<FriendRequest> foundRequests = friendRequestRepository.findAllBetweenTargetMembersAndStatus(member,
+                targetMemberIds, FriendRequestStatus.PENDING);
+
+        Map<Long, Long> resultMap = new HashMap<>();
+
+        for (FriendRequest fr : foundRequests) {
+            Member from = fr.getFromMember();
+            Member to = fr.getToMember();
+
+            if (from.equals(member)) { // 내가 요청을 보낸 경우
+                Long targetId = to.getId();
+                resultMap.put(targetId, member.getId());
+            } else { // 상대가 요청을 보낸 경우
+                Long targetId = from.getId();
+                resultMap.put(targetId, targetId);
+            }
+        }
+
+        for (Long targetId : targetMemberIds) {
+            resultMap.putIfAbsent(targetId, null);
+        }
+
+        return resultMap;
     }
 
     private void validateNotSelf(Member member, Member targetMember) {

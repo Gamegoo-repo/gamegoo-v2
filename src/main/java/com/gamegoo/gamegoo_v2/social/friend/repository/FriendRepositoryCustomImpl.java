@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.social.friend.repository;
 
 import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -8,7 +9,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.gamegoo.gamegoo_v2.social.friend.domain.QFriend.friend;
@@ -75,6 +78,43 @@ public class FriendRepositoryCustomImpl implements FriendRepositoryCustom {
                 .size();
 
         return count == 2;
+    }
+
+    @Override
+    public Map<Long, Boolean> isFriendBatch(Long memberId, List<Long> targetMemberIds) {
+        // fromMember, toMember 쌍 전체 조회
+        List<Tuple> results = queryFactory
+                .select(friend.fromMember.id, friend.toMember.id)
+                .from(friend)
+                .where(
+                        friend.fromMember.id.eq(memberId).and(friend.toMember.id.in(targetMemberIds))
+                                .or(friend.fromMember.id.in(targetMemberIds).and(friend.toMember.id.eq(memberId)))
+                )
+                .fetch();
+
+        // friend 레코드 개수 count
+        Map<Long, Integer> friendCountMap = new HashMap<>();
+
+        for (Tuple row : results) {
+            Long fromId = row.get(friend.fromMember.id);
+            Long toId = row.get(friend.toMember.id);
+
+            if (fromId.equals(memberId)) {
+                friendCountMap.merge(toId, 1, Integer::sum);
+            } else {
+                friendCountMap.merge(fromId, 1, Integer::sum);
+            }
+        }
+
+        // targetId에 대한 친구 여부 map 생성
+        Map<Long, Boolean> result = new HashMap<>();
+        for (Long targetId : targetMemberIds) {
+            Integer count = friendCountMap.getOrDefault(targetId, 0);
+            boolean isFriend = (count == 2);
+            result.put(targetId, isFriend);
+        }
+
+        return result;
     }
 
     /**
