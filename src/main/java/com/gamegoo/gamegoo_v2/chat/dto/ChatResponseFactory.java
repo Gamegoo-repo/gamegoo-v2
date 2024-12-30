@@ -1,13 +1,17 @@
 package com.gamegoo.gamegoo_v2.chat.dto;
 
-import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.domain.Chat;
+import com.gamegoo.gamegoo_v2.chat.domain.Chatroom;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.SystemMessageResponse;
+import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
 import com.gamegoo.gamegoo_v2.social.friend.service.FriendService;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.utils.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -94,6 +98,54 @@ public class ChatResponseFactory {
                 .friendRequestMemberId(friendService.getFriendRequestMemberId(member, targetMember))
                 .system(null)
                 .chatMessageListResponse(chatMessageListResponse)
+                .build();
+    }
+
+    public ChatroomListResponse toChatroomListResponse() {
+        return ChatroomListResponse.builder()
+                .chatroomResponseList(new ArrayList<>())
+                .listSize(0)
+                .build();
+    }
+
+    public ChatroomListResponse toChatroomListResponse(List<ChatroomResponse> chatroomResponseList) {
+        return ChatroomListResponse.builder()
+                .chatroomResponseList(chatroomResponseList)
+                .listSize(chatroomResponseList.size())
+                .build();
+    }
+
+    public ChatroomResponse toChatroomResponse(Chatroom chatroom, Member targetMember, boolean isFriend,
+                                               boolean isBlocked, Long friendRequestMemberId, Chat lastChat,
+                                               int unreadCnt) {
+        String gameName = targetMember.isBlind()
+                ? "(탈퇴한 사용자)"
+                : targetMember.getGameName();
+
+        String lastMsg = null;
+        String lastMsgAt = null;
+        Long lastMsgTimestamp = null;
+        
+        if (lastChat != null) {
+            lastMsg = lastChat.getContents();
+            lastMsgAt = DateTimeUtil.toKSTString(lastChat.getCreatedAt());
+            lastMsgTimestamp = lastChat.getTimestamp();
+        }
+
+        return ChatroomResponse.builder()
+                .chatroomId(chatroom.getId())
+                .uuid(chatroom.getUuid())
+                .targetMemberId(targetMember.getId())
+                .targetMemberImg(targetMember.getProfileImage())
+                .targetMemberName(gameName)
+                .friend(isFriend)
+                .blocked(isBlocked)
+                .blind(targetMember.isBlind())
+                .friendRequestMemberId(friendRequestMemberId)
+                .lastMsg(lastMsg)
+                .lastMsgAt(lastMsgAt)
+                .notReadMsgCnt(unreadCnt)
+                .lastMsgTimestamp(lastMsgTimestamp)
                 .build();
     }
 

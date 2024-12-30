@@ -10,6 +10,8 @@ import com.gamegoo.gamegoo_v2.chat.dto.ChatResponseFactory;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.content.board.domain.Board;
 import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
@@ -18,13 +20,17 @@ import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.ChatException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
+import com.gamegoo.gamegoo_v2.social.block.service.BlockService;
+import com.gamegoo.gamegoo_v2.social.friend.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -50,6 +56,8 @@ public class ChatFacadeService {
     private final ChatValidator chatValidator;
 
     private final ChatResponseFactory chatResponseFactory;
+    private final FriendService friendService;
+    private final BlockService blockService;
 
     /**
      * 대상 회원과 채팅 시작 Facade 메소드
@@ -328,6 +336,69 @@ public class ChatFacadeService {
         chatCommandService.updateLastJoinDate(member, memberChatroom, null);
 
         return "채팅방 나가기 성공";
+    }
+
+    /**
+     * 해당 회원의 입장 상태인 전체 채팅방 목록 조회
+     *
+     * @param member
+     * @return
+     */
+    public ChatroomListResponse getChatrooms(Member member) {
+        // 입장 상태인 모든 memberChatroom 엔티티 정렬해 조회
+        List<MemberChatroom> activeMemberChatrooms = chatQueryService.getActiveMemberChatrooms(member);
+
+        if (activeMemberChatrooms.isEmpty()) {
+            return chatResponseFactory.toChatroomListResponse();
+        }
+
+        List<Chatroom> chatrooms = activeMemberChatrooms.stream()
+                .map(MemberChatroom::getChatroom)
+                .toList();
+
+        List<Long> chatroomIds = new ArrayList<>(chatrooms.size());
+        List<Long> lastChatIds = new ArrayList<>(chatrooms.size());
+
+        for (Chatroom cr : chatrooms) {
+            chatroomIds.add(cr.getId());
+            lastChatIds.add(cr.getLastChatId());
+        }
+
+        // 마지막 채팅 메시지 배치 조회
+        Map<Long, Chat> lastChatMap = chatQueryService.findAllChatsBatch(lastChatIds);
+
+        // 안읽은 메시지 수 배치 조회
+        Map<Long, Integer> unreadChatsMap = chatQueryService.countUnreadChatsBatch(member, chatroomIds);
+
+        // 채팅 상대 회원 배치 조회
+        Map<Long, Member> targetMemberMap = chatQueryService.getChatroomTargetMembersBatch(member, chatroomIds);
+
+        List<Member> targetMembers = new ArrayList<>(targetMemberMap.values());
+        List<Long> targetMemberIds = targetMembers.stream()
+                .map(Member::getId)
+                .toList();
+
+        // 상대 회원과 친구 여부, 차단 여부, 친구 요청 배치 조회
+        Map<Long, Boolean> isFriendMap = friendService.isFriendBatch(member, targetMemberIds);
+        Map<Long, Boolean> isBlockedMap = blockService.isBlockedBatch(member, targetMemberIds);
+        Map<Long, Long> friendRequestMap = friendService.getFriendRequestMemberIdBatch(member, targetMemberIds);
+
+        // dto 생성
+        List<ChatroomResponse> chatroomResponses = activeMemberChatrooms.stream()
+                .map(mc -> {
+                    Chatroom chatroom = mc.getChatroom();
+                    Chat lastChat = lastChatMap.getOrDefault(chatroom.getId(), null);
+                    Member targetMember = targetMemberMap.get(chatroom.getId());
+                    Integer unreadCnt = unreadChatsMap.get(chatroom.getId());
+                    boolean friend = isFriendMap.get(targetMember.getId());
+                    boolean blocked = isBlockedMap.get(targetMember.getId());
+                    Long friendRequestMemberId = friendRequestMap.get(targetMember.getId());
+
+                    return chatResponseFactory.toChatroomResponse(chatroom, targetMember, friend, blocked,
+                            friendRequestMemberId, lastChat, unreadCnt);
+                }).toList();
+
+        return chatResponseFactory.toChatroomListResponse(chatroomResponses);
     }
 
     private int getSystemFlag(MemberChatroom memberChatroom) {

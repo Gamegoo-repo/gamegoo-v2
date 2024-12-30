@@ -5,6 +5,7 @@ import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.chat.dto.request.ChatCreateRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
@@ -109,6 +110,12 @@ public class ChatController {
     public ApiResponse<Object> exitChatroom(@PathVariable(name = "chatroomUuid") String chatroomUuid,
                                             @AuthMember Member member) {
         return ApiResponse.ok(chatFacadeService.exitChatroom(member, chatroomUuid));
+    }
+
+    @Operation(summary = "채팅방 목록 조회 API", description = "회원이 속한 채팅방 목록을 조회하는 API 입니다.")
+    @GetMapping("/chatroom")
+    public ApiResponse<ChatroomListResponse> getChatroom(@AuthMember Member member) {
+        return ApiResponse.ok(chatFacadeService.getChatrooms(member));
     }
 
 }
