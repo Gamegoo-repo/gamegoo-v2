@@ -616,6 +616,14 @@ class ChatFacadeServiceTest {
             List<Chat> chats = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(), member.getId());
             assertThat(chats).hasSize(1);
 
+            // chatroom의 lastChat, lastChatAt 업데이트 검증
+            Chatroom updatedChatroom = chatroomRepository.findById(chatroom.getId()).orElseThrow();
+
+            Chat lastChat = chats.get(chats.size() - 1);
+            assertThat(updatedChatroom.getLastChatAt()).isCloseTo(lastChat.getCreatedAt(),
+                    within(1, ChronoUnit.SECONDS));
+            assertThat(updatedChatroom.getLastChatId()).isEqualTo(lastChat.getId());
+
             // 시스템 메시지 저장 되었는지 검증
             if (systemMessage) {
                 List<Chat> systemChats = chatRepository.findByChatroomIdAndFromMemberId(chatroom.getId(),
@@ -751,6 +759,7 @@ class ChatFacadeServiceTest {
 
             assertThat(result).isEmpty();
         }
+
     }
 
     @Nested
@@ -851,6 +860,7 @@ class ChatFacadeServiceTest {
             assertThat(memberChatroom.getLastViewDate()).isNotNull();
             assertThat(memberChatroom.getLastViewDate()).isCloseTo(chat.getCreatedAt(), within(1, ChronoUnit.MILLIS));
         }
+
     }
 
     @Nested
@@ -901,6 +911,7 @@ class ChatFacadeServiceTest {
                     chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastJoinDate()).isNull();
         }
+
     }
 
     private void assertEnterChatroomResponse(EnterChatroomResponse response, Chatroom chatroom, Member targetMember) {
