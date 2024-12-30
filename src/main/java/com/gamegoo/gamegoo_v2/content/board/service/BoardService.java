@@ -13,39 +13,34 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class BoardCreateService {
+public class BoardService {
 
     private final BoardRepository boardRepository;
 
+    /**
+     * 게시글 엔티티 생성 및 저장
+     */
     @Transactional
-    public Board createBoard(BoardInsertRequest request, Member member) {
+    public Board createAndSaveBoard(BoardInsertRequest request, Member member) {
         int boardProfileImage = (request.getBoardProfileImage() != null)
                 ? request.getBoardProfileImage()
                 : member.getProfileImage();
 
-        return Board.create(
+        Board board = Board.create(
                 member,
                 request.getGameMode(),
                 request.getMainPosition(),
                 request.getSubPosition(),
                 request.getWantPosition(),
-                request.getMike() != null && request.getMike(),
+                request.isMike(),
                 request.getContents(),
                 boardProfileImage
         );
-    }
-
-    /**
-     * Board 엔티티 DB 저장
-     */
-    @Transactional
-    public void saveBoard(Board board) {
-        boardRepository.save(board);
+        return boardRepository.save(board);
     }
 
     /**
      * 게시글 엔티티 조회
-     * 추후 BoardQueryService로 이동
      */
     public Board findBoard(Long boardId) {
         return boardRepository.findById(boardId).orElseThrow(() -> new BoardException(ErrorCode.BOARD_NOT_FOUND));

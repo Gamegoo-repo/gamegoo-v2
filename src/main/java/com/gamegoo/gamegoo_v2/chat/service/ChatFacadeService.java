@@ -12,7 +12,7 @@ import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.content.board.domain.Board;
-import com.gamegoo.gamegoo_v2.content.board.service.BoardCreateService;
+import com.gamegoo.gamegoo_v2.content.board.service.BoardService;
 import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.ChatValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
@@ -41,7 +41,7 @@ import static com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode.CHAT_START_
 public class ChatFacadeService {
 
     private final MemberService memberService;
-    private final BoardCreateService boardCreateService;
+    private final BoardService boardService;
     private final ChatCommandService chatCommandService;
     private final ChatQueryService chatQueryService;
 
@@ -111,7 +111,7 @@ public class ChatFacadeService {
     @Transactional
     public EnterChatroomResponse startChatroomByBoardId(Member member, Long boardId) {
         // 게시글 검증 및 조회
-        Board board = boardCreateService.findBoard(boardId);
+        Board board = boardService.findBoard(boardId);
 
         // 대상 회원 검증 및 조회
         Member targetMember = memberService.findMember(board.getMember().getId());

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BoardFacadeService {
 
-    private final BoardCreateService boardCreateService;
+    private final BoardService boardService;
     private final BoardGameStyleService boardGameStyleService;
 
     /**
@@ -25,9 +25,8 @@ public class BoardFacadeService {
     @Transactional
     public BoardInsertResponse createBoard(BoardInsertRequest request, Member member) {
 
-        Board board = boardCreateService.createBoard(request, member);
+        Board board = boardService.createAndSaveBoard(request, member);
         boardGameStyleService.mapGameStylesToBoard(board, request.getGameStyles());
-        boardCreateService.saveBoard(board);
 
         return BoardInsertResponse.of(board, member);
     }
