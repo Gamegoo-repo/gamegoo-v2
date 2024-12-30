@@ -40,6 +40,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(NOT_FOUND, "MEMBER_401", "사용자를 찾을 수 없습니다."),
     TARGET_MEMBER_DEACTIVATED(FORBIDDEN, "MEMBER_402", "대상 회원이 탈퇴했습니다."),
     MEMBER_ALREADY_EXISTS(BAD_REQUEST, "MEMBER_403", "이미 존재하는 사용자입니다."),
+    INVALID_PASSWORD(BAD_REQUEST, "MEMBER_404", "비밀번호가 틀렸습니다"),
 
     /**
      * 이메일 관련 에러

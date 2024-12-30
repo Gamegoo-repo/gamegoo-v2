@@ -2,6 +2,8 @@ package com.gamegoo.gamegoo_v2.account.auth.controller;
 
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
@@ -40,6 +42,12 @@ public class AuthController {
     @Operation(summary = "logout API 입니다.", description = "API for logout")
     public ApiResponse<String> logout(@AuthMember Member member) {
         return ApiResponse.ok(authFacadeService.logout(member));
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "로그인", description = "로그인 API입니다.")
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ApiResponse.ok(authFacadeService.login(request));
     }
 
 }

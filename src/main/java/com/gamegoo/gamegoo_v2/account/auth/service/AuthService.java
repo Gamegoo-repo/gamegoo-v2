@@ -1,8 +1,5 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
-import com.gamegoo.gamegoo_v2.account.auth.domain.RefreshToken;
-import com.gamegoo.gamegoo_v2.account.auth.repository.RefreshTokenRepository;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,5 +20,15 @@ public class AuthService {
 
         refreshTokenRepository.delete(refreshToken);
     }
-
+    /**
+     * 비밀번호 검증
+     *
+     * @param member   회원
+     * @param password 비밀번호
+     */
+    public void verifyPassword(Member member, String password) {
+        if (!PasswordUtil.matchesPassword(password, member.getPassword())) {
+            throw new MemberException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
 }
