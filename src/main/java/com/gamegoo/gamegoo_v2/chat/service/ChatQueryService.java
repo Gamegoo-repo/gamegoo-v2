@@ -15,7 +15,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -77,6 +79,17 @@ public class ChatQueryService {
     }
 
     /**
+     * 모든 chatroom의 상대 회원을 반환하는 메소드
+     *
+     * @param member
+     * @param chatroomIds
+     * @return
+     */
+    public Map<Long, Member> getChatroomTargetMembersBatch(Member member, List<Long> chatroomIds) {
+        return memberChatroomRepository.findTargetMembersBatch(chatroomIds, member.getId());
+    }
+
+    /**
      * 해당 chatroom의 메시지 내역 slice 객체를 반환하는 메소드
      *
      * @param member
@@ -100,6 +113,16 @@ public class ChatQueryService {
     }
 
     /**
+     * 회원이 입장한 상태인 모든 memberChatroom list 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<MemberChatroom> getActiveMemberChatrooms(Member member) {
+        return memberChatroomRepository.findAllActiveMemberChatroomByMemberId(member.getId());
+    }
+
+    /**
      * 해당 채팅방의 안읽은 메시지 개수를 반환하는 메소드
      *
      * @param member
@@ -112,6 +135,17 @@ public class ChatQueryService {
     }
 
     /**
+     * 모든 채팅방의 안읽은 메시지 개수를 반환하는 메소드
+     *
+     * @param member
+     * @param chatroomIds
+     * @return
+     */
+    public Map<Long, Integer> countUnreadChatsBatch(Member member, List<Long> chatroomIds) {
+        return chatRepository.countUnreadChatsBatch(chatroomIds, member.getId());
+    }
+
+    /**
      * 해당 채팅방에 해당 timestamp를 갖는 chat 엔티티 조회 메소드
      *
      * @param chatroom
@@ -121,6 +155,23 @@ public class ChatQueryService {
     public Chat getChatByChatroomAndTimestamp(Chatroom chatroom, Long timestamp) {
         return chatRepository.findByChatroomAndTimestamp(chatroom, timestamp).orElseThrow(
                 () -> new ChatException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+    }
+
+    /**
+     * id로 chat 엔티티 배치 조회 메소드
+     *
+     * @param chatIds
+     * @return
+     */
+    public Map<Long, Chat> findAllChatsBatch(List<Long> chatIds) {
+        List<Chat> chats = chatRepository.findAllById(chatIds);
+
+        Map<Long, Chat> chatMap = new HashMap<>();
+        for (Chat chat : chats) {
+            chatMap.put(chat.getChatroom().getId(), chat);
+        }
+
+        return chatMap;
     }
 
 }
