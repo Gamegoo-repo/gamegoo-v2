@@ -1,8 +1,10 @@
 package com.gamegoo.gamegoo_v2.account.auth.controller;
 
+import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -31,8 +33,13 @@ public class AuthController {
     @PostMapping("/join")
     @Operation(summary = "회원가입", description = "회원가입 API입니다.")
     public ApiResponse<String> join(@Valid @RequestBody JoinRequest request) {
-        authFacadeService.join(request);
-        return ApiResponse.ok("회원가입이 완료되었습니다.");
+        return ApiResponse.ok(authFacadeService.join(request));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "logout API 입니다.", description = "API for logout")
+    public ApiResponse<String> logout(@AuthMember Member member) {
+        return ApiResponse.ok(authFacadeService.logout(member));
     }
 
 }
