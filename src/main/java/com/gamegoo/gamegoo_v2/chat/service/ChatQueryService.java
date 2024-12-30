@@ -50,8 +50,8 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(), member.getId(), PAGE_SIZE);
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
     /**
@@ -85,9 +85,8 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getChatSliceByCursor(Member member, Chatroom chatroom, Long cursor) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(), member.getId(),
-                PAGE_SIZE);
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.findChatsByCursor(cursor, chatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
     /**
@@ -108,8 +107,8 @@ public class ChatQueryService {
      * @return
      */
     public int countUnreadChats(Member member, Chatroom chatroom) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.countUnreadChats(member.getId(), memberChatroom.getId(), chatroom.getId());
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.countUnreadChats(member.getId(), chatroom.getId());
     }
 
     /**

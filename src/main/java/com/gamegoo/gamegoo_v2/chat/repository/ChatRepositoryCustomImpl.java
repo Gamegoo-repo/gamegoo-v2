@@ -22,13 +22,13 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Chat> findRecentChats(Long chatroomId, Long memberChatroomId, Long memberId, int pageSize) {
+    public Slice<Chat> findRecentChats(Long chatroomId, Long memberId, int pageSize) {
         // 안읽은 메시지 모두 조회
         List<Chat> unreadChats = queryFactory.selectFrom(chat)
                 .where(
                         chat.chatroom.id.eq(chatroomId),
-                        createdAtGreaterThanLastViewDateSubQuery(memberChatroomId),
-                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        createdAtGreaterThanLastViewDateSubQuery(memberId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
                         isMemberMessageOrMySystemMessage(memberId)
                 )
                 .orderBy(chat.createdAt.desc())
@@ -36,7 +36,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
 
         if (unreadChats.size() >= pageSize) { // 안읽은 메시지 개수가 pageSize 이상인 경우, 안읽은 메시지만 모두 리턴
             Chat oldestUnreadChat = unreadChats.get(unreadChats.size() - 1);
-            boolean hasNext = hasNextChat(oldestUnreadChat, memberChatroomId, memberId);
+            boolean hasNext = hasNextChat(oldestUnreadChat, memberId);
 
             // createdAt 오름차순으로 정렬
             Collections.reverse(unreadChats);
@@ -46,7 +46,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
             List<Chat> chats = queryFactory.selectFrom(chat)
                     .where(
                             chat.chatroom.id.eq(chatroomId),
-                            createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                            createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
                             isMemberMessageOrMySystemMessage(memberId)
                     )
                     .orderBy(chat.createdAt.desc())
@@ -66,13 +66,12 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     }
 
     @Override
-    public Slice<Chat> findChatsByCursor(Long cursor, Long chatroomId, Long memberChatroomId, Long memberId,
-                                         int pageSize) {
+    public Slice<Chat> findChatsByCursor(Long cursor, Long chatroomId, Long memberId, int pageSize) {
         List<Chat> chats = queryFactory.selectFrom(chat)
                 .where(
                         chat.chatroom.id.eq(chatroomId),
                         createdBefore(cursor),
-                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
                         isMemberMessageOrMySystemMessage(memberId)
                 )
                 .orderBy(chat.createdAt.desc())
@@ -91,7 +90,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     }
 
     @Override
-    public int countUnreadChats(Long chatroomId, Long memberChatroomId, Long memberId) {
+    public int countUnreadChats(Long chatroomId, Long memberId) {
         Long result = queryFactory.select(chat.count())
                 .from(chat)
                 .join(memberChatroom).on(
@@ -101,8 +100,8 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
                 .where(
                         chat.chatroom.id.eq(chatroomId),
                         memberChatroom.member.id.eq(memberId),
-                        createdAtGreaterThanLastViewDateSubQuery(memberChatroomId),
-                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        createdAtGreaterThanLastViewDateSubQuery(memberId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
                         isMemberMessageOrMySystemMessage(memberId)
                 )
                 .fetchOne();
@@ -114,16 +113,15 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
      * cursorChat 보다 예전 메시지가 있는지 여부를 반환
      *
      * @param cursorChat
-     * @param memberChatroomId
      * @param memberId
      * @return
      */
-    private boolean hasNextChat(Chat cursorChat, Long memberChatroomId, Long memberId) {
+    private boolean hasNextChat(Chat cursorChat, Long memberId) {
         Chat fetch = queryFactory.selectFrom(chat)
                 .where(
                         chat.chatroom.id.eq(cursorChat.getChatroom().getId()),
                         createdBefore(cursorChat.getTimestamp()),
-                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberChatroomId),
+                        createdAtGreaterOrEqualThanLastJoinDateSubQuery(memberId),
                         isMemberMessageOrMySystemMessage(memberId)
                 )
                 .orderBy(chat.createdAt.desc())
@@ -138,29 +136,36 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     /**
      * lastViewDate 이후에 생성된 메시지인 경우에만 true를 반환
      *
-     * @param memberChatroomId
+     * @param memberId
      * @return
      */
-    private BooleanExpression createdAtGreaterThanLastViewDateSubQuery(Long memberChatroomId) {
+    private BooleanExpression createdAtGreaterThanLastViewDateSubQuery(Long memberId) {
         return chat.createdAt.gt(
-                JPAExpressions.select(
-                                memberChatroom.lastViewDate.coalesce(LocalDateTime.MIN))
+                JPAExpressions
+                        .select(memberChatroom.lastViewDate.coalesce(LocalDateTime.MIN))
                         .from(memberChatroom)
-                        .where(memberChatroom.id.eq(memberChatroomId))
+                        .where(
+                                memberChatroom.chatroom.id.eq(chat.chatroom.id),
+                                memberChatroom.member.id.eq(memberId)
+                        )
         );
     }
 
     /**
      * lastJoinDate 이후에 생성된 메시지인 경우에만 true를 반환
      *
-     * @param memberChatroomId
+     * @param memberId
      * @return
      */
-    private BooleanExpression createdAtGreaterOrEqualThanLastJoinDateSubQuery(Long memberChatroomId) {
+    private BooleanExpression createdAtGreaterOrEqualThanLastJoinDateSubQuery(Long memberId) {
         return chat.createdAt.goe(
-                JPAExpressions.select(memberChatroom.lastJoinDate)
+                JPAExpressions
+                        .select(memberChatroom.lastJoinDate)
                         .from(memberChatroom)
-                        .where(memberChatroom.id.eq(memberChatroomId))
+                        .where(
+                                memberChatroom.chatroom.id.eq(chat.chatroom.id),
+                                memberChatroom.member.id.eq(memberId)
+                        )
         );
     }
 

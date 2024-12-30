@@ -80,8 +80,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -118,8 +117,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -148,8 +146,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "new message 3", chatroom, now.minusMinutes(5).plusSeconds(2));
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -179,8 +176,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "new message 3", chatroom, lastJoinDate.plusMinutes(3));
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -207,8 +203,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             Chat memberSystemChat = createSystemChat(member, chatroom, 0);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -228,8 +223,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             assertThat(chatSlice).isEmpty();
@@ -257,8 +251,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -288,8 +281,8 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             Long cursor = chatList.get(20).getTimestamp();
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(cursor, chatroom.getId(), member.getId(),
+                    PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -310,8 +303,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             assertThat(chatSlice).isEmpty();
@@ -339,7 +331,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20).plusSeconds(2));
 
             // when
-            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+            int result = chatRepository.countUnreadChats(chatroom.getId(), member.getId());
 
             // then
             assertThat(result).isEqualTo(0);
@@ -360,7 +352,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20).plusSeconds(2));
 
             // when
-            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+            int result = chatRepository.countUnreadChats(chatroom.getId(), member.getId());
 
             // then
             assertThat(result).isEqualTo(3);
