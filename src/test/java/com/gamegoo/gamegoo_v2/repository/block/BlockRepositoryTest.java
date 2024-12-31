@@ -1,9 +1,9 @@
 package com.gamegoo.gamegoo_v2.repository.block;
 
-import com.gamegoo.gamegoo_v2.social.block.domain.Block;
-import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -111,6 +115,36 @@ class BlockRepositoryTest extends RepositoryTestSupport {
             assertThat(blockedMembers.isLast()).isTrue();
         }
 
+    }
+
+    @DisplayName("회원 차단 여부 배치 조회")
+    @Test
+    void isBlockedBatch() {
+        // given
+        List<Long> targetMemberIds = new ArrayList<>();
+
+        // 회원 9명 차단
+        List<Member> blockedMembers = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
+            blockMember(blocker, blocked);
+            targetMemberIds.add(blocked.getId());
+            blockedMembers.add(blocked);
+        }
+
+        // 회원 1명 차단하지 않음
+        Member notBlocked = createMember("notBlocked@gmail.com", "notBlocked");
+        targetMemberIds.add(notBlocked.getId());
+
+        // when
+        Map<Long, Boolean> blockedMap = blockRepository.isBlockedBatch(targetMemberIds, blocker.getId());
+
+        // then
+        assertThat(blockedMap).hasSize(targetMemberIds.size());
+        for (Member blocked : blockedMembers) {
+            assertThat(blockedMap.get(blocked.getId())).isTrue();
+        }
+        assertThat(blockedMap.get(notBlocked.getId())).isFalse();
     }
 
     private Block blockMember(Member blocker, Member blocked) {
