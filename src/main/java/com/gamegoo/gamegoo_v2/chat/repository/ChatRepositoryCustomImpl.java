@@ -115,7 +115,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     @Override
     public Map<Long, Integer> countUnreadChatsBatch(List<Long> chatroomIds, Long memberId) {
         List<Tuple> results = queryFactory
-                .select(chat.chatroom.id, chat.count())
+                .select(chat.chatroom.id, chat.countDistinct())
                 .from(chat)
                 .join(memberChatroom).on(
                         memberChatroom.chatroom.id.in(chatroomIds),
@@ -134,7 +134,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
         Map<Long, Integer> unreadMap = new HashMap<>();
         for (Tuple tuple : results) {
             Long roomId = tuple.get(chat.chatroom.id);
-            Long countVal = tuple.get(chat.count());
+            Long countVal = tuple.get(chat.countDistinct());
 
             unreadMap.put(roomId, countVal != null ? countVal.intValue() : 0);
         }
