@@ -380,7 +380,7 @@ public class ChatFacadeService {
 
         // 상대 회원과 친구 여부, 차단 여부, 친구 요청 배치 조회
         Map<Long, Boolean> isFriendMap = friendService.isFriendBatch(member, targetMemberIds);
-        Map<Long, Boolean> isBlockedMap = blockService.isBlockedBatch(member, targetMemberIds);
+        Map<Long, Boolean> isBlockedMap = blockService.isBlockedByTargetMembersBatch(member, targetMemberIds);
         Map<Long, Long> friendRequestMap = friendService.getFriendRequestMemberIdBatch(member, targetMemberIds);
 
         // dto 생성

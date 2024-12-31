@@ -125,8 +125,8 @@ public class BlockService {
      * @param targetMemberIds
      * @return
      */
-    public Map<Long, Boolean> isBlockedBatch(Member member, List<Long> targetMemberIds) {
-        return blockRepository.isBlockedBatch(targetMemberIds, member.getId());
+    public Map<Long, Boolean> isBlockedByTargetMembersBatch(Member member, List<Long> targetMemberIds) {
+        return blockRepository.isBlockedByTargetMembersBatch(targetMemberIds, member.getId());
     }
 
     private void validateNotSelfBlock(Member member, Member targetMember) {

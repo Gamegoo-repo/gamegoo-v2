@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface BlockRepositoryCustom {
 
-    Map<Long, Boolean> isBlockedBatch(List<Long> targetMemberIds, Long memberId);
+    Map<Long, Boolean> isBlockedByTargetMembersBatch(List<Long> targetMemberIds, Long memberId);
 
 }

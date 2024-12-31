@@ -17,14 +17,14 @@ public class BlockRepositoryCustomImpl implements BlockRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Map<Long, Boolean> isBlockedBatch(List<Long> targetMemberIds, Long memberId) {
+    public Map<Long, Boolean> isBlockedByTargetMembersBatch(List<Long> targetMemberIds, Long memberId) {
         Set<Long> blockedSet = new HashSet<>(
                 queryFactory
                         .select(block.blockedMember.id)
                         .from(block)
                         .where(
-                                block.blockerMember.id.eq(memberId),
-                                block.blockedMember.id.in(targetMemberIds),
+                                block.blockerMember.id.in(targetMemberIds),
+                                block.blockedMember.id.eq(memberId),
                                 block.deleted.eq(false)
                         )
                         .fetch()

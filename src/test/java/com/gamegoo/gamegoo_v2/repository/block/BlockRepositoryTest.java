@@ -123,28 +123,27 @@ class BlockRepositoryTest extends RepositoryTestSupport {
         // given
         List<Long> targetMemberIds = new ArrayList<>();
 
-        // 회원 9명 차단
-        List<Member> blockedMembers = new ArrayList<>();
+        // 회원 9명이 나를 차단
+        List<Member> blockerMembers = new ArrayList<>();
         for (int i = 1; i <= 9; i++) {
-            Member blocked = createMember("member" + i + "@gmail.com", "member" + i);
-            blockMember(blocker, blocked);
-            targetMemberIds.add(blocked.getId());
-            blockedMembers.add(blocked);
+            Member blocker = createMember("member" + i + "@gmail.com", "member" + i);
+            blockMember(blocker, member);
+            targetMemberIds.add(blocker.getId());
         }
 
-        // 회원 1명 차단하지 않음
-        Member notBlocked = createMember("notBlocked@gmail.com", "notBlocked");
-        targetMemberIds.add(notBlocked.getId());
+        // 회원 1명 나를 차단하지 않음
+        Member notBlocker = createMember("notBlocked@gmail.com", "notBlocked");
+        targetMemberIds.add(notBlocker.getId());
 
         // when
-        Map<Long, Boolean> blockedMap = blockRepository.isBlockedBatch(targetMemberIds, blocker.getId());
+        Map<Long, Boolean> blockedMap = blockRepository.isBlockedByTargetMembersBatch(targetMemberIds, member.getId());
 
         // then
         assertThat(blockedMap).hasSize(targetMemberIds.size());
-        for (Member blocked : blockedMembers) {
-            assertThat(blockedMap.get(blocked.getId())).isTrue();
+        for (Member blocker : blockerMembers) {
+            assertThat(blockedMap.get(blocker.getId())).isTrue();
         }
-        assertThat(blockedMap.get(notBlocked.getId())).isFalse();
+        assertThat(blockedMap.get(notBlocker.getId())).isFalse();
     }
 
     private Block blockMember(Member blocker, Member blocked) {
