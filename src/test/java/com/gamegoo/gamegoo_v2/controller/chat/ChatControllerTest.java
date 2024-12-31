@@ -7,6 +7,8 @@ import com.gamegoo.gamegoo_v2.chat.dto.request.SystemFlagRequest;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatCreateResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageListResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.ChatMessageResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomListResponse;
+import com.gamegoo.gamegoo_v2.chat.dto.response.ChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse;
 import com.gamegoo.gamegoo_v2.chat.dto.response.EnterChatroomResponse.SystemFlagResponse;
 import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
@@ -458,7 +460,6 @@ class ChatControllerTest extends ControllerTestSupport {
 
     }
 
-
     @DisplayName("채팅방 나가기 성공")
     @Test
     void ExitChatroomSucceeds() throws Exception {
@@ -472,6 +473,26 @@ class ChatControllerTest extends ControllerTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").value("채팅방 나가기 성공"));
+    }
+
+    @DisplayName("채팅방 목록 조회")
+    @Test
+    void getChatroomSucceeds() throws Exception {
+        // given
+        List<ChatroomResponse> chatroomResponseList = new ArrayList<>();
+        ChatroomListResponse response = ChatroomListResponse.builder()
+                .chatroomResponseList(chatroomResponseList)
+                .listSize(0)
+                .build();
+
+        given(chatFacadeService.getChatrooms(any(Member.class))).willReturn(response);
+
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/chatroom"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data.chatroomResponseList").isArray())
+                .andExpect(jsonPath("$.data.listSize").isNumber());
     }
 
 }
