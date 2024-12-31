@@ -320,7 +320,7 @@ public class FriendService {
             Member from = fr.getFromMember();
             Member to = fr.getToMember();
 
-            if (from.equals(member)) { // 내가 요청을 보낸 경우
+            if (from.getId().equals(member.getId())) { // 내가 요청을 보낸 경우
                 Long targetId = to.getId();
                 resultMap.put(targetId, member.getId());
             } else { // 상대가 요청을 보낸 경우
