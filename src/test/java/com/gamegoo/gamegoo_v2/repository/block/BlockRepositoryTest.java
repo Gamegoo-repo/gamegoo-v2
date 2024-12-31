@@ -129,6 +129,7 @@ class BlockRepositoryTest extends RepositoryTestSupport {
             Member blocker = createMember("member" + i + "@gmail.com", "member" + i);
             blockMember(blocker, member);
             targetMemberIds.add(blocker.getId());
+            blockerMembers.add(blocker);
         }
 
         // 회원 1명 나를 차단하지 않음

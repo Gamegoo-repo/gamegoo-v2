@@ -20,7 +20,7 @@ public class BlockRepositoryCustomImpl implements BlockRepositoryCustom {
     public Map<Long, Boolean> isBlockedByTargetMembersBatch(List<Long> targetMemberIds, Long memberId) {
         Set<Long> blockedSet = new HashSet<>(
                 queryFactory
-                        .select(block.blockedMember.id)
+                        .select(block.blockerMember.id)
                         .from(block)
                         .where(
                                 block.blockerMember.id.in(targetMemberIds),
