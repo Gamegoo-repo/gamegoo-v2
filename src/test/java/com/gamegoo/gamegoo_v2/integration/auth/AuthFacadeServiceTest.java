@@ -121,6 +121,25 @@ public class AuthFacadeServiceTest {
 
     }
 
+    @DisplayName("로그아웃 성공")
+    @Test
+    void logout() {
+        // given
+        LoginRequest loginRequest = LoginRequest.builder()
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+        authFacadeService.login(loginRequest);
+
+        // when
+        String response = authFacadeService.logout(member);
+
+        // then
+        assertThat(response).isNotNull();
+
+        assertThat(refreshTokenRepository.findByMember(member).isPresent()).isFalse();
+    }
+
     private Member createMember(String email, String gameName, String password) {
         return memberRepository.save(Member.builder()
                 .email(email)
