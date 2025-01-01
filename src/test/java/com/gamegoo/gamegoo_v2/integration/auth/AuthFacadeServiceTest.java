@@ -3,6 +3,7 @@ package com.gamegoo.gamegoo_v2.integration.auth;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
+import com.gamegoo.gamegoo_v2.account.auth.repository.RefreshTokenRepository;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
 import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
@@ -31,6 +32,9 @@ public class AuthFacadeServiceTest {
     MemberRepository memberRepository;
 
     @Autowired
+    RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     JwtProvider jwtProvider;
 
     private Member member;
@@ -52,6 +56,7 @@ public class AuthFacadeServiceTest {
 
     @AfterEach
     void tearDown() {
+        refreshTokenRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
 
@@ -72,6 +77,7 @@ public class AuthFacadeServiceTest {
             LoginResponse response = authFacadeService.login(loginRequest);
 
             // then
+            // response 검증
             assertThat(response).isNotNull();
             assertThat(response.getAccessToken()).isEqualTo(jwtProvider.createAccessToken(member.getId()));
             assertThat(response.getRefreshToken()).isEqualTo(jwtProvider.createRefreshToken(member.getId()));
@@ -79,6 +85,7 @@ public class AuthFacadeServiceTest {
             assertThat(response.getName()).isEqualTo(member.getGameName());
             assertThat(response.getProfileImage()).isEqualTo(member.getProfileImage());
 
+            refreshTokenRepository.findByMember(member).ifPresent(refreshToken -> assertThat(refreshToken.getRefreshToken()).isEqualTo(response.getRefreshToken()));
         }
 
         @DisplayName("로그인 실패 : 없는 사용자일 경우")
