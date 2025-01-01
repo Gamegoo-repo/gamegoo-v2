@@ -1,8 +1,7 @@
 package com.gamegoo.gamegoo_v2.content.board.domain;
 
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.common.BaseDateTimeEntity;
-import jakarta.persistence.CascadeType;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,14 +10,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -58,10 +53,6 @@ public class Board extends BaseDateTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<BoardGameStyle> boardGameStyles = new ArrayList<>();
-
-
     public static Board create(Member member, int mode, int mainPosition, int subPosition, int wantPosition,
                                boolean mike, String content, int boardProfileImage) {
         return Board.builder()
@@ -88,11 +79,6 @@ public class Board extends BaseDateTimeEntity {
         this.boardProfileImage = boardProfileImage;
         this.deleted = deleted;
         this.member = member;
-    }
-
-    public void addBoardGameStyle(BoardGameStyle boardGameStyle) {
-        boardGameStyles.add(boardGameStyle);
-        boardGameStyle.setBoard(this);
     }
 
 }
