@@ -1,6 +1,8 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
@@ -34,7 +36,7 @@ public class AuthFacadeService {
      * @param request 회원가입용 정보
      */
     @Transactional
-    public String join(JoinRequest request) {
+    public void join(JoinRequest request) {
         // 1. [Member] 중복확인
         memberService.checkDuplicateMemberByEmail(request.getEmail());
 
@@ -58,14 +60,20 @@ public class AuthFacadeService {
 
         // 6. [Member] Member Champion DB에서 매핑하기
         memberChampionService.saveMemberChampions(member, preferChampionfromMatch);
-
-        return "회원가입이 완료되었습니다.";
     }
 
-    @Transactional
-    public String logout(Member member) {
-        authService.deleteRefreshToken(member);
-        return "로그아웃이 완료되었습니다.";
+    public LoginResponse login(LoginRequest request) {
+        // email 검증
+        Member member = memberService.findMemberByEmail(request.getEmail());
+
+        // password 검증
+        authService.verifyPassword(member, request.getPassword());
+
+        // 해당 사용자의 정보를 가진 jwt 토큰 발급
+        String accessToken = jwtProvider.createAccessToken(member.getId());
+        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+
+        return LoginResponse.of(member, accessToken, refreshToken);
     }
 
 }
