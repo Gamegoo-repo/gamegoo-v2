@@ -1,14 +1,14 @@
 package com.gamegoo.gamegoo_v2.notification.service;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.exception.NotificationException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.social.manner.domain.MannerKeyword;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.notification.domain.Notification;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationType;
 import com.gamegoo.gamegoo_v2.notification.domain.NotificationTypeTitle;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationRepository;
 import com.gamegoo.gamegoo_v2.notification.repository.NotificationTypeRepository;
+import com.gamegoo.gamegoo_v2.social.manner.domain.MannerKeyword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,9 +33,9 @@ public class NotificationService {
     /**
      * 친구 요청 전송됨 알림 생성 메소드
      *
-     * @param member
-     * @param sourceMember
-     * @return
+     * @param member       알림 전송 대상 회원
+     * @param sourceMember 친구 요청 전송 대상 회원
+     * @return Notification
      */
     @Transactional
     public Notification createSendFriendRequestNotification(Member member, Member sourceMember) {
@@ -49,9 +49,9 @@ public class NotificationService {
     /**
      * 친구 요청 받음 알림 생성 메소드
      *
-     * @param member
-     * @param sourceMember
-     * @return
+     * @param member       알림 전송 대상 회원
+     * @param sourceMember 친구 요청 보낸 회원
+     * @return Notification
      */
     @Transactional
     public Notification createReceivedFriendRequestNotification(Member member, Member sourceMember) {
@@ -65,9 +65,9 @@ public class NotificationService {
     /**
      * 친구 요청 수락됨 알림 생성 메소드
      *
-     * @param member
-     * @param sourceMember
-     * @return
+     * @param member       알림 전송 대상 회원
+     * @param sourceMember 친구 요청 수락한 회원
+     * @return Notification
      */
     @Transactional
     public Notification createAcceptFriendRequestNotification(Member member, Member sourceMember) {
@@ -81,9 +81,9 @@ public class NotificationService {
     /**
      * 친구 요청 거절됨 알림 생성 메소드
      *
-     * @param member
-     * @param sourceMember
-     * @return
+     * @param member       알림 전송 대상 회원
+     * @param sourceMember 친구 요청 거절한 회원
+     * @return Notification
      */
     @Transactional
     public Notification createRejectFriendRequestNotification(Member member, Member sourceMember) {
@@ -97,14 +97,14 @@ public class NotificationService {
     /**
      * 매너레벨 상승/하락 알림 생성 메소드
      *
-     * @param notificationTypeTitle
-     * @param member
-     * @param mannerLevel
-     * @return
+     * @param notificationTypeTitle 알림 유형
+     * @param member                알림 전송 대상 회원
+     * @param mannerLevel           매너레벨
+     * @return Notification
      */
     @Transactional
     public Notification createMannerLevelNotification(NotificationTypeTitle notificationTypeTitle, Member member,
-            int mannerLevel) {
+                                                      int mannerLevel) {
         validateMember(member);
 
         NotificationType notificationType = findNotificationType(notificationTypeTitle);
@@ -115,9 +115,9 @@ public class NotificationService {
     /**
      * 매너 평가 등록됨 알림 생성 메소드
      *
-     * @param mannerKeywordList
-     * @param member
-     * @return
+     * @param mannerKeywordList 매너 키워드 list
+     * @param member            알림 전송 대상 회원
+     * @return Notification
      */
     @Transactional
     public Notification createMannerRatingNotification(List<MannerKeyword> mannerKeywordList, Member member) {
@@ -139,11 +139,11 @@ public class NotificationService {
     /**
      * 알림 생성 및 저장 메소드
      *
-     * @param type
-     * @param content
-     * @param member
-     * @param sourceMember
-     * @return
+     * @param type         알림 type
+     * @param content      알림 텍스트
+     * @param member       알림 전송 대상 회원
+     * @param sourceMember 알림 연관 회원
+     * @return Notification
      */
     @Transactional
     protected Notification saveNotification(NotificationType type, String content, Member member, Member sourceMember) {
@@ -153,8 +153,9 @@ public class NotificationService {
     /**
      * 알림 읽음 처리 메소드
      *
-     * @param member
-     * @param notificationId
+     * @param member         회원
+     * @param notificationId 알림 id
+     * @return Notification
      */
     @Transactional
     public Notification readNotification(Member member, Long notificationId) {
@@ -169,8 +170,8 @@ public class NotificationService {
     /**
      * 안읽은 알림 개수 계산 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 안읽은 알림 개수
      */
     public int countUnreadNotification(Member member) {
         long count = member.getNotificationList()
@@ -184,9 +185,9 @@ public class NotificationService {
     /**
      * 해당 회원의 알림 목록 Page 객체 반환하는 메소드
      *
-     * @param member
-     * @param pageIdx
-     * @return
+     * @param member  회원
+     * @param pageIdx 페이지 번호
+     * @return 알림 Page 객체
      */
     public Page<Notification> getNotificationPage(Member member, Integer pageIdx) {
         PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -197,9 +198,9 @@ public class NotificationService {
     /**
      * 해당 회원의 알림 목록 Slice 객체 반환하는 메소드
      *
-     * @param member
-     * @param cursor
-     * @return
+     * @param member 회원
+     * @param cursor 알림 id
+     * @return 알림 Slice 객체
      */
     public Slice<Notification> getNotificationSlice(Member member, Long cursor) {
         return notificationRepository.findNotificationsByCursor(member.getId(), cursor, PAGE_SIZE);
@@ -208,8 +209,8 @@ public class NotificationService {
     /**
      * title로 NotificationType을 찾는 메소드
      *
-     * @param title
-     * @return
+     * @param title NotificationTypeTitle enum
+     * @return NotificationType
      */
     private NotificationType findNotificationType(NotificationTypeTitle title) {
         return notificationTypeRepository.findNotificationTypeByTitle(title)
@@ -219,7 +220,7 @@ public class NotificationService {
     /**
      * member가 null이 아닌지 검증하는 메소드
      *
-     * @param member
+     * @param member 회원
      */
     private void validateMember(Member member) {
         if (member == null) {
@@ -230,7 +231,7 @@ public class NotificationService {
     /**
      * mannerKeywordList에 키워드가 1개 이상 있는지 검증하는 메소드
      *
-     * @param mannerKeywordList
+     * @param mannerKeywordList 매너 레벨 키워드 list
      */
     private void validateMannerKeywordList(List<MannerKeyword> mannerKeywordList) {
         if (mannerKeywordList.isEmpty()) {
@@ -239,10 +240,10 @@ public class NotificationService {
     }
 
     /**
-     * notificationId에 해당하는 알림 내역 존재 여부 검증
+     * notificationId에 해당하는 알림 내역 존재 여부 검증하는 메소드
      *
-     * @param member
-     * @param notificationId
+     * @param member         회원
+     * @param notificationId 알림 id
      */
     private void validateNotificationExists(Member member, Long notificationId) {
         boolean exists = notificationRepository.existsByMemberAndId(member, notificationId);
