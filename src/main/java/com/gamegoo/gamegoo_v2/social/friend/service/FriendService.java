@@ -42,8 +42,9 @@ public class FriendService {
     /**
      * 친구 요청 생성 메소드
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return FriendRequest
      */
     @Transactional
     public FriendRequest sendFriendRequest(Member member, Member targetMember) {
@@ -74,9 +75,9 @@ public class FriendService {
     /**
      * targetMember가 보낸 친구 요청 수락 처리 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return FriendRequest
      */
     @Transactional
     public FriendRequest acceptFriendRequest(Member member, Member targetMember) {
@@ -104,9 +105,9 @@ public class FriendService {
     /**
      * targetMember가 보낸 친구 요청 거절 처리 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return FriendRequest
      */
     @Transactional
     public FriendRequest rejectFriendRequest(Member member, Member targetMember) {
@@ -130,9 +131,9 @@ public class FriendService {
     /**
      * targetMember에게 보낸 친구 요청 취소 처리 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return FriendRequest
      */
     @Transactional
     public FriendRequest cancelFriendRequest(Member member, Member targetMember) {
@@ -154,9 +155,9 @@ public class FriendService {
     /**
      * targetMember를 즐겨찾기 설정 또는 해제 처리 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return Friend
      */
     @Transactional
     public Friend reverseFriendLiked(Member member, Member targetMember) {
@@ -179,8 +180,8 @@ public class FriendService {
     /**
      * 두 회원 사이 친구 관계 삭제 메소드
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
      */
     @Transactional
     public void deleteFriend(Member member, Member targetMember) {
@@ -203,8 +204,8 @@ public class FriendService {
     /**
      * 해당 회원의 친구 목록 Slice 객체 반환하는 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 친구 Slice
      */
     public Slice<Friend> getFriendSlice(Member member, Long cursor) {
         return friendRepository.findFriendsByCursor(member.getId(), cursor, PAGE_SIZE);
@@ -213,8 +214,8 @@ public class FriendService {
     /**
      * 해당 회원의 모든 친구 id 리스트 반환하는 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 친구 회원 id list
      */
     public List<Long> getFriendIdList(Member member) {
         return member.getFriendList().stream()
@@ -225,9 +226,9 @@ public class FriendService {
     /**
      * 소환사명으로 친구 목록 조회하는 메소드
      *
-     * @param member
-     * @param query
-     * @return
+     * @param member 회원
+     * @param query  검색어
+     * @return 친구 list
      */
     public List<Friend> searchFriendByGamename(Member member, String query) {
         validateSearchQuery(query);
@@ -237,8 +238,8 @@ public class FriendService {
     /**
      * fromMember와 toMember가 서로 친구 관계이면, 친구 관계 삭제하는 메소드
      *
-     * @param fromMember
-     * @param toMember
+     * @param fromMember 회원
+     * @param toMember   상대 회원
      */
     @Transactional
     public void removeFriendshipIfPresent(Member fromMember, Member toMember) {
@@ -258,8 +259,8 @@ public class FriendService {
     /**
      * fromMember가 toMember에게 보낸 PENDING 상태인 친구 요청을 취소 처리하는 메소드
      *
-     * @param fromMember
-     * @param toMember
+     * @param fromMember 회원
+     * @param toMember   상대 회원
      */
     @Transactional
     public void cancelPendingFriendRequest(Member fromMember, Member toMember) {
@@ -270,9 +271,9 @@ public class FriendService {
     /**
      * 두 회원이 서로 친구인지 여부를 반환하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return 친구 여부
      */
     public boolean isFriend(Member member, Member targetMember) {
         return friendRepository.isFriend(member.getId(), targetMember.getId());
@@ -281,9 +282,9 @@ public class FriendService {
     /**
      * 모든 상대 회원에 대해 서로 친구인지 여부를 반환하는 메소드
      *
-     * @param member
-     * @param targetMemberIds
-     * @return
+     * @param member          회원
+     * @param targetMemberIds 상대 회원 id list
+     * @return Map<상대 회원 id, 친구 여부>
      */
     public Map<Long, Boolean> isFriendBatch(Member member, List<Long> targetMemberIds) {
         return friendRepository.isFriendBatch(member.getId(), targetMemberIds);
@@ -292,9 +293,9 @@ public class FriendService {
     /**
      * 두 회원 사이 친구 요청이 존재하는 경우 친구 요청을 보낸 회원의 id를 반환하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return 친구 요청을 보낸 회원의 id
      */
     public Long getFriendRequestMemberId(Member member, Member targetMember) {
         return friendRequestRepository
@@ -306,9 +307,9 @@ public class FriendService {
     /**
      * 모든 targetMember에 대해 두 회원 사이 친구 요청 보낸 회원의 id 반환하는 메소드
      *
-     * @param member
-     * @param targetMemberIds
-     * @return
+     * @param member          회원
+     * @param targetMemberIds 상대 회원 id list
+     * @return Map<상대 회원 id, 친구 요청을 보낸 회원의 id>
      */
     public Map<Long, Long> getFriendRequestMemberIdBatch(Member member, List<Long> targetMemberIds) {
         List<FriendRequest> foundRequests = friendRequestRepository.findAllBetweenTargetMembersAndStatus(member,
@@ -336,12 +337,24 @@ public class FriendService {
         return resultMap;
     }
 
+    /**
+     * 두 member가 동일하면 에러 발생 메소드
+     *
+     * @param member       회원
+     * @param targetMember 상대 회원
+     */
     private void validateNotSelf(Member member, Member targetMember) {
         if (member.getId().equals(targetMember.getId())) {
             throw new FriendException(ErrorCode.FRIEND_BAD_REQUEST);
         }
     }
 
+    /**
+     * 두 회원이 서로 차단한 상태이면 에러 발생 메소드
+     *
+     * @param member       회원
+     * @param targetMember 상대 회원
+     */
     private void validateBlockStatus(Member member, Member targetMember) {
         blockValidator.throwIfBlocked(member, targetMember, FriendException.class,
                 ErrorCode.FRIEND_TARGET_IS_BLOCKED);
@@ -349,6 +362,11 @@ public class FriendService {
                 ErrorCode.BLOCKED_BY_FRIEND_TARGET);
     }
 
+    /**
+     * 검색어 길이가 100자 초과이면 에러 발생 메소드
+     *
+     * @param query 검색어
+     */
     private void validateSearchQuery(String query) {
         if (query.length() > 100) {
             throw new FriendException(ErrorCode.FRIEND_SEARCH_QUERY_BAD_REQUEST);
