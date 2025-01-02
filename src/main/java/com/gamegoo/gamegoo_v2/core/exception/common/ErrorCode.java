@@ -75,7 +75,7 @@ public enum ErrorCode {
      */
     ALREADY_BLOCKED(BAD_REQUEST, "BLOCK_401", "이미 차단한 회원입니다."),
     TARGET_MEMBER_NOT_BLOCKED(BAD_REQUEST, "BLOCK_402", "차단 목록에 존재하지 않는 회원입니다."),
-    BLOCK_MEMBER_BAD_REQUEST(BAD_REQUEST, "BLOCK_403", "잘못된 친구 차단 요청입니다."),
+    BLOCK_MEMBER_BAD_REQUEST(BAD_REQUEST, "BLOCK_403", "잘못된 차단 요청입니다."),
     DELETE_BLOCKED_MEMBER_FAILED(FORBIDDEN, "BLOCK_404", "차단 목록에서 삭제 불가한 회원입니다."),
 
     /**
