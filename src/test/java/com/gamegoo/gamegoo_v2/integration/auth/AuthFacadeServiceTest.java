@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.integration.auth;
 
+import com.gamegoo.gamegoo_v2.account.auth.domain.RefreshToken;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
