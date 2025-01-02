@@ -1,11 +1,11 @@
 package com.gamegoo.gamegoo_v2.core.common.validator;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.exception.FriendException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.social.friend.domain.FriendRequestStatus;
 import com.gamegoo.gamegoo_v2.social.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.social.friend.repository.FriendRequestRepository;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +19,11 @@ public class FriendValidator {
     /**
      * 두 회원이 서로 친구이면 예외 발생
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 회원
      */
-    public void validateIsNotFriend(Member member, Member targetMember) {
-        if (friendRepository.existsByFromMemberAndToMember(member, targetMember)) {
+    public void throwIfFriend(Member member, Member targetMember) {
+        if (friendRepository.isFriend(member.getId(), targetMember.getId())) {
             throw new FriendException(ErrorCode.ALREADY_FRIEND);
         }
     }
@@ -31,14 +31,11 @@ public class FriendValidator {
     /**
      * 두 회원이 서로 친구가 아니면 예외 발생
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 회원
      */
-    public void validateIsFriend(Member member, Member targetMember) {
-        boolean exists1 = friendRepository.existsByFromMemberAndToMember(member, targetMember);
-        boolean exists2 = friendRepository.existsByFromMemberAndToMember(targetMember, member);
-
-        if (!exists1 || !exists2) {
+    public void throwIfNotFriend(Member member, Member targetMember) {
+        if (!friendRepository.isFriend(member.getId(), targetMember.getId())) {
             throw new FriendException(ErrorCode.MEMBERS_NOT_FRIEND);
         }
     }
@@ -46,8 +43,8 @@ public class FriendValidator {
     /**
      * 두 회원 사이에 PENDING 상태인 친구 요청이 존재하면 예외 발생
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
      */
     public void validateNoPendingRequest(Member member, Member targetMember) {
         boolean myPendingRequestExists = friendRequestRepository.existsByFromMemberAndToMemberAndStatus(

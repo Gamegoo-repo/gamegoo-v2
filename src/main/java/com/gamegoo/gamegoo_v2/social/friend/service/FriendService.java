@@ -52,13 +52,13 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // 상대방의 탈퇴 여부 검증
-        memberValidator.validateMemberIsNotBlind(targetMember);
+        memberValidator.throwIfBlind(targetMember);
 
         // 두 회원의 차단 여부 검증
         validateBlockStatus(member, targetMember);
 
         // 두 회원이 이미 친구 관계인 경우 검증
-        friendValidator.validateIsNotFriend(member, targetMember);
+        friendValidator.throwIfFriend(member, targetMember);
 
         // 두 회원 사이 수락 대기중인 친구 요청 존재 여부 검증
         friendValidator.validateNoPendingRequest(member, targetMember);
@@ -165,10 +165,10 @@ public class FriendService {
         validateNotSelf(member, targetMember);
 
         // targetMember의 탈퇴 여부 검증
-        memberValidator.validateMemberIsNotBlind(targetMember);
+        memberValidator.throwIfBlind(targetMember);
 
         // 두 회원이 친구 관계인지 검증
-        friendValidator.validateIsFriend(member, targetMember);
+        friendValidator.throwIfNotFriend(member, targetMember);
 
         // liked 상태 변경
         Friend friend = friendRepository.findByFromMemberAndToMember(member, targetMember).get();

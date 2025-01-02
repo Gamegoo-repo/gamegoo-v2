@@ -71,7 +71,7 @@ public class ChatFacadeService {
     public EnterChatroomResponse startChatroomByMemberId(Member member, Long targetMemberId) {
         // 대상 회원 검증
         Member targetMember = memberService.findMemberById(targetMemberId);
-        memberValidator.validateDifferentMembers(member, targetMember);
+        memberValidator.throwIfEqual(member, targetMember);
 
         // 내가 상대 회원을 차단하지 않았는지 검증
         blockValidator.throwIfBlocked(member, targetMember, ChatException.class, CHAT_START_FAILED_TARGET_IS_BLOCKED);
@@ -123,7 +123,7 @@ public class ChatFacadeService {
 
         // 대상 회원 검증 및 조회
         Member targetMember = memberService.findMemberById(board.getMember().getId());
-        memberValidator.validateDifferentMembers(member, targetMember);
+        memberValidator.throwIfEqual(member, targetMember);
 
         // 상대가 탈퇴하지 않았는지 검증
         memberValidator.throwIfBlind(targetMember, ChatException.class, CHAT_START_FAILED_TARGET_DEACTIVATED);

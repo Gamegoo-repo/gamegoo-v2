@@ -10,23 +10,23 @@ import org.springframework.stereotype.Component;
 public class MemberValidator extends BaseValidator {
 
     /**
-     * 대상 회원이 탈퇴하지 않았는지 검증
+     * 대상 회원이 탈퇴한 경우 예외 발생
      *
-     * @param member
+     * @param member 회원
      */
-    public void validateMemberIsNotBlind(Member member) {
+    public void throwIfBlind(Member member) {
         if (member.isBlind()) {
             throw new MemberException(ErrorCode.TARGET_MEMBER_DEACTIVATED);
         }
     }
 
     /**
-     * 두 회원이 서로 다른 회원인지 검증
+     * 두 회원이 서로 같은 경우 예외 발생
      *
-     * @param member1
-     * @param member2
+     * @param member1 회원
+     * @param member2 회원
      */
-    public void validateDifferentMembers(Member member1, Member member2) {
+    public void throwIfEqual(Member member1, Member member2) {
         if (member1.getId().equals(member2.getId())) {
             throw new GlobalException(ErrorCode._BAD_REQUEST);
         }
@@ -35,10 +35,9 @@ public class MemberValidator extends BaseValidator {
     /**
      * 해당 회원이 탈퇴한 상태인 경우 입력받은 Exception을 발생시키는 메소드
      *
-     * @param member
-     * @param exceptionClass
-     * @param errorCode
-     * @param <T>
+     * @param member         회원
+     * @param exceptionClass 예외 클래스
+     * @param errorCode      에러 코드
      */
     public <T extends GlobalException> void throwIfBlind(Member member, Class<T> exceptionClass, ErrorCode errorCode) {
         if (member.isBlind()) {
