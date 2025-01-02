@@ -3,7 +3,9 @@ package com.gamegoo.gamegoo_v2.account.auth.controller;
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.RefreshTokenRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.RefreshTokenResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
@@ -48,6 +50,12 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인 API입니다.")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ApiResponse.ok(authFacadeService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "refresh   토큰을 통한 access, refresh 토큰 재발급 API 입니다.", description = "API for Refresh Token")
+    public ApiResponse<RefreshTokenResponse> updateToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ApiResponse.ok(authFacadeService.updateToken(request));
     }
 
 }

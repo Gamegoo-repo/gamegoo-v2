@@ -30,9 +30,10 @@ public enum ErrorCode {
     EXPIRED_JWT_EXCEPTION(UNAUTHORIZED, "AUTH_406", "기존 토큰이 만료되었습니다. 토큰을 재발급해주세요."),
     INVALID_CLAIMS(UNAUTHORIZED, "AUTH_407", "JWT의 클레임이 유효하지 않습니다."),
     EXPIRED_REFRESH_TOKEN(BAD_REQUEST, "AUTH_408", "리프레쉬 토큰이 만료되었습니다. 다시 로그인 해주세요"),
-    UNAUTHORIZED_EXCEPTION(UNAUTHORIZED, "AUTH_409", "로그인 후 이용가능합니다. 토큰을 입력해 주세요"),
-    MEMBER_EXTRACTION_FAILED(NOT_FOUND, "AUTH_410", "회원 정보를 추출할 수 없습니다."),
-    INACTIVE_MEMBER(NOT_FOUND, "AUTH_411", "탈퇴한 사용자 입니다."),
+    INVALID_REFRESH_TOKEN(BAD_REQUEST, "AUTH_409", "사용할 수 없는 리프레쉬 토큰입니다. "),
+    UNAUTHORIZED_EXCEPTION(UNAUTHORIZED, "AUTH_410", "로그인 후 이용가능합니다. 토큰을 입력해 주세요"),
+    MEMBER_EXTRACTION_FAILED(NOT_FOUND, "AUTH_411", "회원 정보를 추출할 수 없습니다."),
+    INACTIVE_MEMBER(NOT_FOUND, "AUTH_412", "탈퇴한 사용자 입니다."),
 
     /**
      * 회원 관련 에러

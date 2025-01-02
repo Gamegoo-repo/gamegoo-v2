@@ -1,8 +1,12 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
 import com.gamegoo.gamegoo_v2.account.auth.domain.RefreshToken;
+import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.repository.RefreshTokenRepository;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.core.exception.JwtAuthException;
+import com.gamegoo.gamegoo_v2.core.exception.MemberException;
+import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProvider jwtProvider;
 
     /**
      * 리프레시 토큰 제거
@@ -42,5 +47,18 @@ public class AuthService {
         refreshTokenRepository.save(RefreshToken.create(refreshToken, member));
     }
 
+    /**
+     * 리프레시 토큰 검증
+     *
+     * @param refreshToken
+     */
+    public void verifyRefreshToken(String refreshToken) {
+        // DB 검증
+        if (refreshTokenRepository.findByRefreshToken(refreshToken).isEmpty()) {
+            throw new JwtAuthException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
 
+        // JWT 검증
+        jwtProvider.validateToken(refreshToken);
+    }
 }
