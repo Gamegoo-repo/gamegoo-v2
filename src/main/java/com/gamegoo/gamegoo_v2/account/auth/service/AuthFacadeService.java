@@ -1,6 +1,8 @@
 package com.gamegoo.gamegoo_v2.account.auth.service;
 
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.JoinRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.service.MemberChampionService;
@@ -27,6 +29,7 @@ public class AuthFacadeService {
     private final MemberChampionService memberChampionService;
     private final AuthService authService;
     private final JwtProvider jwtProvider;
+    private final PasswordService passwordService;
 
     /**
      * 회원가입
@@ -60,6 +63,23 @@ public class AuthFacadeService {
         memberChampionService.saveMemberChampions(member, preferChampionfromMatch);
 
         return "회원가입이 완료되었습니다.";
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        // email 검증
+        Member member = memberService.findMemberByEmail(request.getEmail());
+
+        // password 검증
+        passwordService.verifyPassword(member, request.getPassword());
+
+        // 해당 사용자의 정보를 가진 jwt 토큰 발급
+        String accessToken = jwtProvider.createAccessToken(member.getId());
+        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+
+        // refreshToken 저장
+        authService.addRefreshToken(member, refreshToken);
+
+        return LoginResponse.of(member, accessToken, refreshToken);
     }
 
     @Transactional
