@@ -338,7 +338,7 @@ public class FriendService {
     }
 
     /**
-     * 두 member가 동일하면 에러 발생 메소드
+     * 두 회원이 동일하면 에러 발생 메소드
      *
      * @param member       회원
      * @param targetMember 상대 회원
