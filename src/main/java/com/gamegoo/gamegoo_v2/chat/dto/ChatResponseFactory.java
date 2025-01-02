@@ -30,9 +30,9 @@ public class ChatResponseFactory {
         List<ChatMessageResponse> chatMessageResponseList = chatSlice.stream()
                 .map(chat -> {
                     if (chat.getSystemType() == null) {
-                        return SystemMessageResponse.of(chat);
+                        return ChatMessageResponse.of(chat);
                     }
-                    return ChatMessageResponse.of(chat);
+                    return SystemMessageResponse.of(chat);
                 })
                 .toList();
 
@@ -125,7 +125,7 @@ public class ChatResponseFactory {
         String lastMsg = null;
         String lastMsgAt = null;
         Long lastMsgTimestamp = null;
-        
+
         if (lastChat != null) {
             lastMsg = lastChat.getContents();
             lastMsgAt = DateTimeUtil.toKSTString(lastChat.getCreatedAt());
