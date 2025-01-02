@@ -1,5 +1,6 @@
 package com.gamegoo.gamegoo_v2.controller.friend;
 
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
 import com.gamegoo.gamegoo_v2.core.exception.FriendException;
 import com.gamegoo.gamegoo_v2.core.exception.MemberException;
@@ -12,7 +13,6 @@ import com.gamegoo.gamegoo_v2.social.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.social.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.social.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.social.friend.service.FriendFacadeService;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class FriendControllerTest extends ControllerTestSupport {
     @MockitoBean
     private FriendFacadeService friendFacadeService;
 
-    private static final String API_URL_PREFIX = "/api/v2/friends";
+    private static final String API_URL_PREFIX = "/api/v2/friend";
     private static final Long TARGET_MEMBER_ID = 2L;
 
     @Nested
@@ -174,7 +174,8 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 수락 성공")
                     .build();
 
-            given(friendFacadeService.acceptFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
+            given(friendFacadeService.acceptFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(
+                    response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/accept", TARGET_MEMBER_ID))
@@ -225,7 +226,8 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 거절 성공")
                     .build();
 
-            given(friendFacadeService.rejectFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
+            given(friendFacadeService.rejectFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(
+                    response);
 
             // when // then
             mockMvc.perform(patch(API_URL_PREFIX + "/request/{memberId}/reject", TARGET_MEMBER_ID))
@@ -276,7 +278,8 @@ class FriendControllerTest extends ControllerTestSupport {
                     .message("친구 요청 취소 성공")
                     .build();
 
-            given(friendFacadeService.cancelFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(response);
+            given(friendFacadeService.cancelFriendRequest(any(Member.class), eq(TARGET_MEMBER_ID))).willReturn(
+                    response);
 
             // when // then
             mockMvc.perform(delete(API_URL_PREFIX + "/request/{memberId}", TARGET_MEMBER_ID))

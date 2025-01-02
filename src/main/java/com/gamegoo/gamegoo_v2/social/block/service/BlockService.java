@@ -1,17 +1,20 @@
 package com.gamegoo.gamegoo_v2.social.block.service;
 
-import com.gamegoo.gamegoo_v2.social.block.domain.Block;
-import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.BlockException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.social.block.domain.Block;
+import com.gamegoo.gamegoo_v2.social.block.repository.BlockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -113,6 +116,17 @@ public class BlockService {
      */
     public boolean isBlocked(Member member, Member targetMember) {
         return blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
+    }
+
+    /**
+     * 모든 targetMember에 대한 차단 여부 반환하는 메소드
+     *
+     * @param member
+     * @param targetMemberIds
+     * @return
+     */
+    public Map<Long, Boolean> isBlockedByTargetMembersBatch(Member member, List<Long> targetMemberIds) {
+        return blockRepository.isBlockedByTargetMembersBatch(targetMemberIds, member.getId());
     }
 
     private void validateNotSelfBlock(Member member, Member targetMember) {

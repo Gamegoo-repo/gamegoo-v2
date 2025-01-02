@@ -1,9 +1,9 @@
 package com.gamegoo.gamegoo_v2.repository.friend;
 
-import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
-import com.gamegoo.gamegoo_v2.social.friend.repository.FriendRepository;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.repository.RepositoryTestSupport;
+import com.gamegoo.gamegoo_v2.social.friend.domain.Friend;
+import com.gamegoo.gamegoo_v2.social.friend.repository.FriendRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import org.springframework.data.domain.Slice;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -142,7 +143,8 @@ class FriendRepositoryTest extends RepositoryTestSupport {
             assertThat(friendSlice.hasNext()).isFalse();
             List<String> orderedGameName = Arrays.asList("가", "가가", "가a", "가aa", "가a1", "가1", "가10", "가2", "a", "123");
             for (int i = 0; i < orderedGameName.size(); i++) {
-                assertThat(friendSlice.getContent().get(i).getToMember().getGameName()).isEqualTo(orderedGameName.get(i));
+                assertThat(friendSlice.getContent().get(i).getToMember().getGameName()).isEqualTo(
+                        orderedGameName.get(i));
             }
         }
 
@@ -190,6 +192,36 @@ class FriendRepositoryTest extends RepositoryTestSupport {
             assertThat(friendList).hasSize(3);
         }
 
+    }
+
+    @DisplayName("친구 여부 배치 조회")
+    @Test
+    void isFriendBatch() {
+        // given
+        List<Long> targetMemberIds = new ArrayList<>();
+
+        // 친구 회원 9명 생성
+        List<Member> friendMembers = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            Member toMember = createMember("member" + i + "@gmail.com", "member" + i);
+            createFriend(member, toMember);
+            friendMembers.add(toMember);
+            targetMemberIds.add(toMember.getId());
+        }
+
+        // 친구가 아닌 회원 1명 생성
+        Member notFriend = createMember("member10@gmail.com", "member10");
+        targetMemberIds.add(notFriend.getId());
+
+        // when
+        Map<Long, Boolean> friendMap = friendRepository.isFriendBatch(member.getId(), targetMemberIds);
+
+        // then
+        assertThat(friendMap).hasSize(targetMemberIds.size());
+        for (Member friend : friendMembers) {
+            assertThat(friendMap.get(friend.getId())).isTrue();
+        }
+        assertThat(friendMap.get(notFriend.getId())).isFalse();
     }
 
     private Friend createFriend(Member fromMember, Member toMember) {

@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.social.friend.controller;
 
 import com.gamegoo.gamegoo_v2.account.auth.annotation.AuthMember;
+import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.core.common.ApiResponse;
 import com.gamegoo.gamegoo_v2.core.common.annotation.ValidCursor;
 import com.gamegoo.gamegoo_v2.social.friend.dto.DeleteFriendResponse;
@@ -9,7 +10,6 @@ import com.gamegoo.gamegoo_v2.social.friend.dto.FriendListResponse;
 import com.gamegoo.gamegoo_v2.social.friend.dto.FriendRequestResponse;
 import com.gamegoo.gamegoo_v2.social.friend.dto.StarFriendResponse;
 import com.gamegoo.gamegoo_v2.social.friend.service.FriendFacadeService;
-import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +29,7 @@ import java.util.List;
 @Tag(name = "Friend", description = "친구 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/friends")
+@RequestMapping("/api/v2/friend")
 @Validated
 public class FriendController {
 
@@ -47,7 +47,7 @@ public class FriendController {
     @Parameter(name = "memberId", description = "친구 요청을 수락할 대상 회원의 id 입니다.")
     @PatchMapping("/request/{memberId}/accept")
     public ApiResponse<FriendRequestResponse> acceptFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
-            @AuthMember Member member) {
+                                                                  @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.acceptFriendRequest(member, targetMemberId));
     }
 
@@ -55,7 +55,7 @@ public class FriendController {
     @Parameter(name = "memberId", description = "친구 요청을 거절할 대상 회원의 id 입니다.")
     @PatchMapping("/request/{memberId}/reject")
     public ApiResponse<FriendRequestResponse> rejectFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
-            @AuthMember Member member) {
+                                                                  @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.rejectFriendRequest(member, targetMemberId));
     }
 
@@ -63,7 +63,7 @@ public class FriendController {
     @Parameter(name = "memberId", description = "친구 요청을 취소할 대상 회원의 id 입니다.")
     @DeleteMapping("/request/{memberId}")
     public ApiResponse<FriendRequestResponse> cancelFriendRequest(@PathVariable(name = "memberId") Long targetMemberId,
-            @AuthMember Member member) {
+                                                                  @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.cancelFriendRequest(member, targetMemberId));
     }
 
@@ -71,7 +71,7 @@ public class FriendController {
     @Parameter(name = "memberId", description = "즐겨찾기 설정/해제할 친구 회원의 id 입니다.")
     @PatchMapping("/{memberId}/star")
     public ApiResponse<StarFriendResponse> reverseFriendLiked(@PathVariable(name = "memberId") Long friendMemberId,
-            @AuthMember Member member) {
+                                                              @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.reverseFriendLiked(member, friendMemberId));
     }
 
@@ -79,7 +79,7 @@ public class FriendController {
     @Parameter(name = "memberId", description = "삭제 처리할 친구 회원의 id 입니다.")
     @DeleteMapping("/{memberId}")
     public ApiResponse<DeleteFriendResponse> deleteFriend(@PathVariable(name = "memberId") Long targetMemberId,
-            @AuthMember Member member) {
+                                                          @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.deleteFriend(member, targetMemberId));
     }
 
@@ -103,7 +103,7 @@ public class FriendController {
     @Parameter(name = "query", description = "친구 목록 검색을 위한 소환사명 string으로, 100자 이하여야 합니다.")
     @GetMapping("/search")
     public ApiResponse<List<FriendInfoResponse>> searchFriend(@RequestParam(name = "query") String query,
-            @AuthMember Member member) {
+                                                              @AuthMember Member member) {
         return ApiResponse.ok(friendFacadeService.searchFriend(member, query));
     }
 

@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,8 +81,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -118,8 +118,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -148,8 +147,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "new message 3", chatroom, now.minusMinutes(5).plusSeconds(2));
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -179,8 +177,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createChatWithCreatedAt(member, "new message 3", chatroom, lastJoinDate.plusMinutes(3));
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -207,8 +204,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             Chat memberSystemChat = createSystemChat(member, chatroom, 0);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -228,8 +224,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             assertThat(chatSlice).isEmpty();
@@ -257,8 +252,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             }
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -288,8 +282,8 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             Long cursor = chatList.get(20).getTimestamp();
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(cursor, chatroom.getId(), member.getId(),
+                    PAGE_SIZE);
 
             // then
             List<Chat> chats = chatSlice.getContent();
@@ -310,8 +304,7 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // when
-            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), memberChatroom.getId(),
-                    member.getId(), PAGE_SIZE);
+            Slice<Chat> chatSlice = chatRepository.findChatsByCursor(null, chatroom.getId(), member.getId(), PAGE_SIZE);
 
             // then
             assertThat(chatSlice).isEmpty();
@@ -334,12 +327,12 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // 읽은 메시지 생성
-            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20));
-            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20).plusSeconds(1));
-            createChatWithCreatedAt(member, "old message", chatroom, now.minusMinutes(20).plusSeconds(2));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.minusMinutes(20));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.minusMinutes(20).plusSeconds(1));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.minusMinutes(20).plusSeconds(2));
 
             // when
-            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+            int result = chatRepository.countUnreadChats(chatroom.getId(), member.getId());
 
             // then
             assertThat(result).isEqualTo(0);
@@ -355,17 +348,50 @@ public class ChatRepositoryTest extends RepositoryTestSupport {
             createMemberChatroom(targetMember, chatroom);
 
             // 안읽은 메시지 생성
-            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20));
-            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20).plusSeconds(1));
-            createChatWithCreatedAt(member, "old message", chatroom, now.plusMinutes(20).plusSeconds(2));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.plusMinutes(20));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.plusMinutes(20).plusSeconds(1));
+            createChatWithCreatedAt(targetMember, "old message", chatroom, now.plusMinutes(20).plusSeconds(2));
 
             // when
-            int result = chatRepository.countUnreadChats(chatroom.getId(), memberChatroom.getId(), member.getId());
+            int result = chatRepository.countUnreadChats(chatroom.getId(), member.getId());
 
             // then
             assertThat(result).isEqualTo(3);
         }
 
+    }
+
+    @DisplayName("안읽은 메시지 개수 배치 조회")
+    @Test
+    void countUnreadChatsBatch() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastJoinDate = now.minusDays(1);
+
+        // chatroom1 및 메시지 생성
+        Chatroom chatroom1 = createChatroom();
+        createMemberChatroom(member, chatroom1, now, lastJoinDate);
+        createMemberChatroom(targetMember, chatroom1, now, lastJoinDate);
+
+        createChatWithCreatedAt(targetMember, "old message", chatroom1, now.plusMinutes(20));
+        createChatWithCreatedAt(targetMember, "old message", chatroom1, now.plusMinutes(20).plusSeconds(1));
+        createChatWithCreatedAt(targetMember, "old message", chatroom1, now.plusMinutes(20).plusSeconds(2));
+
+        // chatroom2 생성
+        Member targetMember2 = createMember("targetMember2@gmail.com", "targetMember2");
+        Chatroom chatroom2 = createChatroom();
+        createMemberChatroom(member, chatroom2);
+        createMemberChatroom(targetMember2, chatroom2);
+
+        List<Long> chatroomIds = List.of(chatroom1.getId(), chatroom2.getId());
+
+        // when
+        Map<Long, Integer> unreadCountMap = chatRepository.countUnreadChatsBatch(chatroomIds, member.getId());
+
+        // then
+        assertThat(unreadCountMap).hasSize(2);
+        assertThat(unreadCountMap.get(chatroom1.getId())).isEqualTo(3);
+        assertThat(unreadCountMap.get(chatroom2.getId())).isEqualTo(0);
     }
 
     private Chatroom createChatroom() {

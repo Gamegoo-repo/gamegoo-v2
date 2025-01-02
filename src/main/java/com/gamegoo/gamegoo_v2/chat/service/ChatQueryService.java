@@ -15,7 +15,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -50,8 +52,8 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.findRecentChats(chatroom.getId(), memberChatroom.getId(), member.getId(), PAGE_SIZE);
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.findRecentChats(chatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
     /**
@@ -77,6 +79,17 @@ public class ChatQueryService {
     }
 
     /**
+     * 모든 chatroom의 상대 회원을 반환하는 메소드
+     *
+     * @param member
+     * @param chatroomIds
+     * @return
+     */
+    public Map<Long, Member> getChatroomTargetMembersBatch(Member member, List<Long> chatroomIds) {
+        return memberChatroomRepository.findTargetMembersBatch(chatroomIds, member.getId());
+    }
+
+    /**
      * 해당 chatroom의 메시지 내역 slice 객체를 반환하는 메소드
      *
      * @param member
@@ -85,9 +98,8 @@ public class ChatQueryService {
      * @return
      */
     public Slice<Chat> getChatSliceByCursor(Member member, Chatroom chatroom, Long cursor) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.findChatsByCursor(cursor, chatroom.getId(), memberChatroom.getId(), member.getId(),
-                PAGE_SIZE);
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.findChatsByCursor(cursor, chatroom.getId(), member.getId(), PAGE_SIZE);
     }
 
     /**
@@ -101,6 +113,16 @@ public class ChatQueryService {
     }
 
     /**
+     * 회원이 입장한 상태인 모든 memberChatroom list 반환하는 메소드
+     *
+     * @param member
+     * @return
+     */
+    public List<MemberChatroom> getActiveMemberChatrooms(Member member) {
+        return memberChatroomRepository.findAllActiveMemberChatroomByMemberId(member.getId());
+    }
+
+    /**
      * 해당 채팅방의 안읽은 메시지 개수를 반환하는 메소드
      *
      * @param member
@@ -108,8 +130,19 @@ public class ChatQueryService {
      * @return
      */
     public int countUnreadChats(Member member, Chatroom chatroom) {
-        MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
-        return chatRepository.countUnreadChats(member.getId(), memberChatroom.getId(), chatroom.getId());
+        chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
+        return chatRepository.countUnreadChats(member.getId(), chatroom.getId());
+    }
+
+    /**
+     * 모든 채팅방의 안읽은 메시지 개수를 반환하는 메소드
+     *
+     * @param member
+     * @param chatroomIds
+     * @return
+     */
+    public Map<Long, Integer> countUnreadChatsBatch(Member member, List<Long> chatroomIds) {
+        return chatRepository.countUnreadChatsBatch(chatroomIds, member.getId());
     }
 
     /**
@@ -122,6 +155,23 @@ public class ChatQueryService {
     public Chat getChatByChatroomAndTimestamp(Chatroom chatroom, Long timestamp) {
         return chatRepository.findByChatroomAndTimestamp(chatroom, timestamp).orElseThrow(
                 () -> new ChatException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+    }
+
+    /**
+     * id로 chat 엔티티 배치 조회 메소드
+     *
+     * @param chatIds
+     * @return
+     */
+    public Map<Long, Chat> findAllChatsBatch(List<Long> chatIds) {
+        List<Chat> chats = chatRepository.findAllById(chatIds);
+
+        Map<Long, Chat> chatMap = new HashMap<>();
+        for (Chat chat : chats) {
+            chatMap.put(chat.getChatroom().getId(), chat);
+        }
+
+        return chatMap;
     }
 
 }
