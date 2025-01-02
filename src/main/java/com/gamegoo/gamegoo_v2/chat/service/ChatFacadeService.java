@@ -63,9 +63,9 @@ public class ChatFacadeService {
      * 대상 회원과 채팅 시작 Facade 메소드
      * 기존에 채팅방이 있는 경우 채팅방 입장 처리, 기존에 채팅방이 없는 경우 새로운 채팅방 생성
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return EnterChatroomResponse
      */
     @Transactional
     public EnterChatroomResponse startChatroomByMemberId(Member member, Long targetMemberId) {
@@ -112,9 +112,9 @@ public class ChatFacadeService {
      * 게시글을 통한 채팅 시작 Facade 메소드
      * 기존에 채팅방이 있는 경우 채팅방 입장 처리, 기존에 채팅방이 없는 경우 새로운 채팅방 생성
      *
-     * @param member
-     * @param boardId
-     * @return
+     * @param member  회원
+     * @param boardId 게시글 id
+     * @return EnterChatroomResponse
      */
     @Transactional
     public EnterChatroomResponse startChatroomByBoardId(Member member, Long boardId) {
@@ -153,9 +153,9 @@ public class ChatFacadeService {
     /**
      * uuid에 해당하는 채팅방에 입장 처리 Facade 메소드
      *
-     * @param member
-     * @param uuid
-     * @return
+     * @param member 회원
+     * @param uuid   채팅방 uuid
+     * @return EnterChatroomResponse
      */
     @Transactional
     public EnterChatroomResponse enterChatroomByUuid(Member member, String uuid) {
@@ -185,10 +185,10 @@ public class ChatFacadeService {
     /**
      * uuid에 해당하는 채팅방에 새로운 채팅 등록 Facade 메소드
      *
-     * @param request
-     * @param member
-     * @param uuid
-     * @return
+     * @param request 채팅 등록 요청
+     * @param member  회원
+     * @param uuid    채팅방 uuid
+     * @return ChatCreateResponse
      */
     @Transactional
     public ChatCreateResponse createChat(ChatCreateRequest request, Member member, String uuid) {
@@ -240,14 +240,14 @@ public class ChatFacadeService {
     /**
      * 해당 채팅방의 대화 내역을 cursor 기반 페이징 조회 Facade 메소드
      *
-     * @param member
-     * @param chatroomUuid
-     * @param cursor
-     * @return
+     * @param member 회원
+     * @param uuid   채팅방 uuid
+     * @param cursor 채팅 timestamp
+     * @return ChatMessageListResponse
      */
-    public ChatMessageListResponse getChatMessagesByCursor(Member member, String chatroomUuid, Long cursor) {
+    public ChatMessageListResponse getChatMessagesByCursor(Member member, String uuid, Long cursor) {
         // chatroom 엔티티 조회
-        Chatroom chatroom = chatQueryService.getChatroomByUuid(chatroomUuid);
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
 
         // 해당 채팅방이 회원의 것이 맞는지 검증
         chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
@@ -267,8 +267,8 @@ public class ChatFacadeService {
     /**
      * 해당 회원의 안읽은 메시지가 존재하는 채팅방 uuid 목록 조회 Facade 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 채팅방 uuid list
      */
     public List<String> getUnreadChatroomUuids(Member member) {
         // 입장 상태인 모든 chatroom 조회
@@ -288,15 +288,15 @@ public class ChatFacadeService {
     /**
      * 해당 채팅방 메시지 읽음 처리 Facade 메소드
      *
-     * @param member
-     * @param chatroomUuid
-     * @param timestamp
-     * @return
+     * @param member    회원
+     * @param uuid      채팅방 uuid
+     * @param timestamp 채팅 timestamp
+     * @return 처리 결과
      */
     @Transactional
-    public String readChatMessage(Member member, String chatroomUuid, Long timestamp) {
+    public String readChatMessage(Member member, String uuid, Long timestamp) {
         // chatroom 엔티티 조회
-        Chatroom chatroom = chatQueryService.getChatroomByUuid(chatroomUuid);
+        Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
 
         // 해당 채팅방이 회원의 것이 맞는지 검증
         MemberChatroom memberChatroom = chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
@@ -320,9 +320,9 @@ public class ChatFacadeService {
     /**
      * 해당 채팅방을 퇴장 처리 Facade 메소드
      *
-     * @param member
-     * @param uuid
-     * @return
+     * @param member 회원
+     * @param uuid   채팅방 uuid
+     * @return 처리 결과
      */
     @Transactional
     public String exitChatroom(Member member, String uuid) {
@@ -341,8 +341,8 @@ public class ChatFacadeService {
     /**
      * 해당 회원의 입장 상태인 전체 채팅방 목록 조회
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return ChatroomListResponse
      */
     public ChatroomListResponse getChatrooms(Member member) {
         // 입장 상태인 모든 memberChatroom 엔티티 정렬해 조회
@@ -401,6 +401,12 @@ public class ChatFacadeService {
         return chatResponseFactory.toChatroomListResponse(chatroomResponses);
     }
 
+    /**
+     * systemFlag 값 반환 메소드
+     *
+     * @param memberChatroom 회원-채팅방
+     * @return systemFlag
+     */
     private int getSystemFlag(MemberChatroom memberChatroom) {
         if (memberChatroom.exited()) {
             return SystemMessageType.INITIATE_CHATROOM_BY_BOARD_MESSAGE.getCode();
