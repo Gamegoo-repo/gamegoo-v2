@@ -85,7 +85,8 @@ public class AuthFacadeServiceTest {
             assertThat(response.getName()).isEqualTo(member.getGameName());
             assertThat(response.getProfileImage()).isEqualTo(member.getProfileImage());
 
-            refreshTokenRepository.findByMember(member).ifPresent(refreshToken -> assertThat(refreshToken.getRefreshToken()).isEqualTo(response.getRefreshToken()));
+            RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElseThrow();
+            assertThat(refreshToken.getRefreshToken()).isEqualTo(response.getRefreshToken());
         }
 
         @DisplayName("로그인 실패 : 없는 사용자일 경우")
