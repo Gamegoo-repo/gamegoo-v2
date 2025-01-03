@@ -2,7 +2,9 @@ package com.gamegoo.gamegoo_v2.integration.auth;
 
 import com.gamegoo.gamegoo_v2.account.auth.domain.RefreshToken;
 import com.gamegoo.gamegoo_v2.account.auth.dto.request.LoginRequest;
+import com.gamegoo.gamegoo_v2.account.auth.dto.request.RefreshTokenRequest;
 import com.gamegoo.gamegoo_v2.account.auth.dto.response.LoginResponse;
+import com.gamegoo.gamegoo_v2.account.auth.dto.response.RefreshTokenResponse;
 import com.gamegoo.gamegoo_v2.account.auth.jwt.JwtProvider;
 import com.gamegoo.gamegoo_v2.account.auth.repository.RefreshTokenRepository;
 import com.gamegoo.gamegoo_v2.account.auth.service.AuthFacadeService;
@@ -10,6 +12,7 @@ import com.gamegoo.gamegoo_v2.account.member.domain.LoginType;
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
 import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.account.member.repository.MemberRepository;
+import com.gamegoo.gamegoo_v2.core.exception.JwtAuthException;
 import com.gamegoo.gamegoo_v2.core.exception.MemberException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import com.gamegoo.gamegoo_v2.utils.PasswordUtil;
@@ -21,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -45,6 +50,7 @@ public class AuthFacadeServiceTest {
     private static final String PASSWORD = "password";
     private static final String INVALID_PASSWORD = "invalidpassword";
     private static final String GAMENAME = "test1";
+    private static final String INVALID_REFRESH_TOKEN = "invalidrefreshtoken";
 
     @Autowired
     private AuthFacadeService authFacadeService;
@@ -139,6 +145,58 @@ public class AuthFacadeServiceTest {
         // then
         assertThat(response).isNotNull();
         assertThat(refreshTokenRepository.findByMember(member).isPresent()).isFalse();
+    }
+
+    @Nested
+    @DisplayName("리프레시 토큰 테스트")
+    class RefreshTokenTest {
+        @DisplayName("리프레시 토큰으로 다른 토큰 업데이트 성공")
+        @Test
+        void updateToken() {
+            // given
+            String token = jwtProvider.createRefreshToken(member.getId());
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .refreshToken(token)
+                    .member(member)
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+
+            RefreshTokenRequest refreshTokenRequest = RefreshTokenRequest.builder().refreshToken(token).build();
+
+            // when
+            RefreshTokenResponse refreshTokenResponse = authFacadeService.updateToken(refreshTokenRequest);
+
+            // then
+            Optional<RefreshToken> result = refreshTokenRepository.findByMember(member);
+            assertThat(result).isPresent();
+            assertThat(result.get().getRefreshToken()).isEqualTo(refreshTokenRequest.getRefreshToken());
+
+            Long jwtId = jwtProvider.getMemberId(refreshTokenResponse.getAccessToken());
+            Long memberId = member.getId();
+            assertThat(jwtId).isEqualTo(memberId);
+
+            Long responseId = refreshTokenResponse.getId();
+            assertThat(responseId).isEqualTo(memberId);
+        }
+
+        @DisplayName("리프레시 토큰으로 업데이트 실패 : 리프레시 토큰이 올바르지 못할 경우")
+        @Test
+        void updateTokenWithInvalidRefreshToken() {
+            // given
+            String token = jwtProvider.createRefreshToken(member.getId());
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .refreshToken(token)
+                    .member(member)
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+
+            RefreshTokenRequest refreshTokenRequest = RefreshTokenRequest.builder().refreshToken(INVALID_REFRESH_TOKEN).build();
+
+            // when
+            assertThatThrownBy(()->authFacadeService.updateToken(refreshTokenRequest))
+                    .isInstanceOf(JwtAuthException.class)
+                    .hasMessage(ErrorCode.INVALID_REFRESH_TOKEN.getMessage());
+        }
     }
 
     private Member createMember(String email, String gameName, String password) {
