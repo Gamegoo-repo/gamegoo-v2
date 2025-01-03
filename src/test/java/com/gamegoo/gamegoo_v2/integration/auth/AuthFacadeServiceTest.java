@@ -168,7 +168,7 @@ public class AuthFacadeServiceTest {
 
             // then
             Optional<RefreshToken> result = refreshTokenRepository.findByMember(member);
-            assertThat(result.isEmpty()).isFalse();
+            assertThat(result).isPresent();
             assertThat(result.get().getRefreshToken()).isEqualTo(refreshTokenRequest.getRefreshToken());
 
             Long jwtId = jwtProvider.getMemberId(refreshTokenResponse.getAccessToken());
