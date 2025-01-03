@@ -148,27 +148,28 @@ public class AuthFacadeServiceTest {
     }
 
     @Nested
-    @DisplayName("리프레쉬 토큰 테스트")
+    @DisplayName("리프레시 토큰 테스트")
     class RefreshTokenTest {
         @DisplayName("리프레시 토큰으로 다른 토큰 업데이트 성공")
         @Test
         void updateToken() {
             // given
-            LoginRequest loginRequest = LoginRequest.builder()
-                    .email(EMAIL)
-                    .password(PASSWORD)
+            String token = jwtProvider.createRefreshToken(member.getId());
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .refreshToken(token)
+                    .member(member)
                     .build();
-            LoginResponse loginResponse = authFacadeService.login(loginRequest);
+            refreshTokenRepository.save(refreshToken);
 
-            RefreshTokenRequest refreshTokenRequest = RefreshTokenRequest.builder().refreshToken(loginResponse.getRefreshToken()).build();
+            RefreshTokenRequest refreshTokenRequest = RefreshTokenRequest.builder().refreshToken(token).build();
 
             // when
             RefreshTokenResponse refreshTokenResponse = authFacadeService.updateToken(refreshTokenRequest);
 
             // then
-            Optional<RefreshToken> refreshToken = refreshTokenRepository.findByMember(member);
-            assertThat(refreshToken.isEmpty()).isFalse();
-            assertThat(refreshToken.get().getRefreshToken()).isEqualTo(refreshTokenRequest.getRefreshToken());
+            Optional<RefreshToken> result = refreshTokenRepository.findByMember(member);
+            assertThat(result.isEmpty()).isFalse();
+            assertThat(result.get().getRefreshToken()).isEqualTo(refreshTokenRequest.getRefreshToken());
 
             Long jwtId = jwtProvider.getMemberId(refreshTokenResponse.getAccessToken());
             Long memberId = member.getId();
@@ -182,11 +183,12 @@ public class AuthFacadeServiceTest {
         @Test
         void updateTokenWithInvalidRefreshToken() {
             // given
-            LoginRequest loginRequest = LoginRequest.builder()
-                    .email(EMAIL)
-                    .password(PASSWORD)
+            String token = jwtProvider.createRefreshToken(member.getId());
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .refreshToken(token)
+                    .member(member)
                     .build();
-            authFacadeService.login(loginRequest);
+            refreshTokenRepository.save(refreshToken);
 
             RefreshTokenRequest refreshTokenRequest = RefreshTokenRequest.builder().refreshToken(INVALID_REFRESH_TOKEN).build();
 
