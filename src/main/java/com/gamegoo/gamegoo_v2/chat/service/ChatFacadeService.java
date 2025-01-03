@@ -185,13 +185,16 @@ public class ChatFacadeService {
     /**
      * uuid에 해당하는 채팅방에 새로운 채팅 등록 Facade 메소드
      *
-     * @param request 채팅 등록 요청
-     * @param member  회원
-     * @param uuid    채팅방 uuid
+     * @param request  채팅 등록 요청
+     * @param memberId 회원 id
+     * @param uuid     채팅방 uuid
      * @return ChatCreateResponse
      */
     @Transactional
-    public ChatCreateResponse createChat(ChatCreateRequest request, Member member, String uuid) {
+    public ChatCreateResponse createChat(ChatCreateRequest request, Long memberId, String uuid) {
+        // member 엔티티 조회
+        Member member = memberService.findMemberById(memberId);
+
         // chatroom 엔티티 조회
         Chatroom chatroom = chatQueryService.getChatroomByUuid(uuid);
 
