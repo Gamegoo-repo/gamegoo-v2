@@ -1,5 +1,7 @@
 package com.gamegoo.gamegoo_v2.controller.internal;
 
+import com.gamegoo.gamegoo_v2.chat.controller.ChatInternalController;
+import com.gamegoo.gamegoo_v2.chat.service.ChatFacadeService;
 import com.gamegoo.gamegoo_v2.controller.ControllerTestSupport;
 import com.gamegoo.gamegoo_v2.social.friend.controller.FriendInternalController;
 import com.gamegoo.gamegoo_v2.social.friend.service.FriendFacadeService;
@@ -17,11 +19,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({FriendInternalController.class})
+@WebMvcTest({FriendInternalController.class, ChatInternalController.class})
 public class InternalControllerTest extends ControllerTestSupport {
 
     @MockitoBean
     private FriendFacadeService friendFacadeService;
+
+    @MockitoBean
+    private ChatFacadeService chatFacadeService;
 
     private static final String API_URL_PREFIX = "/api/v2/internal";
     private static final Long MEMBER_ID = 1L;
@@ -36,6 +41,21 @@ public class InternalControllerTest extends ControllerTestSupport {
 
         // when // then
         mockMvc.perform(get(API_URL_PREFIX + "/{memberId}/friend/ids", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @DisplayName("모든 채팅방 uuid 조회 성공")
+    @Test
+    void getChatroomUuidSucceeds() throws Exception {
+        // given
+        List<String> response = new ArrayList<>();
+
+        given(chatFacadeService.getChatroomUuids(any(Long.class))).willReturn(response);
+
+        // when // then
+        mockMvc.perform(get(API_URL_PREFIX + "/{memberId}/chatroom/uuid", MEMBER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").isArray());

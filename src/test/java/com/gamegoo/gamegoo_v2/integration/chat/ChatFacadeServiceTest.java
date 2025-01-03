@@ -173,7 +173,7 @@ class ChatFacadeServiceTest {
             // then
             // lastViewDate 업데이트 검증
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
 
             // response 검증
@@ -193,9 +193,9 @@ class ChatFacadeServiceTest {
             // then
             // 생성된 엔티티 검증
             Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId())
-                    .get();
+                    .orElseThrow();
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
 
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
             assertThat(memberChatroom.getLastJoinDate()).isNull();
@@ -330,7 +330,7 @@ class ChatFacadeServiceTest {
             // then
             // lastViewDate 업데이트 검증
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
 
             // response 검증
@@ -356,7 +356,7 @@ class ChatFacadeServiceTest {
             // then
             // lastViewDate 업데이트 검증
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
 
             // response 검증
@@ -379,9 +379,9 @@ class ChatFacadeServiceTest {
             // then
             // lastViewDate 업데이트 검증
             Chatroom chatroom = chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId())
-                    .get();
+                    .orElseThrow();
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
 
             // response 검증
@@ -453,7 +453,7 @@ class ChatFacadeServiceTest {
             // then
             // lastViewDate 업데이트 검증
             MemberChatroom memberChatroom = memberChatroomRepository.findByMemberIdAndChatroomId(member.getId(),
-                    chatroom.getId()).get();
+                    chatroom.getId()).orElseThrow();
             assertThat(memberChatroom.getLastViewDate()).isAfter(now);
 
             // response 검증
@@ -1014,6 +1014,53 @@ class ChatFacadeServiceTest {
             assertThat(chatroomResponse3.getLastMsgTimestamp()).isEqualTo(chat1.getTimestamp());
             assertThat(chatroomResponse3.getNotReadMsgCnt()).isEqualTo(1);
             assertThat(chatroomResponse3.isFriend()).isTrue();
+        }
+
+    }
+
+    @Nested
+    @DisplayName("모든 채팅방 uuid 조회")
+    class GetChatroomUuidsTest {
+
+        @DisplayName("성공: 회원의 채팅방이 없는 경우 빈 리스트를 반환한다.")
+        @Test
+        void getChatroomUuidsSucceedsWhenNoChatroom() {
+            // when
+            List<String> chatroomUuids = chatFacadeService.getChatroomUuids(member.getId());
+
+            // then
+            assertThat(chatroomUuids).isEmpty();
+        }
+
+        @DisplayName("성공: 채팅방 uuid 리스트를 반환한다.")
+        @Test
+        void getChatroomUuidsSucceeds() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+
+            // targetMember1 생성
+            Member targetMember1 = createMember("targetMember1@gmail.com", "targetMember1");
+            Chatroom chatroom1 = createChatroom();
+            createMemberChatroom(targetMember1, chatroom1, now, now);
+            createMemberChatroom(member, chatroom1, now, now);
+
+            // targetMember2 생성
+            Member targetMember2 = createMember("targetmember2@gmail.com", "targetMember2");
+            Chatroom chatroom2 = createChatroom();
+            createMemberChatroom(member, chatroom2, now, now);
+            createMemberChatroom(targetMember2, chatroom2, now, now);
+
+            // targetMember3 생성
+            Member targetMember3 = createMember("targetmember3@gmail.com", "targetMember3");
+            Chatroom chatroom3 = createChatroom();
+            createMemberChatroom(member, chatroom3, null, null);
+            createMemberChatroom(targetMember3, chatroom3, null, null);
+
+            // when
+            List<String> chatroomUuids = chatFacadeService.getChatroomUuids(member.getId());
+
+            // then
+            assertThat(chatroomUuids).hasSize(2);
         }
 
     }
