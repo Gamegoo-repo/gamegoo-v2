@@ -1,12 +1,15 @@
 package com.gamegoo.gamegoo_v2.content.board.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.account.member.domain.Tier;
 import com.gamegoo.gamegoo_v2.content.board.domain.Board;
 import com.gamegoo.gamegoo_v2.content.board.dto.request.BoardInsertRequest;
 import com.gamegoo.gamegoo_v2.content.board.repository.BoardRepository;
 import com.gamegoo.gamegoo_v2.core.exception.BoardException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    public static final int PAGE_SIZE = 20;
 
     /**
      * 게시글 엔티티 생성 및 저장
@@ -38,6 +42,14 @@ public class BoardService {
         );
         return boardRepository.save(board);
     }
+
+    /**
+     * 게시글 목록 조회
+     */
+    public Page<Board> findBoards(Integer mode, Tier tier, Integer mainPosition, Boolean mike, Pageable pageable) {
+        return boardRepository.findByFilters(mode, tier, mainPosition, mike, pageable);
+    }
+
 
     /**
      * 게시글 엔티티 조회
