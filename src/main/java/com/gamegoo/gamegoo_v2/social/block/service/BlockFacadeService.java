@@ -23,8 +23,9 @@ public class BlockFacadeService {
     /**
      * 회원 차단 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return BlockResponse
      */
     @Transactional
     public BlockResponse blockMember(Member member, Long targetMemberId) {
@@ -47,9 +48,9 @@ public class BlockFacadeService {
     /**
      * 차단한 회원 목록 조회 메소드
      *
-     * @param member
-     * @param pageIdx
-     * @return
+     * @param member  회원
+     * @param pageIdx 페이지 번호
+     * @return BlockListResponse
      */
     public BlockListResponse getBlockList(Member member, Integer pageIdx) {
         Page<Member> members = blockService.getBlockedMemberPage(member.getId(), pageIdx);
@@ -60,8 +61,9 @@ public class BlockFacadeService {
     /**
      * 회원 차단 해제 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return BlockResponse
      */
     @Transactional
     public BlockResponse unBlockMember(Member member, Long targetMemberId) {
@@ -72,10 +74,11 @@ public class BlockFacadeService {
     }
 
     /**
-     * targetMember가 탈퇴한 회원인 경우 member의 차단 목록에서 targetMember 삭제 Facade 메소드
+     * 상대가 탈퇴한 회원인 경우 회원의 차단 목록에서 상대 회원 삭제 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return BlockResponse
      */
     @Transactional
     public BlockResponse deleteBlock(Member member, Long targetMemberId) {

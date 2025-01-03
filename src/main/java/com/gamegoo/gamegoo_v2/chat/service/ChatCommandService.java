@@ -42,12 +42,12 @@ public class ChatCommandService {
 
 
     /**
-     * member를 해당 chatroom에 입장 처리하는 메소드
+     * 회원을 채팅방에 입장 처리하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @param chatroom
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @param chatroom     채팅방
+     * @return MemberChatroom
      */
     public MemberChatroom enterExistingChatroom(Member member, Member targetMember, Chatroom chatroom) {
         MemberChatroom memberChatroom = memberChatroomRepository
@@ -72,11 +72,11 @@ public class ChatCommandService {
     }
 
     /**
-     * member와 targetMember 사이 새로운 chatroom 생성 및 저장하는 메소드
+     * 회원과 상대 회원 사이 새로운 채팅방 생성 및 저장하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return Chatroom
      */
     public Chatroom createChatroom(Member member, Member targetMember) {
         Chatroom chatroom = Chatroom.create(UUID.randomUUID().toString());
@@ -90,12 +90,12 @@ public class ChatCommandService {
     }
 
     /**
-     * 회원 메시지 생성 및 저장 메소드
+     * 회원 채팅 메시지 생성 및 저장 메소드
      *
-     * @param member
-     * @param chatroom
-     * @param content
-     * @return
+     * @param member   회원
+     * @param chatroom 채팅방
+     * @param content  메시지 내용
+     * @return Chat
      */
     public Chat createMemberChat(Member member, Chatroom chatroom, String content) {
         return chatRepository.save(Chat.create(content, null, chatroom, member, null, null));
@@ -104,10 +104,10 @@ public class ChatCommandService {
     /**
      * 시스템 메시지 생성 및 저장 메소드
      *
-     * @param request
-     * @param member
-     * @param targetMember
-     * @param chatroom
+     * @param request      systemFlag 요청
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @param chatroom     채팅방
      */
     public List<Chat> createSystemChat(SystemFlagRequest request, Member member, Member targetMember,
                                        Chatroom chatroom) {
@@ -128,12 +128,12 @@ public class ChatCommandService {
     }
 
     /**
-     * member의 lastViewDate 업데이트 메소드
+     * 회원의 lastViewDate 업데이트 메소드
      *
-     * @param member
-     * @param chatroom
-     * @param lastViewDate
-     * @return
+     * @param member       회원
+     * @param chatroom     채팅방
+     * @param lastViewDate lastViewDate
+     * @return MemberChatroom
      */
     public MemberChatroom updateLastViewDate(Member member, Chatroom chatroom, LocalDateTime lastViewDate) {
         MemberChatroom memberChatroom = memberChatroomRepository
@@ -146,16 +146,16 @@ public class ChatCommandService {
     }
 
     /**
-     * member와 targetMember의 lastJoinDate 업데이트 및 socket join 이벤트 발생
+     * 회원과 상대 회원의 lastJoinDate 업데이트 및 socket join 이벤트 발생
      *
-     * @param member
-     * @param targetMember
-     * @param memberCreatedAt
-     * @param targetCreatedAt
-     * @param chatroom
+     * @param member         회원
+     * @param targetMember   상대 회원
+     * @param memberUpdateTo 회원의 lastJoinDate 업데이트 값
+     * @param targetUpdateTo 상대 회원의 lastJoinDate 업데이트 값
+     * @param chatroom       채팅방
      */
-    public void updateLastJoinDates(Member member, Member targetMember, LocalDateTime memberCreatedAt,
-                                    LocalDateTime targetCreatedAt, Chatroom chatroom) {
+    public void updateLastJoinDates(Member member, Member targetMember, LocalDateTime memberUpdateTo,
+                                    LocalDateTime targetUpdateTo, Chatroom chatroom) {
         MemberChatroom memberChatroom = memberChatroomRepository
                 .findByMemberIdAndChatroomId(member.getId(), chatroom.getId())
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
@@ -164,16 +164,16 @@ public class ChatCommandService {
                 .findByMemberIdAndChatroomId(targetMember.getId(), chatroom.getId())
                 .orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_ACCESS_DENIED));
 
-        updateLastJoinDate(member, memberChatroom, memberCreatedAt);
-        updateLastJoinDate(targetMember, targetMemberChatroom, targetCreatedAt);
+        updateLastJoinDate(member, memberChatroom, memberUpdateTo);
+        updateLastJoinDate(targetMember, targetMemberChatroom, targetUpdateTo);
     }
 
     /**
-     * 새로운 채팅 등록 시 member의 lastViewDate, member와 targetMember의 lastJoinDate 업데이트
+     * 새로운 채팅 등록 시 member의 lastViewDate, 회원과 상대 회원의 lastJoinDate 업데이트
      *
-     * @param member
-     * @param targetMember
-     * @param chat
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @param chat         채팅
      */
     public void updateMemberChatroomDatesByAddChat(Member member, Member targetMember, Chat chat) {
         // member의 lastViewDate 업데이트
@@ -197,9 +197,9 @@ public class ChatCommandService {
     /**
      * 해당 회원 및 채팅방에 대한 MemberChatroom 엔티티 생성 및 저장
      *
-     * @param member
-     * @param chatroom
-     * @param lastJoinDate
+     * @param member       회원
+     * @param chatroom     채팅방
+     * @param lastJoinDate lastJoinDate
      */
     private void createAndSaveMemberChatroom(Member member, Chatroom chatroom, LocalDateTime lastJoinDate) {
         memberChatroomRepository.save(MemberChatroom.create(member, chatroom, lastJoinDate));
@@ -208,11 +208,11 @@ public class ChatCommandService {
     /**
      * 시스템 메시지 생성 및 저장
      *
-     * @param chatroom
-     * @param toMember
-     * @param content
-     * @param sourceBoard
-     * @return
+     * @param chatroom    채팅방
+     * @param toMember    시스템 메시지 대상 회원
+     * @param content     메시지 내용
+     * @param sourceBoard 메시지 관련 게시글
+     * @return Chat
      */
     private Chat createAndSaveSystemChat(Chatroom chatroom, Member toMember, String content, Board sourceBoard,
                                          int systemType) {
@@ -226,9 +226,9 @@ public class ChatCommandService {
      * lastJoinDate 업데이트 메소드
      * 기존 lastJoinDate가 null인 경우 socket join 이벤트 발생
      *
-     * @param member
-     * @param memberChatroom
-     * @param date
+     * @param member         회원
+     * @param memberChatroom 회원-채팅방
+     * @param date           업데이트할 lastJoinDate 값
      */
     public void updateLastJoinDate(Member member, MemberChatroom memberChatroom, LocalDateTime date) {
         if (memberChatroom.getLastJoinDate() == null && date != null) {
@@ -246,8 +246,8 @@ public class ChatCommandService {
     /**
      * chatroom 엔티티의 lastChatId와 lastChatAt 업데이트 메소드
      *
-     * @param chat
-     * @param chatroom
+     * @param chat     채팅
+     * @param chatroom 채팅방
      */
     public void updateLastChat(Chat chat, Chatroom chatroom) {
         chatroom.updateLastChatId(chat.getId());

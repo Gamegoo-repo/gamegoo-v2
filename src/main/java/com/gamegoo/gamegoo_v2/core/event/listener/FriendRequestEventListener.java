@@ -24,7 +24,7 @@ public class FriendRequestEventListener {
     /**
      * 친구 요청 전송 event listener
      *
-     * @param event
+     * @param event event
      */
     @Async
     @Transactional
@@ -47,7 +47,7 @@ public class FriendRequestEventListener {
     /**
      * 친구 요청 수락 event listener
      *
-     * @param event
+     * @param event event
      */
     @Async
     @Transactional
@@ -67,7 +67,7 @@ public class FriendRequestEventListener {
     /**
      * 친구 요청 거절 event listener
      *
-     * @param event
+     * @param event event
      */
     @Async
     @Transactional

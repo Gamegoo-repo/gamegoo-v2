@@ -16,7 +16,7 @@ public class SocketEventListener {
     /**
      * socket 서버로 join API 요청 event listener
      *
-     * @param event
+     * @param event event
      */
     @Async
     @EventListener

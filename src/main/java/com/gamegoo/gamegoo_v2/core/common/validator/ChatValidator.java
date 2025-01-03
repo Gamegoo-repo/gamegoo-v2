@@ -15,10 +15,11 @@ public class ChatValidator extends BaseValidator {
     private final MemberChatroomRepository memberChatroomRepository;
 
     /**
-     * 해당 chatroom이 member의 것이 맞는지 검증
+     * 해당 채팅방이 회원의 것이 맞는지 검증
      *
-     * @param memberId
-     * @param ChatroomId
+     * @param memberId   회원 id
+     * @param ChatroomId 채팅방 id
+     * @return MemberChatroom
      */
     public MemberChatroom validateMemberChatroom(Long memberId, Long ChatroomId) {
         return memberChatroomRepository.findByMemberIdAndChatroomId(memberId, ChatroomId)
@@ -28,10 +29,9 @@ public class ChatValidator extends BaseValidator {
     /**
      * 해당 채팅방을 나간 상태인 경우 입력받은 Exception을 발생시키는 메소드
      *
-     * @param memberChatroom
-     * @param exceptionClass
-     * @param errorCode
-     * @param <T>
+     * @param memberChatroom 회원-채팅방
+     * @param exceptionClass 예외 클래스
+     * @param errorCode      에러 코드
      */
     public <T extends GlobalException> void throwIfExited(MemberChatroom memberChatroom, Class<T> exceptionClass,
                                                           ErrorCode errorCode) {

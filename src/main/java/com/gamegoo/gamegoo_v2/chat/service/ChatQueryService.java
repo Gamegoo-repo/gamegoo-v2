@@ -34,11 +34,11 @@ public class ChatQueryService {
 
 
     /**
-     * 두 회원 사이에 존재하는 chatroom을 반환하는 메소드
+     * 두 회원 사이에 존재하는 채팅방을 반환하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return 채팅방 Optional 객체
      */
     public Optional<Chatroom> findExistingChatroom(Member member, Member targetMember) {
         return chatroomRepository.findChatroomByMemberIds(member.getId(), targetMember.getId());
@@ -47,9 +47,9 @@ public class ChatQueryService {
     /**
      * 최근 메시지 내역 slice 객체를 반환하는 메소드
      *
-     * @param member
-     * @param chatroom
-     * @return
+     * @param member   회원
+     * @param chatroom 채팅방
+     * @return 채팅 Slice 객체
      */
     public Slice<Chat> getRecentChatSlice(Member member, Chatroom chatroom) {
         chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
@@ -57,21 +57,21 @@ public class ChatQueryService {
     }
 
     /**
-     * uuid에 해당하는 chatroom을 반환하는 메소드
+     * uuid에 해당하는 채팅방을 반환하는 메소드
      *
-     * @param uuid
-     * @return
+     * @param uuid 채팅방 uuid
+     * @return Chatroom
      */
     public Chatroom getChatroomByUuid(String uuid) {
         return chatroomRepository.findByUuid(uuid).orElseThrow(() -> new ChatException(ErrorCode.CHATROOM_NOT_FOUND));
     }
 
     /**
-     * 해당 chatrooom의 상대 회원을 반환하는 메소드
+     * 해당 채팅방의 상대 회원을 반환하는 메소드
      *
-     * @param member
-     * @param chatroom
-     * @return
+     * @param member   회원
+     * @param chatroom 채팅방
+     * @return Member
      */
     public Member getChatroomTargetMember(Member member, Chatroom chatroom) {
         return memberChatroomRepository.findTargetMemberByChatroomIdAndMemberId(chatroom.getId(), member.getId())
@@ -79,23 +79,23 @@ public class ChatQueryService {
     }
 
     /**
-     * 모든 chatroom의 상대 회원을 반환하는 메소드
+     * 채팅방 각각에 대한 상대 회원을 반환하는 메소드
      *
-     * @param member
-     * @param chatroomIds
-     * @return
+     * @param member      회원
+     * @param chatroomIds 채팅방 id list
+     * @return Map<채팅방 id, 상대 회원 객체>
      */
     public Map<Long, Member> getChatroomTargetMembersBatch(Member member, List<Long> chatroomIds) {
         return memberChatroomRepository.findTargetMembersBatch(chatroomIds, member.getId());
     }
 
     /**
-     * 해당 chatroom의 메시지 내역 slice 객체를 반환하는 메소드
+     * 해당 채팅방의 메시지 내역 slice 객체를 반환하는 메소드
      *
-     * @param member
-     * @param chatroom
-     * @param cursor
-     * @return
+     * @param member   회원
+     * @param chatroom 채팅방
+     * @param cursor   채팅 timestamp
+     * @return 채팅 Slice 객체
      */
     public Slice<Chat> getChatSliceByCursor(Member member, Chatroom chatroom, Long cursor) {
         chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
@@ -103,10 +103,10 @@ public class ChatQueryService {
     }
 
     /**
-     * 회원이 입장한 상태인 모든 chatroom list 반환하는 메소드
+     * 회원이 입장한 상태인 모든 채팅방 list 반환하는 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 채팅방 list
      */
     public List<Chatroom> getActiveChatrooms(Member member) {
         return chatroomRepository.findActiveChatrooms(member.getId());
@@ -115,8 +115,8 @@ public class ChatQueryService {
     /**
      * 회원이 입장한 상태인 모든 memberChatroom list 반환하는 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return MemberChatroom list
      */
     public List<MemberChatroom> getActiveMemberChatrooms(Member member) {
         return memberChatroomRepository.findAllActiveMemberChatroomByMemberId(member.getId());
@@ -125,9 +125,9 @@ public class ChatQueryService {
     /**
      * 해당 채팅방의 안읽은 메시지 개수를 반환하는 메소드
      *
-     * @param member
-     * @param chatroom
-     * @return
+     * @param member   회원
+     * @param chatroom 채팅방
+     * @return 안읽은 메시지 개수
      */
     public int countUnreadChats(Member member, Chatroom chatroom) {
         chatValidator.validateMemberChatroom(member.getId(), chatroom.getId());
@@ -135,11 +135,11 @@ public class ChatQueryService {
     }
 
     /**
-     * 모든 채팅방의 안읽은 메시지 개수를 반환하는 메소드
+     * 채팅방 각각에 대한 안읽은 메시지 개수를 반환하는 메소드
      *
-     * @param member
-     * @param chatroomIds
-     * @return
+     * @param member      회원
+     * @param chatroomIds 채팅방 id list
+     * @return Map<채팅방 id, 안읽은 메시지 개수>
      */
     public Map<Long, Integer> countUnreadChatsBatch(Member member, List<Long> chatroomIds) {
         return chatRepository.countUnreadChatsBatch(chatroomIds, member.getId());
@@ -148,9 +148,9 @@ public class ChatQueryService {
     /**
      * 해당 채팅방에 해당 timestamp를 갖는 chat 엔티티 조회 메소드
      *
-     * @param chatroom
-     * @param timestamp
-     * @return
+     * @param chatroom  채팅방
+     * @param timestamp timestamp
+     * @return Chat
      */
     public Chat getChatByChatroomAndTimestamp(Chatroom chatroom, Long timestamp) {
         return chatRepository.findByChatroomAndTimestamp(chatroom, timestamp).orElseThrow(
@@ -160,8 +160,8 @@ public class ChatQueryService {
     /**
      * id로 chat 엔티티 배치 조회 메소드
      *
-     * @param chatIds
-     * @return
+     * @param chatIds 채팅 id list
+     * @return Map<채팅방 id, 채팅 객체>
      */
     public Map<Long, Chat> findAllChatsBatch(List<Long> chatIds) {
         List<Chat> chats = chatRepository.findAllById(chatIds);

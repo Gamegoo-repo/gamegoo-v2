@@ -24,7 +24,6 @@ public class BlockListResponse {
 
         Long memberId;
         int profileImg;
-        String email;
         String name;
         boolean isBlind;
 
@@ -33,7 +32,6 @@ public class BlockListResponse {
             return BlockedMemberResponse.builder()
                     .memberId(member.getId())
                     .profileImg(member.getProfileImage())
-                    .email(member.getEmail())
                     .name(name)
                     .isBlind(member.isBlind())
                     .build();

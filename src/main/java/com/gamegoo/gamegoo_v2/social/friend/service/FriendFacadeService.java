@@ -26,9 +26,9 @@ public class FriendFacadeService {
     /**
      * 친구 요청 전송 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return FriendRequestResponse
      */
     @Transactional
     public FriendRequestResponse sendFriendRequest(Member member, Long targetMemberId) {
@@ -41,9 +41,9 @@ public class FriendFacadeService {
     /**
      * 친구 요청 수락 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return FriendRequestResponse
      */
     @Transactional
     public FriendRequestResponse acceptFriendRequest(Member member, Long targetMemberId) {
@@ -56,9 +56,9 @@ public class FriendFacadeService {
     /**
      * 친구 요청 거절 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return FriendRequestResponse
      */
     @Transactional
     public FriendRequestResponse rejectFriendRequest(Member member, Long targetMemberId) {
@@ -71,9 +71,9 @@ public class FriendFacadeService {
     /**
      * 친구 요청 취소 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return FriendRequestResponse
      */
     @Transactional
     public FriendRequestResponse cancelFriendRequest(Member member, Long targetMemberId) {
@@ -86,9 +86,9 @@ public class FriendFacadeService {
     /**
      * 친구 즐겨찾기 설정/해제 Facade 메소드
      *
-     * @param member
-     * @param friendMemberId
-     * @return
+     * @param member         회원
+     * @param friendMemberId 친구 회원 id
+     * @return StarFriendResponse
      */
     @Transactional
     public StarFriendResponse reverseFriendLiked(Member member, Long friendMemberId) {
@@ -101,9 +101,9 @@ public class FriendFacadeService {
     /**
      * 친구 삭제 Facade 메소드
      *
-     * @param member
-     * @param targetMemberId
-     * @return
+     * @param member         회원
+     * @param targetMemberId 상대 회원 id
+     * @return DeleteFriendResponse
      */
     @Transactional
     public DeleteFriendResponse deleteFriend(Member member, Long targetMemberId) {
@@ -116,8 +116,8 @@ public class FriendFacadeService {
     /**
      * 모든 친구 id 목록 조회 Facade 메소드
      *
-     * @param member
-     * @return
+     * @param member 회원
+     * @return 친구 회원의 id list
      */
     public List<Long> getFriendIdList(Member member) {
         return friendService.getFriendIdList(member);
@@ -126,9 +126,9 @@ public class FriendFacadeService {
     /**
      * 친구 목록 조회 Facade 메소드
      *
-     * @param member
-     * @param cursor
-     * @return
+     * @param member 회원
+     * @param cursor 친구 회원 id
+     * @return FriendListResponse
      */
     public FriendListResponse getFriends(Member member, Long cursor) {
         return FriendListResponse.of(friendService.getFriendSlice(member, cursor));
@@ -137,9 +137,9 @@ public class FriendFacadeService {
     /**
      * 소환사명으로 친구 조회 Facade 메소드
      *
-     * @param member
-     * @param query
-     * @return
+     * @param member 회원
+     * @param query  검색어
+     * @return FriendListResponse list
      */
     public List<FriendInfoResponse> searchFriend(Member member, String query) {
         return friendService.searchFriendByGamename(member, query).stream()

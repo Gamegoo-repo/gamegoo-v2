@@ -26,17 +26,17 @@ public class SocketService {
     private static final String JOIN_CHATROOM_URL = "/socket/room/join";
 
     /**
-     * SOCKET서버로 해당 member의 socket을 chatroom에 join시키는 API 전송
+     * SOCKET서버로 해당 회원의 socket을 room에 join 요청하는 API 전송
      *
-     * @param memberId
-     * @param chatroomUuid
+     * @param memberId 회원 id
+     * @param uuid     채팅방 uuid
      */
-    public void joinSocketToChatroom(Long memberId, String chatroomUuid) {
+    public void joinSocketToChatroom(Long memberId, String uuid) {
 
         String url = SOCKET_SERVER_URL + JOIN_CHATROOM_URL;
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("memberId", memberId);
-        requestBody.put("chatroomUuid", chatroomUuid);
+        requestBody.put("chatroomUuid", uuid);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, requestBody, String.class);

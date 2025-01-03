@@ -1,6 +1,7 @@
 package com.gamegoo.gamegoo_v2.social.block.service;
 
 import com.gamegoo.gamegoo_v2.account.member.domain.Member;
+import com.gamegoo.gamegoo_v2.core.common.validator.BlockValidator;
 import com.gamegoo.gamegoo_v2.core.common.validator.MemberValidator;
 import com.gamegoo.gamegoo_v2.core.exception.BlockException;
 import com.gamegoo.gamegoo_v2.core.exception.common.ErrorCode;
@@ -23,14 +24,16 @@ public class BlockService {
 
     private final BlockRepository blockRepository;
     private final MemberValidator memberValidator;
+    private final BlockValidator blockValidator;
 
     private final static int PAGE_SIZE = 10;
 
     /**
      * member가 targetMember를 차단 처리하는 메소드
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return Block
      */
     @Transactional
     public Block blockMember(Member member, Member targetMember) {
@@ -38,10 +41,10 @@ public class BlockService {
         validateNotSelfBlock(member, targetMember);
 
         // 대상 회원의 탈퇴 여부 검증
-        memberValidator.validateMemberIsNotBlind(targetMember);
+        memberValidator.throwIfBlind(targetMember);
 
-        // 이미 차단한 회원인지 검증
-        validateNotBlocked(member, targetMember);
+        // 이미 차단한 회원이 아닌지 검증
+        blockValidator.throwIfBlocked(member, targetMember, BlockException.class, ErrorCode.ALREADY_BLOCKED);
 
         // block 엔티티 생성
         Block block = Block.create(member, targetMember);
@@ -53,9 +56,9 @@ public class BlockService {
     /**
      * 해당 회원이 차단한 회원의 목록 Page 객체 반환하는 메소드
      *
-     * @param blockerId
-     * @param pageIdx
-     * @return
+     * @param blockerId 회원 id
+     * @param pageIdx   페이지 번호
+     * @return 회원 Page 객체
      */
     public Page<Member> getBlockedMemberPage(Long blockerId, int pageIdx) {
         PageRequest pageRequest = PageRequest.of(pageIdx - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -66,13 +69,14 @@ public class BlockService {
     /**
      * menber가 targetMember를 차단 해제 처리하는 메소드
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return Block
      */
     @Transactional
     public Block unBlockMember(Member member, Member targetMember) {
         // 대상 회원의 탈퇴 여부 검증
-        memberValidator.validateMemberIsNotBlind(targetMember);
+        memberValidator.throwIfBlind(targetMember);
 
         // targetMember가 실제로 차단 목록에 존재하는지 검증 및 block 엔티티 조회
         Block block = blockRepository.findByBlockerMemberAndBlockedMember(member, targetMember)
@@ -87,8 +91,9 @@ public class BlockService {
     /**
      * member의 차단 목록에서 targetMember 삭제
      *
-     * @param member
-     * @param targetMember
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return Block
      */
     @Transactional
     public Block deleteBlock(Member member, Member targetMember) {
@@ -110,9 +115,9 @@ public class BlockService {
     /**
      * memer가 targetMember를 차단했는지 여부를 반환하는 메소드
      *
-     * @param member
-     * @param targetMember
-     * @return
+     * @param member       회원
+     * @param targetMember 상대 회원
+     * @return 차단 여부
      */
     public boolean isBlocked(Member member, Member targetMember) {
         return blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
@@ -121,24 +126,23 @@ public class BlockService {
     /**
      * 모든 targetMember에 대한 차단 여부 반환하는 메소드
      *
-     * @param member
-     * @param targetMemberIds
-     * @return
+     * @param member          회원
+     * @param targetMemberIds 상대 회원 id list
+     * @return Map<상대 회원 id, 차단 여부>
      */
     public Map<Long, Boolean> isBlockedByTargetMembersBatch(Member member, List<Long> targetMemberIds) {
         return blockRepository.isBlockedByTargetMembersBatch(targetMemberIds, member.getId());
     }
 
+    /**
+     * 두 회원이 동일하면 에러 발생 메소드
+     *
+     * @param member       회원
+     * @param targetMember 상대 회원
+     */
     private void validateNotSelfBlock(Member member, Member targetMember) {
         if (member.getId().equals(targetMember.getId())) {
             throw new BlockException(ErrorCode.BLOCK_MEMBER_BAD_REQUEST);
-        }
-    }
-
-    private void validateNotBlocked(Member member, Member targetMember) {
-        boolean exists = blockRepository.existsByBlockerMemberAndBlockedMemberAndDeleted(member, targetMember, false);
-        if (exists) {
-            throw new BlockException(ErrorCode.ALREADY_BLOCKED);
         }
     }
 
