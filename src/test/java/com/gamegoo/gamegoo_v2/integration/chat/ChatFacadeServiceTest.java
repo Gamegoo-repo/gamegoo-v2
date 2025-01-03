@@ -485,7 +485,7 @@ class ChatFacadeServiceTest {
                     .build();
 
             // when // then
-            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, "no-uuid"))
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member.getId(), "no-uuid"))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHATROOM_NOT_FOUND.getMessage());
         }
@@ -500,7 +500,7 @@ class ChatFacadeServiceTest {
                     .build();
 
             // when // then
-            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, createChatroom().getUuid()))
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member.getId(), createChatroom().getUuid()))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHATROOM_ACCESS_DENIED.getMessage());
         }
@@ -521,7 +521,7 @@ class ChatFacadeServiceTest {
             blindMember(targetMember);
 
             // when // then
-            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member.getId(), chatroom.getUuid()))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHAT_ADD_FAILED_TARGET_DEACTIVATED.getMessage());
         }
@@ -542,7 +542,7 @@ class ChatFacadeServiceTest {
             blockMember(member, targetMember);
 
             // when // then
-            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member.getId(), chatroom.getUuid()))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHAT_ADD_FAILED_TARGET_IS_BLOCKED.getMessage());
         }
@@ -564,7 +564,7 @@ class ChatFacadeServiceTest {
             blockMember(targetMember, member);
 
             // then
-            assertThatThrownBy(() -> chatFacadeService.createChat(request, member, chatroom.getUuid()))
+            assertThatThrownBy(() -> chatFacadeService.createChat(request, member.getId(), chatroom.getUuid()))
                     .isInstanceOf(ChatException.class)
                     .hasMessage(ErrorCode.CHAT_ADD_FAILED_BLOCKED_BY_TARGET.getMessage());
         }
@@ -618,7 +618,7 @@ class ChatFacadeServiceTest {
             }
 
             // when
-            chatFacadeService.createChat(request, member, chatroom.getUuid());
+            chatFacadeService.createChat(request, member.getId(), chatroom.getUuid());
 
             // then
             // member의 lastViewDate 업데이트 검증
